@@ -87,6 +87,27 @@ class ObserverPhysicsEngine {
                 color: '#1abc9c',
                 particleSize: 3,
                 connectionDistance: 90
+            },
+            thermodynamic: {
+                name: '🔥 Thermodynamic Observer',
+                color: '#e74c3c',
+                particleSize: 5,
+                connectionDistance: 100,
+                showHeatFlow: true
+            },
+            relativistic: {
+                name: '⚡ Relativistic Observer',
+                color: '#f39c12',
+                particleSize: 4,
+                connectionDistance: 80,
+                speedOfLight: 5
+            },
+            probabilistic: {
+                name: '🎲 Probabilistic Observer',
+                color: '#16a085',
+                particleSize: 4,
+                connectionDistance: 100,
+                showUncertainty: true
             }
         };
 
@@ -133,7 +154,7 @@ class ObserverPhysicsEngine {
                 y = Math.random() * this.height;
             }
 
-            return {
+            const particle = {
                 id: i,
                 x: x,
                 y: y,
@@ -145,6 +166,26 @@ class ObserverPhysicsEngine {
                 predictedY: y,
                 predictionError: 0
             };
+
+            // Thermodynamic observer: track temperature
+            if (this.config.observerType === 'thermodynamic') {
+                particle.temperature = Math.random() * 100 + 50;
+                particle.heatCapacity = 1.0;
+            }
+
+            // Relativistic observer: track proper time and gamma factor
+            if (this.config.observerType === 'relativistic') {
+                particle.properTime = 0;
+                particle.restMass = 1.0;
+            }
+
+            // Probabilistic observer: track probability distribution
+            if (this.config.observerType === 'probabilistic') {
+                particle.probability = 1.0 / this.config.populationSize;
+                particle.variance = 10.0;
+            }
+
+            return particle;
         });
 
         // Assign cluster colors
@@ -476,6 +517,43 @@ class ObserverPhysicsEngine {
                     p.vy += shockY;
                 }
             }
+
+            // Thermodynamic observer: heat diffusion
+            if (this.config.observerType === 'thermodynamic') {
+                const vel = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                p.temperature = p.temperature * 0.99 + vel * 10; // Kinetic energy → temperature
+
+                // Heat dissipation
+                p.temperature = p.temperature * 0.98 + 50 * 0.02; // Cool toward ambient
+            }
+
+            // Relativistic observer: time dilation and speed limit
+            if (this.config.observerType === 'relativistic') {
+                const c = config.speedOfLight;
+                const vel = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+
+                // Enforce speed of light limit
+                if (vel > c) {
+                    const factor = c / vel;
+                    p.vx *= factor;
+                    p.vy *= factor;
+                }
+
+                // Calculate Lorentz factor: γ = 1/√(1 - v²/c²)
+                const gamma = 1 / Math.sqrt(1 - (vel * vel) / (c * c));
+                p.properTime = (p.properTime || 0) + (1 / gamma); // Time dilation!
+            }
+
+            // Probabilistic observer: Bayesian update
+            if (this.config.observerType === 'probabilistic') {
+                // Update probability based on "measurements" (velocity changes)
+                const vel = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                const likelihood = Math.exp(-vel * 0.5); // Slower = more likely
+                p.probability = p.probability * 0.95 + likelihood * 0.05;
+
+                // Update variance (uncertainty)
+                p.variance = p.variance * 0.98 + Math.abs(vel - 1.5) * 0.02;
+            }
         });
     }
 
@@ -557,6 +635,63 @@ class ObserverPhysicsEngine {
                 }
             });
         }
+
+        // Thermodynamic: heat flow visualization
+        if (this.config.observerType === 'thermodynamic') {
+            this.particles.forEach(p => {
+                const temp = p.temperature || 50;
+                const normalized = Math.max(0, Math.min(1, (temp - 20) / 150));
+
+                // Glow effect for hot particles
+                if (normalized > 0.5) {
+                    const glowRadius = config.particleSize + (normalized * 15);
+                    const gradient = this.ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowRadius);
+                    gradient.addColorStop(0, `rgba(255, 100, 0, ${normalized * 0.3})`);
+                    gradient.addColorStop(1, 'rgba(255, 100, 0, 0)');
+
+                    this.ctx.fillStyle = gradient;
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, glowRadius, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+            });
+        }
+
+        // Probabilistic: uncertainty circles
+        if (this.config.observerType === 'probabilistic') {
+            this.particles.forEach(p => {
+                const variance = p.variance || 1;
+                const radius = config.particleSize + variance * 3;
+
+                this.ctx.strokeStyle = config.color;
+                this.ctx.globalAlpha = 0.2;
+                this.ctx.lineWidth = 1;
+                this.ctx.beginPath();
+                this.ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+                this.ctx.stroke();
+            });
+            this.ctx.globalAlpha = 1;
+        }
+
+        // Relativistic: light cones (optional, can be performance intensive)
+        if (this.config.observerType === 'relativistic' && this.particles.length < 150) {
+            this.particles.forEach(p => {
+                const vel = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                if (vel > 1) {
+                    const angle = Math.atan2(p.vy, p.vx);
+                    const coneLength = vel * 8;
+
+                    this.ctx.strokeStyle = config.color;
+                    this.ctx.globalAlpha = 0.15;
+                    this.ctx.lineWidth = 2;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(p.x, p.y);
+                    this.ctx.lineTo(p.x - Math.cos(angle) * coneLength, p.y - Math.sin(angle) * coneLength);
+                    this.ctx.stroke();
+                }
+            });
+            this.ctx.globalAlpha = 1;
+        }
     }
 
     renderParticles(config) {
@@ -582,9 +717,54 @@ class ObserverPhysicsEngine {
                 }
             }
 
+            // Thermodynamic: temperature-based coloring (blue=cold, red=hot)
+            if (this.config.observerType === 'thermodynamic') {
+                const temp = p.temperature || 50;
+                const normalized = Math.max(0, Math.min(1, (temp - 20) / 150));
+
+                if (normalized < 0.33) {
+                    fillColor = '#3498db'; // Blue (cold)
+                } else if (normalized < 0.66) {
+                    fillColor = '#f39c12'; // Orange (warm)
+                } else {
+                    fillColor = '#e74c3c'; // Red (hot)
+                }
+            }
+
+            // Relativistic: gamma-based sizing (time dilation)
+            let particleSize = config.particleSize;
+            if (this.config.observerType === 'relativistic') {
+                const vel = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                const c = config.speedOfLight;
+                const beta = vel / c;
+
+                // Color shift toward red as approaching speed of light (redshift!)
+                const redshift = Math.min(beta, 0.9);
+                const r = Math.floor(200 + redshift * 55);
+                const g = Math.floor(150 * (1 - redshift));
+                const b = Math.floor(50 * (1 - redshift));
+                fillColor = `rgb(${r}, ${g}, ${b})`;
+
+                // Size based on gamma factor (length contraction visualization)
+                const gamma = 1 / Math.sqrt(1 - beta * beta);
+                particleSize = config.particleSize / Math.min(gamma, 2);
+            }
+
+            // Probabilistic: opacity based on probability
+            let particleAlpha = 0.8;
+            if (this.config.observerType === 'probabilistic') {
+                const prob = p.probability || 0.01;
+                particleAlpha = Math.max(0.1, Math.min(1, prob * 100));
+
+                // Size based on variance (uncertainty)
+                const variance = p.variance || 1;
+                particleSize = config.particleSize * (1 + variance * 0.1);
+            }
+
+            this.ctx.globalAlpha = particleAlpha;
             this.ctx.fillStyle = fillColor;
             this.ctx.beginPath();
-            this.ctx.arc(p.x, p.y, config.particleSize, 0, Math.PI * 2);
+            this.ctx.arc(p.x, p.y, particleSize, 0, Math.PI * 2);
             this.ctx.fill();
 
             // Social: white stroke
