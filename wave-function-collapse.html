@@ -351,6 +351,15 @@
             // POSITION MEASUREMENT → Velocity becomes uncertain!
             // Heisenberg Uncertainty: Δx·Δp ≥ ℏ/2
             // Measuring position precisely → momentum becomes highly uncertain!
+
+            // Save original velocities so we can restore on reset!
+            if (!window.originalVelocities) {
+                window.originalVelocities = particles.map(p => ({
+                    vx: p.vx,
+                    vy: p.vy
+                }));
+            }
+
             particles.forEach(p => {
                 // Collapse position (ghosts → single point) - already happened visually
                 collapsedPositions.push({x: p.x, y: p.y});
@@ -387,6 +396,17 @@
         function resetSystem() {
             isCollapsed = false;
             collapsedPositions = [];
+
+            // RESTORE ORIGINAL VELOCITIES!
+            // When returning to superposition, particles return to their pre-measurement state
+            if (window.originalVelocities && engine.particles) {
+                engine.particles.forEach((p, i) => {
+                    if (window.originalVelocities[i]) {
+                        p.vx = window.originalVelocities[i].vx;
+                        p.vy = window.originalVelocities[i].vy;
+                    }
+                });
+            }
 
             document.getElementById('stateDisplay').textContent = 'SUPERPOSITION';
             document.getElementById('stateDisplay').className = 'state-value state-superposition';
