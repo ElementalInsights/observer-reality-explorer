@@ -117,31 +117,103 @@
             background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
         }
 
-        /* Visualization side */
+        /* Visualization side - Physicist's Notebook! */
         .viz-side {
             width: 60%;
             overflow-y: auto;
             padding: 20px;
-            background: #e8f5e9;
+            background: #f5f1e8;
+            position: relative;
+        }
+
+        /* Coffee rings and smudges */
+        .viz-side::before {
+            content: '';
+            position: absolute;
+            top: 120px;
+            right: 80px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: radial-gradient(circle, transparent 50%, rgba(139, 90, 43, 0.12) 55%, transparent 60%),
+                        radial-gradient(circle, transparent 58%, rgba(101, 67, 33, 0.08) 62%, transparent 65%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .viz-side::after {
+            content: '';
+            position: absolute;
+            bottom: 200px;
+            left: 60px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, transparent 55%, rgba(139, 90, 43, 0.08) 58%, transparent 62%);
+            pointer-events: none;
+            z-index: 1;
         }
 
         .container {
             background-image:
-                linear-gradient(rgba(46, 204, 113, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(46, 204, 113, 0.05) 1px, transparent 1px),
-                linear-gradient(rgba(46, 204, 113, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(46, 204, 113, 0.02) 1px, transparent 1px);
+                /* Fine grid lines */
+                linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+                /* Bold grid lines every 5 squares */
+                linear-gradient(rgba(0, 0, 0, 0.08) 2px, transparent 2px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.08) 2px, transparent 2px);
             background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
-            background-color: white;
+            background-color: #fefdfb;
             border-radius: 15px;
-            border-left: 5px solid #27ae60;
+            border-left: 5px solid #444;
             padding: 40px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Smudge marks on paper */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 40px;
+            right: 100px;
+            width: 80px;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: 50%;
+            transform: rotate(-15deg);
+            filter: blur(3px);
+        }
+
+        .container::after {
+            content: '';
+            position: absolute;
+            bottom: 150px;
+            left: 120px;
+            width: 60px;
+            height: 25px;
+            background: rgba(0, 0, 0, 0.025);
+            border-radius: 50%;
+            transform: rotate(25deg);
+            filter: blur(4px);
+        }
+
+        /* Hand-drawn sketch annotations */
+        .sketch-note {
+            position: absolute;
+            font-family: 'Comic Sans MS', 'Marker Felt', cursive;
+            color: rgba(0, 0, 0, 0.3);
+            font-size: 14px;
+            transform: rotate(-3deg);
+            pointer-events: none;
+            z-index: 3;
         }
 
         h1 {
             text-align: center;
-            color: #27ae60;
+            color: #2c3e50;
+            position: relative;
             margin-bottom: 10px;
             font-size: 2.5em;
             font-weight: 700;
@@ -149,8 +221,9 @@
 
         .subtitle {
             text-align: center;
-            color: #34495e;
+            color: #555;
             margin-bottom: 40px;
+            font-style: italic;
             font-weight: 500;
             font-size: 1.1em;
         }
@@ -507,8 +580,22 @@
                 <h1>Interactive Visualizations</h1>
                 <p class="subtitle">Explore the Mathematics of Observer-Dependent Reality</p>
 
+                <!-- Hand-drawn sketch notes -->
+                <div class="sketch-note" style="top: 80px; right: 50px; font-size: 12px;">
+                    ΔxΔp ≥ ℏ/2<br>
+                    ↓ uncertainty!
+                </div>
+                <div class="sketch-note" style="top: 200px; left: 30px; transform: rotate(2deg);">
+                    Same particles,<br>
+                    8 different views →
+                </div>
+                <div class="sketch-note" style="bottom: 180px; right: 40px; transform: rotate(-5deg); font-size: 11px;">
+                    dS/dt ≥ 0<br>
+                    (entropy always ↑)
+                </div>
+
                 <!-- Visualization List (Compact Buttons) -->
-                <div style="max-width: 700px; margin: 30px auto; display: flex; flex-direction: column; gap: 10px;">
+                <div style="max-width: 700px; margin: 30px auto; display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 10;">
                     <!-- Framework Benchmark -->
                     <a href="benchmark.html" style="background: #000; color: white; padding: 15px 20px; text-decoration: none; border: 2px solid #555; transition: all 0.2s; display: flex; align-items: center; gap: 15px; border-radius: 8px;"
                        onmouseover="this.style.borderColor='#aaa'"
