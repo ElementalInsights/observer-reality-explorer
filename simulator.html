@@ -505,17 +505,17 @@
 
         .stat-tooltip {
             display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             background: rgba(10,14,39,0.98);
             border: 2px solid #9b59b6;
             border-radius: 10px;
             padding: 16px;
-            width: 420px;
-            z-index: 1000;
-            margin-top: 10px;
-            box-shadow: 0 4px 20px rgba(155,89,182,0.4);
+            width: 500px;
+            z-index: 2000;
+            box-shadow: 0 4px 30px rgba(155,89,182,0.6);
         }
 
         .stat-row-hover.active .stat-tooltip {
@@ -1021,6 +1021,17 @@
             <div class="observer-desc-inline" id="observerDesc">Superpositions, Multiple States, Probabilistic Reality, Wave Function Collapse</div>
             <div class="observer-description" id="observerDescription">
                 Sees particles in MULTIPLE states at once (superposition). Reality is probabilistic - particles exist as "waves" of possibility until measured. Ghost particles show "HERE or THERE" states before observation collapses the wave function.
+            </div>
+
+            <!-- Play/Pause Button (PROMINENT!) -->
+            <div style="margin-top: 20px; display: flex; gap: 15px; align-items: center; justify-content: center;">
+                <button id="playBtn" onclick="toggleTimeEvolution()" style="padding: 12px 32px; background: #00ff88; color: #0a0e27; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1.1em; box-shadow: 0 4px 15px rgba(0,255,136,0.4);">
+                    <span id="playIcon">▶️</span> <span id="playText">Play</span>
+                </button>
+                <div style="color: #aaa; font-size: 0.9em; text-align: left; line-height: 1.5;">
+                    <strong style="color: #00ff88;">Hit Play</strong> to see thermodynamic evolution!<br>
+                    Watch entropy increase, particles spread, 2nd Law in action.
+                </div>
             </div>
         </div>
 
