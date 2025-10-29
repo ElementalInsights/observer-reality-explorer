@@ -305,6 +305,13 @@
         <!-- Controls -->
         <div class="controls">
             <div class="control-group">
+                <div class="button-row">
+                    <button id="playBtn" onclick="togglePlay()">▶️ Play</button>
+                    <button onclick="resetSimulation()">🔄 Reset</button>
+                </div>
+            </div>
+
+            <div class="control-group">
                 <label>Observer Type</label>
                 <select id="observerType" onchange="changeObserver(this.value)">
                     <option value="quantum">🌀 Quantum</option>
@@ -328,13 +335,6 @@
                 <label>Evolution Speed: <span class="value-display" id="speedValue">1x</span></label>
                 <input type="range" id="speedSlider" min="1" max="10" value="1"
                        oninput="updateSpeed(this.value)">
-            </div>
-
-            <div class="control-group">
-                <div class="button-row">
-                    <button id="playBtn" onclick="togglePlay()">▶️ Play</button>
-                    <button onclick="resetSimulation()">🔄 Reset</button>
-                </div>
             </div>
 
             <div class="benchmark-stats">
