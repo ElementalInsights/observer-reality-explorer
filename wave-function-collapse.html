@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wave Function Collapse - Quantum Measurement</title>
+    <script src="physics-engine.js"></script>
+    <script src="telemetry-display.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            background: #0a0e27;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: rgba(10,14,39,0.95);
+            padding: 15px 30px;
+            border-bottom: 2px solid #2ecc71;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-bar h1 {
+            color: #2ecc71;
+            font-size: 1.5em;
+        }
+
+        .top-bar a {
+            color: #2ecc71;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 350px 1fr 350px;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            padding: 20px;
+            height: calc(100vh - 60px);
+        }
+
+        /* Info Card */
+        .info-card {
+            grid-column: 1 / -1;
+            background: rgba(10,14,39,0.92);
+            border: 2px solid #9b59b6;
+            padding: 30px;
+            backdrop-filter: blur(15px);
+            text-align: center;
+        }
+
+        .info-card h2 {
+            color: #9b59b6;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .info-card p {
+            color: #ccc;
+            font-size: 1.1em;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Controls Panel */
+        .controls-panel {
+            grid-column: 1;
+            background: rgba(10,14,39,0.95);
+            border: 2px solid #2ecc71;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .controls-panel h2 {
+            color: #2ecc71;
+            font-size: 1.2em;
+            margin: 0 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #2ecc71;
+        }
+
+        /* Visualization Panel */
+        .viz-panel {
+            grid-column: 2;
+            position: relative;
+            background: rgba(255,255,255,0.02);
+            border: 2px solid rgba(155,89,182,0.5);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Telemetry Panel */
+        .telemetry-panel {
+            grid-column: 3;
+        }
+
+        /* Buttons */
+        button {
+            background: #2ecc71;
+            color: #0a0e27;
+            border: none;
+            padding: 15px 25px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #27ae60;
+        }
+
+        button.measure-btn {
+            background: #9b59b6;
+            color: white;
+            font-size: 1.3em;
+            padding: 20px;
+        }
+
+        button.measure-btn:hover {
+            background: #8e44ad;
+        }
+
+        button.measure-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* State indicator */
+        .state-indicator {
+            background: rgba(155,89,182,0.1);
+            border: 2px solid #9b59b6;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .state-indicator .state-label {
+            color: #9b59b6;
+            font-size: 0.9em;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .state-indicator .state-value {
+            color: #fff;
+            font-size: 1.4em;
+            font-weight: 700;
+        }
+
+        .state-superposition {
+            color: #9b59b6 !important;
+        }
+
+        .state-collapsed {
+            color: #e74c3c !important;
+        }
+
+        /* Control groups */
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            color: #aaa;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .control-group input {
+            width: 100%;
+        }
+
+        .value-display {
+            color: #2ecc71;
+            font-weight: 700;
+        }
+
+        /* Measurement history */
+        .measurement-history {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(46,204,113,0.3);
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.9em;
+        }
+
+        .measurement-history h3 {
+            color: #2ecc71;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .measurement-item {
+            color: #aaa;
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 2px solid #9b59b6;
+            padding-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <h1>⚡ Wave Function Collapse - Quantum Measurement</h1>
+        <a href="index.html">← Back to Home</a>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Info Card -->
+        <div class="info-card">
+            <h2>🌀 Observe the Observer Effect</h2>
+            <p>
+                Before measurement, particles exist in SUPERPOSITION (multiple states at once, shown as ghost clouds).
+                Click <strong>MEASURE</strong> to collapse the wave function - watch the probability cloud snap to a single definite state!
+                This demonstrates the fundamental quantum principle: <strong>observation changes reality</strong>.
+            </p>
+        </div>
+
+        <!-- Controls Panel -->
+        <div class="controls-panel">
+            <h2>🎮 Controls</h2>
+
+            <!-- State Indicator -->
+            <div class="state-indicator">
+                <div class="state-label">QUANTUM STATE:</div>
+                <div class="state-value" id="stateDisplay">SUPERPOSITION</div>
+            </div>
+
+            <!-- Measure Button -->
+            <button class="measure-btn" id="measureBtn" onclick="performMeasurement()">
+                ⚡ MEASURE!
+            </button>
+
+            <!-- Reset Button -->
+            <button onclick="resetSystem()">
+                🔄 Reset to Superposition
+            </button>
+
+            <div style="height: 1px; background: rgba(46,204,113,0.2); margin: 15px 0;"></div>
+
+            <!-- Particle Control -->
+            <div class="control-group">
+                <label>Particles: <span id="popValue" class="value-display">50</span></label>
+                <input type="range" id="populationSlider" min="10" max="200" value="50" step="10" oninput="updatePopulation(this.value)">
+            </div>
+
+            <!-- Uncertainty Control -->
+            <div class="control-group">
+                <label>Quantum Uncertainty: <span id="uncertaintyValue" class="value-display">High</span></label>
+                <input type="range" id="uncertaintySlider" min="1" max="10" value="5" step="1" oninput="updateUncertainty(this.value)">
+            </div>
+
+            <div style="height: 1px; background: rgba(46,204,113,0.2); margin: 15px 0;"></div>
+
+            <!-- Measurement History -->
+            <div class="measurement-history">
+                <h3>📊 Measurement History</h3>
+                <div id="historyList"></div>
+            </div>
+        </div>
+
+        <!-- Visualization Panel -->
+        <div class="viz-panel">
+            <canvas id="mainCanvas"></canvas>
+        </div>
+
+        <!-- Telemetry Panel -->
+        <div class="telemetry-panel" id="telemetry"></div>
+    </div>
+
+    <script>
+        // ===== USE REUSABLE PHYSICS ENGINE! =====
+        let engine;
+        let telemetry;
+        let isCollapsed = false;
+        let uncertaintyLevel = 5;
+        let measurementCount = 0;
+        let collapsedPositions = [];
+
+        // Initialize
+        function init() {
+            // Create physics engine
+            engine = new ObserverPhysicsEngine('mainCanvas', {
+                populationSize: 50,
+                observerType: 'quantum'
+            });
+
+            // Create telemetry display
+            telemetry = new TelemetryDisplay('telemetry', {
+                title: '📊 Quantum Telemetry'
+            });
+
+            // Start rendering
+            engine.start();
+
+            // Update telemetry every 100ms
+            setInterval(() => {
+                telemetry.update(engine.getTelemetry());
+            }, 100);
+        }
+
+        // Perform measurement (collapse wave function!)
+        function performMeasurement() {
+            if (isCollapsed) return;
+
+            isCollapsed = true;
+            measurementCount++;
+
+            // Animate collapse
+            const particles = engine.particles;
+            collapsedPositions = particles.map(p => ({
+                x: p.x,
+                y: p.y
+            }));
+
+            // Visual effect - particles snap to measured position
+            document.getElementById('stateDisplay').textContent = 'COLLAPSED';
+            document.getElementById('stateDisplay').className = 'state-value state-collapsed';
+            document.getElementById('measureBtn').disabled = true;
+
+            // Add to history
+            const historyList = document.getElementById('historyList');
+            const item = document.createElement('div');
+            item.className = 'measurement-item';
+            const avgX = particles.reduce((sum, p) => sum + p.x, 0) / particles.length;
+            const avgY = particles.reduce((sum, p) => sum + p.y, 0) / particles.length;
+            item.textContent = `Measurement #${measurementCount}: Collapsed at (${Math.round(avgX)}, ${Math.round(avgY)})`;
+            historyList.insertBefore(item, historyList.firstChild);
+
+            // Change to classical observer (shows definite state)
+            setTimeout(() => {
+                engine.setObserver('classical');
+            }, 500);
+        }
+
+        // Reset to superposition
+        function resetSystem() {
+            isCollapsed = false;
+            collapsedPositions = [];
+
+            document.getElementById('stateDisplay').textContent = 'SUPERPOSITION';
+            document.getElementById('stateDisplay').className = 'state-value state-superposition';
+            document.getElementById('measureBtn').disabled = false;
+
+            // Return to quantum observer
+            engine.setObserver('quantum');
+            engine.createParticles();
+        }
+
+        // Update population
+        function updatePopulation(value) {
+            document.getElementById('popValue').textContent = value;
+            engine.setPopulation(parseInt(value));
+            if (!isCollapsed) {
+                resetSystem();
+            }
+        }
+
+        // Update uncertainty
+        function updateUncertainty(value) {
+            uncertaintyLevel = parseInt(value);
+            const labels = ['Minimal', 'Very Low', 'Low', 'Medium-Low', 'Medium',
+                           'Medium-High', 'High', 'Very High', 'Extreme', 'Maximum'];
+            document.getElementById('uncertaintyValue').textContent = labels[value - 1];
+
+            // Affect spread of ghost particles (visual only)
+            // Could modify engine rendering parameters here
+        }
+
+        // Initialize on load
+        window.addEventListener('load', init);
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            engine.initCanvas();
+            engine.createParticles();
+        });
+    </script>
+</body>
+</html>
