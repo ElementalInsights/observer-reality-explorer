@@ -18,6 +18,7 @@
             background: #000;
             color: #fff;
             overflow: hidden;
+            font-size: 16px;
         }
 
         .container {
@@ -42,13 +43,13 @@
 
         .header-left h1 {
             color: #fff;
-            font-size: 1.8em;
+            font-size: 2.2em;
             margin-bottom: 10px;
         }
 
         .header-left p {
             color: #888;
-            font-size: 0.9em;
+            font-size: 1.1em;
         }
 
         .header-right {
@@ -63,14 +64,14 @@
         }
 
         .header-buttons button {
-            padding: 10px 20px;
+            padding: 12px 24px;
             background: #444;
             border: none;
             border-radius: 5px;
             color: white;
             font-weight: bold;
             cursor: pointer;
-            font-size: 0.95em;
+            font-size: 1.1em;
             transition: background 0.3s;
         }
 
@@ -91,7 +92,7 @@
 
         .panel h2 {
             color: #fff;
-            font-size: 1.3em;
+            font-size: 1.6em;
             margin-bottom: 15px;
             letter-spacing: 0.5px;
         }
@@ -120,7 +121,7 @@
             border: 2px solid #666;
             border-radius: 8px;
             color: #fff;
-            padding: 12px 20px;
+            padding: 14px 24px;
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
@@ -129,7 +130,7 @@
             z-index: 1000;
             text-decoration: none;
             font-weight: bold;
-            font-size: 1em;
+            font-size: 1.15em;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
 
@@ -148,22 +149,23 @@
 
         .info-box h3 {
             color: #fff;
-            font-size: 1.1em;
+            font-size: 1.4em;
             margin-bottom: 10px;
         }
 
         .info-box p {
             color: #ccc;
-            font-size: 0.9em;
-            line-height: 1.5;
-            margin-bottom: 8px;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 10px;
         }
 
         .info-box code {
             background: rgba(255,255,255,0.1);
-            padding: 2px 6px;
+            padding: 3px 8px;
             border-radius: 3px;
             color: #ddd;
+            font-size: 1.05em;
         }
 
         .stat-row {
@@ -179,13 +181,13 @@
 
         .stat-label {
             color: #bbb;
-            font-size: 0.95em;
+            font-size: 1.1em;
         }
 
         .stat-value {
             color: #fff;
             font-weight: bold;
-            font-size: 1.05em;
+            font-size: 1.2em;
         }
 
         .speed-control {
@@ -197,7 +199,7 @@
 
         .speed-control label {
             color: #bbb;
-            font-size: 0.85em;
+            font-size: 1em;
             white-space: nowrap;
         }
 
@@ -209,7 +211,7 @@
         .speed-value {
             color: #fff;
             font-weight: bold;
-            font-size: 0.9em;
+            font-size: 1.05em;
         }
     </style>
 </head>
@@ -281,6 +283,18 @@
                 <p>The Second Law: <code>dS/dt ≥ 0</code> - entropy ALWAYS increases!</p>
                 <p>Notice how when entropy climbs rapidly (steep green), the rate is high (red peak). As entropy levels off, the rate decays toward zero.</p>
                 <p><strong>This is irreversible!</strong> You can't un-scramble an egg. Time flows forward because entropy increases.</p>
+            </div>
+
+            <div class="info-box" style="margin-top: 10px;">
+                <h3>⏰ Why Does Time Flow Forward?</h3>
+                <p>There are actually <strong>multiple "arrows of time"</strong> that all mysteriously point the same direction:</p>
+                <p><strong>1. Thermodynamic:</strong> Entropy increases (this simulation!)</p>
+                <p><strong>2. Cosmological:</strong> Universe expands</p>
+                <p><strong>3. Psychological:</strong> We remember past, not future</p>
+                <p><strong>4. Causal:</strong> Causes precede effects</p>
+                <p><strong>5. Radiation:</strong> Waves spread outward, not inward</p>
+                <p style="margin-top: 10px;">The <strong>mystery:</strong> Most fundamental physics laws (Newton, Maxwell, Schrödinger) are <em>time-reversible</em> - they work equally well backward and forward! But the Second Law is the only fundamental asymmetry that breaks this symmetry.</p>
+                <p><strong>This simulation shows the arrow of time in action.</strong> The particles will NEVER spontaneously return to their clustered state. That's why you can't un-break a glass or watch smoke flow back into a cigarette.</p>
             </div>
         </div>
     </div>
@@ -415,7 +429,7 @@
 
             // Labels
             ctx.fillStyle = '#ccc';
-            ctx.font = '12px Monaco, monospace';
+            ctx.font = '14px Monaco, monospace';
             ctx.textAlign = 'center';
 
             // X-axis label
@@ -426,6 +440,7 @@
             ctx.translate(15, padding + chartHeight / 2);
             ctx.rotate(-Math.PI / 2);
             ctx.fillStyle = '#2ecc71';
+            ctx.font = '14px Monaco, monospace';
             ctx.fillText('Entropy (bits)', 0, 0);
             ctx.restore();
 
@@ -434,11 +449,13 @@
             ctx.translate(chart.width - 15, padding + chartHeight / 2);
             ctx.rotate(Math.PI / 2);
             ctx.fillStyle = '#e74c3c';
+            ctx.font = '14px Monaco, monospace';
             ctx.fillText('dS/dt (bits/s)', 0, 0);
             ctx.restore();
 
             // Y-axis tick labels - Left (Entropy)
             ctx.fillStyle = '#2ecc71';
+            ctx.font = '13px Monaco, monospace';
             ctx.textAlign = 'right';
             for (let i = 0; i <= 5; i++) {
                 const value = minEntropy + (i / 5) * entropyRange;
@@ -449,6 +466,7 @@
             // Y-axis tick labels - Right (Rate)
             if (rateData && rateData.length > 0) {
                 ctx.fillStyle = '#e74c3c';
+                ctx.font = '13px Monaco, monospace';
                 ctx.textAlign = 'left';
                 for (let i = 0; i <= 5; i++) {
                     const value = minRate + (i / 5) * rateRange;
@@ -458,14 +476,14 @@
             }
 
             // Legend
-            ctx.font = 'bold 13px Monaco, monospace';
+            ctx.font = 'bold 15px Monaco, monospace';
             ctx.textAlign = 'left';
 
             ctx.fillStyle = '#2ecc71';
             ctx.fillText('━ Entropy (S)', padding + 10, padding - 25);
 
             ctx.fillStyle = '#e74c3c';
-            ctx.fillText('━ Rate (dS/dt)', padding + 140, padding - 25);
+            ctx.fillText('━ Rate (dS/dt)', padding + 160, padding - 25);
         }
 
         // Update chart every 100ms
