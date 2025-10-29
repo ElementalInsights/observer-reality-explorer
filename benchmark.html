@@ -229,6 +229,29 @@
             border: 2px solid #444;
             border-radius: 10px;
             padding: 20px;
+            overflow-y: auto;
+        }
+
+        .controls::-webkit-scrollbar,
+        .telemetry::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .controls::-webkit-scrollbar-track,
+        .telemetry::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+        }
+
+        .controls::-webkit-scrollbar-thumb,
+        .telemetry::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+        }
+
+        .controls::-webkit-scrollbar-thumb:hover,
+        .telemetry::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.5);
         }
 
         .control-group {
@@ -581,8 +604,26 @@
                 <p><strong>Social:</strong> <code>5 clusters</code> with in-group connections only</p>
                 <p><strong>Conscious:</strong> Prediction error decay: <code>α=0.7</code>, surprise rate: <code>5%</code></p>
                 <p><strong>Thermodynamic:</strong> Temperature range: <code>20-170</code>, ambient: <code>50</code></p>
-                <p><strong>Relativistic:</strong> Speed of light: <code>c=5</code> pixels/frame</p>
+                <p><strong>Relativistic:</strong> Speed of light: <code>c=3</code> pixels/frame, velocity boost: <code>2.5x</code></p>
                 <p><strong>Probabilistic:</strong> Variance update: <code>α=0.98</code></p>
+            </div>
+
+            <div class="modal-section">
+                <h3>⚡ Relativistic Causality (NEW!)</h3>
+                <p>In relativistic mode, connections represent <strong>causal structure</strong> in spacetime, not just spatial proximity.</p>
+
+                <p><strong>Connection Types:</strong></p>
+                <p>🟡 <strong>Timelike</strong> (Yellow/Blue): Inside light cone - causally connected. Light signal could travel between particles.</p>
+                <p>🔵 <strong>Past Light Cone</strong> (Blue): Could have influenced current particle.</p>
+                <p>🟡 <strong>Future Light Cone</strong> (Yellow): Can be influenced by current particle.</p>
+                <p>🔷 <strong>Lightlike</strong> (Cyan): On light cone boundary - simultaneous events.</p>
+                <p>⚪ <strong>Spacelike</strong> (Gray dashed): Outside light cone - NO causal connection possible.</p>
+
+                <p><strong>Mathematics:</strong></p>
+                <p>Spacetime interval: <code>Δs² = c²Δt² - Δx² - Δy²</code></p>
+                <p>• Timelike: <code>Δs² < 0</code> (causal)</p>
+                <p>• Lightlike: <code>Δs² = 0</code> (light speed)</p>
+                <p>• Spacelike: <code>Δs² > 0</code> (no causal link)</p>
             </div>
 
             <div class="modal-section">

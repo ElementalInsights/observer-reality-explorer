@@ -113,6 +113,18 @@ class TelemetryDisplay {
                             <span class="metric-label">Near Lightspeed:</span>
                             <span class="metric-value" id="telemetry-near-c">0 particles</span>
                         </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Timelike (Causal):</span>
+                            <span class="metric-value" id="telemetry-timelike" style="color: #ffd43b;">0</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Lightlike (Edge):</span>
+                            <span class="metric-value" id="telemetry-lightlike" style="color: #22b8cf;">0</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Spacelike (No Causal):</span>
+                            <span class="metric-value" id="telemetry-spacelike" style="color: #868e96;">0</span>
+                        </div>
 
                         <div style="height: 1px; background: rgba(46,204,113,0.2); margin: 15px 0;"></div>
                     </div>
@@ -173,6 +185,9 @@ class TelemetryDisplay {
             document.getElementById('telemetry-beta').textContent = (telemetry.avgBeta || 0).toFixed(3);
             document.getElementById('telemetry-gamma').textContent = (telemetry.avgGamma || 1).toFixed(3);
             document.getElementById('telemetry-near-c').textContent = `${telemetry.particlesNearC || 0} particles`;
+            document.getElementById('telemetry-timelike').textContent = telemetry.timelikeConnections || 0;
+            document.getElementById('telemetry-lightlike').textContent = telemetry.lightlikeConnections || 0;
+            document.getElementById('telemetry-spacelike').textContent = telemetry.spacelikeConnections || 0;
         } else {
             relativisticSection.style.display = 'none';
         }

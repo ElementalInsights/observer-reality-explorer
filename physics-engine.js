@@ -165,9 +165,10 @@ class ObserverPhysicsEngine {
                     'Length contraction: L = L₀/γ',
                     'Relativistic momentum: p = γmv',
                     'Energy: E² = (pc)² + (mc²)²',
-                    'Speed limit: v < c always'
+                    'Speed limit: v < c always',
+                    'Spacetime interval: Δs² = c²Δt² - Δx² - Δy²'
                 ],
-                visualization: 'Redshift = approaching light speed. Size = length contraction. Light cones show causal structure'
+                visualization: 'Orange trails = worldlines (past). Yellow cones = causal future. Connections: BLUE = past light cone (causally influenced this), YELLOW = future light cone (can influence), CYAN = lightlike (simultaneous), GRAY dashed = spacelike (no causal connection)'
             },
             probabilistic: {
                 name: '🎲 Probabilistic Observer',
@@ -410,6 +411,9 @@ class ObserverPhysicsEngine {
         let avgBeta = 0;
         let avgGamma = 1;
         let particlesNearC = 0;
+        let timelikeConnections = 0;
+        let spacelikeConnections = 0;
+        let lightlikeConnections = 0;
 
         if (this.config.observerType === 'relativistic' && particles.length > 0) {
             const c = config.speedOfLight;
@@ -429,6 +433,28 @@ class ObserverPhysicsEngine {
 
             avgBeta = totalBeta / particles.length;
             avgGamma = totalGamma / particles.length;
+
+            // Count causal connection types
+            this.connections.forEach(link => {
+                const dx = link.target.x - link.source.x;
+                const dy = link.target.y - link.source.y;
+                const spatialDist = Math.sqrt(dx * dx + dy * dy);
+                const characteristicTime = spatialDist / (c + 0.01);
+                const causalDistance = c * characteristicTime;
+
+                const isTimelike = spatialDist < causalDistance * 1.5;
+
+                if (isTimelike) {
+                    const dotProduct = (link.source.vx * dx + link.source.vy * dy);
+                    if (Math.abs(dotProduct) < 0.1) {
+                        lightlikeConnections++; // Simultaneous
+                    } else {
+                        timelikeConnections++; // Past or future
+                    }
+                } else {
+                    spacelikeConnections++; // Not causally connected
+                }
+            });
         }
 
         // Update telemetry
@@ -451,7 +477,10 @@ class ObserverPhysicsEngine {
             // Relativistic metrics
             avgBeta: avgBeta,
             avgGamma: avgGamma,
-            particlesNearC: particlesNearC
+            particlesNearC: particlesNearC,
+            timelikeConnections: timelikeConnections,
+            spacelikeConnections: spacelikeConnections,
+            lightlikeConnections: lightlikeConnections
         };
 
         return this.telemetry;
@@ -685,6 +714,80 @@ class ObserverPhysicsEngine {
         links.forEach(link => {
             // Social: only same cluster
             if (this.config.observerType === 'social' && link.source.cluster !== link.target.cluster) return;
+
+            // RELATIVISTIC: Causality-based connections (light cones!)
+            if (this.config.observerType === 'relativistic') {
+                const dx = link.target.x - link.source.x;
+                const dy = link.target.y - link.source.y;
+                const spatialDist = Math.sqrt(dx * dx + dy * dy);
+
+                const c = config.speedOfLight;
+
+                // Estimate time separation based on relative velocity
+                // If particles are moving toward/away from each other, they have time-like separation
+                const vel1 = Math.sqrt(link.source.vx * link.source.vx + link.source.vy * link.source.vy);
+                const vel2 = Math.sqrt(link.target.vx * link.target.vx + link.target.vy * link.target.vy);
+
+                // Velocity difference (approach/recession)
+                const dvx = link.target.vx - link.source.vx;
+                const dvy = link.target.vy - link.source.vy;
+                const relVel = Math.sqrt(dvx * dvx + dvy * dvy);
+
+                // Causal connection: Can light signal reach from source to target?
+                // Simple model: distance < c * characteristic_time
+                const characteristicTime = spatialDist / (c + 0.01); // Time for light to travel
+                const causalDistance = c * characteristicTime;
+
+                // Spacetime interval (simplified 2D+time)
+                // Timelike: |Δx| < c*Δt (inside light cone, causally connected)
+                // Spacelike: |Δx| > c*Δt (outside light cone, not causal)
+                const isTimelike = spatialDist < causalDistance * 1.5; // Causally connected
+
+                if (isTimelike) {
+                    // TIMELIKE: Causally connected (inside light cone)
+                    // Determine past vs future light cone based on relative motion
+                    const dotProduct = (link.source.vx * dx + link.source.vy * dy);
+                    const isPastLightCone = dotProduct < 0; // Moving toward each other (past)
+                    const isFutureLightCone = dotProduct > 0; // Moving apart (future)
+
+                    if (isPastLightCone) {
+                        // Past light cone: Could have influenced current particle (BLUE)
+                        this.ctx.strokeStyle = '#4dabf7';
+                        this.ctx.globalAlpha = 0.4;
+                        this.ctx.lineWidth = 2;
+                    } else if (isFutureLightCone) {
+                        // Future light cone: Can be influenced by current particle (YELLOW)
+                        this.ctx.strokeStyle = '#ffd43b';
+                        this.ctx.globalAlpha = 0.5;
+                        this.ctx.lineWidth = 2;
+                    } else {
+                        // Simultaneous (lightlike) - CYAN
+                        this.ctx.strokeStyle = '#22b8cf';
+                        this.ctx.globalAlpha = 0.3;
+                        this.ctx.lineWidth = 1.5;
+                    }
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(link.source.x, link.source.y);
+                    this.ctx.lineTo(link.target.x, link.target.y);
+                    this.ctx.stroke();
+
+                } else {
+                    // SPACELIKE: Not causally connected (outside light cone) - DIM RED/GRAY
+                    this.ctx.strokeStyle = '#495057';
+                    this.ctx.globalAlpha = 0.1;
+                    this.ctx.lineWidth = 1;
+                    this.ctx.setLineDash([2, 4]); // Dashed line
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(link.source.x, link.source.y);
+                    this.ctx.lineTo(link.target.x, link.target.y);
+                    this.ctx.stroke();
+                    this.ctx.setLineDash([]); // Reset
+                }
+
+                return; // Skip default rendering
+            }
 
             // AI: variable thickness
             if (this.config.observerType === 'ai') {
