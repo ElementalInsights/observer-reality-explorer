@@ -2116,36 +2116,40 @@
                     });
                 }
 
-                // === CALCULATE CONSCIOUS PREDICTION ERRORS ===
+                // === ACTIVE INFERENCE (Free Energy Minimization) ===
                 if (currentObserver === 'conscious') {
                     particles.forEach(p => {
                         // Initialize prediction if not set
                         if (!p.predictedX) {
                             p.predictedX = p.x;
                             p.predictedY = p.y;
-                        }
-
-                        // Add random environmental perturbations (surprises!)
-                        // Only shock particles occasionally (not every frame!)
-                        if (Math.random() < 0.1) { // 10% chance per frame
-                            const isBigSurprise = Math.random() < 0.3; // 30% of shocks are BIG
-                            const surpriseScale = isBigSurprise ? 8 : 2;
-                            const surpriseX = (Math.random() - 0.5) * 2 * surpriseScale;
-                            const surpriseY = (Math.random() - 0.5) * 2 * surpriseScale;
-                            p.x += surpriseX;
-                            p.y += surpriseY;
-                            p.justSurprised = true; // Mark as surprised this frame
-                        } else {
-                            p.justSurprised = false;
+                            p.predictionError = 0;
                         }
 
                         // Calculate error between PREVIOUS prediction and ACTUAL current position
                         const error = Math.sqrt((p.predictedX - p.x)**2 + (p.predictedY - p.y)**2);
-                        p.predictionError = error;
 
-                        // Make NEW prediction for next frame (assuming constant velocity)
+                        // ACTIVE INFERENCE: Minimize prediction error by adjusting behavior!
+                        if (error > 1) {
+                            // High error → adjust velocity to reduce future errors
+                            // Move toward more predictable behavior (slower, smoother)
+                            p.vx *= 0.95; // Slow down when surprised
+                            p.vy *= 0.95;
+                        }
+
+                        // Store error with decay (errors fade over time as system adapts)
+                        p.predictionError = error * 0.8 + p.predictionError * 0.2;
+
+                        // Make NEW prediction for next frame (constant velocity model)
                         p.predictedX = p.x + p.vx;
                         p.predictedY = p.y + p.vy;
+
+                        // Add occasional environmental surprises (unpredictable events)
+                        if (Math.random() < 0.05) { // 5% chance
+                            const shock = (Math.random() - 0.5) * 5;
+                            p.vx += shock;
+                            p.vy += shock;
+                        }
                     });
                 }
 
@@ -2170,18 +2174,19 @@
                         fillColor = p.color || config.color; // Fallback if color not set
                     }
 
-                    // Conscious: error-based coloring (BRIGHT RED for surprises!)
+                    // Conscious: error-based coloring (Free Energy visualization!)
                     if (currentObserver === 'conscious') {
-                        // Normalize error (with big surprises, can be 0-16)
-                        const errorIntensity = Math.min(p.predictionError / 5, 1);
+                        // Free Energy ≈ Prediction Error (in this simplified model)
+                        // Higher error = higher free energy = more "surprise"
+                        const errorIntensity = Math.min(p.predictionError / 3, 1);
 
-                        // Clear 3-color system with hysteresis (colors persist)
-                        if (errorIntensity > 0.6 || p.justSurprised) {
-                            fillColor = '#ff4757'; // BRIGHT RED (HIGH SURPRISE!)
-                        } else if (errorIntensity > 0.3) {
-                            fillColor = '#ffa502'; // ORANGE (medium error)
+                        // 3-tier system showing free energy levels
+                        if (errorIntensity > 0.5) {
+                            fillColor = '#ff4757'; // HIGH FREE ENERGY (red = surprise!)
+                        } else if (errorIntensity > 0.2) {
+                            fillColor = '#ffa502'; // MEDIUM FREE ENERGY (orange)
                         } else {
-                            fillColor = config.color; // Observer color (good prediction)
+                            fillColor = '#2ecc71'; // LOW FREE ENERGY (green = predictable!)
                         }
                     }
 
