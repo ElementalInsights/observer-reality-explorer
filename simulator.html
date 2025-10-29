@@ -2100,9 +2100,10 @@
 
                         // Add random environmental perturbations (surprises!)
                         // This creates ACTUAL prediction errors to detect
-                        const surprise = (Math.random() - 0.5) * 0.5;
-                        p.x += surprise;
-                        p.y += surprise;
+                        const surpriseX = (Math.random() - 0.5) * 1.5;
+                        const surpriseY = (Math.random() - 0.5) * 1.5;
+                        p.x += surpriseX;
+                        p.y += surpriseY;
 
                         // Calculate error between PREVIOUS prediction and ACTUAL current position
                         const error = Math.sqrt((p.predictedX - p.x)**2 + (p.predictedY - p.y)**2);
@@ -2137,13 +2138,16 @@
 
                     // Conscious: error-based coloring (BRIGHT RED for surprises!)
                     if (currentObserver === 'conscious') {
-                        const errorIntensity = Math.min(p.predictionError / 3, 1);
-                        // Gradient from observer color (low error) to bright red (high error)
-                        if (errorIntensity > 0.3) {
-                            const redAmount = (errorIntensity - 0.3) / 0.7; // 0 to 1
-                            fillColor = `rgb(${Math.floor(231 * redAmount + 231 * (1-redAmount))}, ${Math.floor(76 * redAmount + 103 * (1-redAmount))}, ${Math.floor(60 * redAmount + 34 * (1-redAmount))})`;
+                        // Normalize error (typical values are 0-2)
+                        const errorIntensity = Math.min(p.predictionError / 1.5, 1);
+
+                        // Simple binary: high error = BRIGHT RED, low error = orange
+                        if (errorIntensity > 0.4) {
+                            fillColor = '#ff4757'; // BRIGHT RED
+                        } else if (errorIntensity > 0.2) {
+                            fillColor = '#ffa502'; // ORANGE (medium error)
                         } else {
-                            fillColor = config.color;
+                            fillColor = '#2ecc71'; // GREEN (good prediction)
                         }
                     }
 
