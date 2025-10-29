@@ -256,6 +256,10 @@
                     <span class="stat-label">Temperature (T):</span>
                     <span class="stat-value" id="currentTemp">--</span>
                 </div>
+                <div class="stat-row">
+                    <span class="stat-label">Time to Max Entropy:</span>
+                    <span class="stat-value" id="timeToMax">--</span>
+                </div>
             </div>
         </div>
 
@@ -308,6 +312,9 @@
 
             // Clear time series
             engine.clearTimeSeries();
+
+            // Reset smoothed time estimate
+            smoothedTimeToMax = null;
         }
 
         // Initialize to low entropy
@@ -316,6 +323,9 @@
         // Start playing
         engine.isPlaying = true;
         engine.start();
+
+        // Smoothed time estimate tracker
+        let smoothedTimeToMax = null;
 
         // Update chart every 100ms
         setInterval(() => {
@@ -343,6 +353,52 @@
             document.getElementById('currentEntropy').textContent = (telemetry.entropy || 0).toFixed(3) + ' bits';
             document.getElementById('currentSpread').textContent = (telemetry.spatialSpread || 0).toFixed(1) + ' px';
             document.getElementById('currentTemp').textContent = (telemetry.temperature || 0).toFixed(3);
+
+            // Calculate time to maximum entropy
+            if (entropyData && entropyData.length > 30) {
+                const currentEntropy = entropyData[entropyData.length - 1].value;
+
+                // Calculate rate of change (average over last 50 data points for smoother estimate)
+                const lookback = Math.min(50, entropyData.length);
+                const recentData = entropyData.slice(-lookback);
+                const timeSpan = (recentData[recentData.length - 1].time - recentData[0].time) / 1000; // seconds
+                const entropyChange = recentData[recentData.length - 1].value - recentData[0].value;
+                const rate = entropyChange / timeSpan; // bits per second
+
+                // Theoretical maximum entropy for uniform distribution on a 20x20 grid
+                // H_max = log₂(N_cells) where particles are uniformly distributed
+                const gridResolution = 20;
+                const maxEntropy = Math.log2(gridResolution * gridResolution);
+
+                // Target 95% of maximum (since it approaches asymptotically)
+                const targetEntropy = maxEntropy * 0.95;
+                const remainingEntropy = targetEntropy - currentEntropy;
+
+                if (rate > 0.001 && remainingEntropy > 0) {
+                    const rawTimeToMax = remainingEntropy / rate; // seconds
+
+                    // Apply exponential smoothing to reduce jitter
+                    if (smoothedTimeToMax === null) {
+                        smoothedTimeToMax = rawTimeToMax;
+                    } else {
+                        const alpha = 0.15; // Smoothing factor (lower = smoother)
+                        smoothedTimeToMax = alpha * rawTimeToMax + (1 - alpha) * smoothedTimeToMax;
+                    }
+
+                    if (smoothedTimeToMax < 60) {
+                        document.getElementById('timeToMax').textContent = smoothedTimeToMax.toFixed(0) + ' sec';
+                    } else if (smoothedTimeToMax < 3600) {
+                        document.getElementById('timeToMax').textContent = (smoothedTimeToMax / 60).toFixed(1) + ' min';
+                    } else {
+                        document.getElementById('timeToMax').textContent = (smoothedTimeToMax / 3600).toFixed(1) + ' hr';
+                    }
+                } else if (remainingEntropy <= 0) {
+                    document.getElementById('timeToMax').textContent = 'At maximum!';
+                    smoothedTimeToMax = null;
+                } else {
+                    document.getElementById('timeToMax').textContent = 'Calculating...';
+                }
+            }
         }, 100);
 
         // Controls

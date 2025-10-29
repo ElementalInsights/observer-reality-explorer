@@ -85,6 +85,7 @@ class ObserverPhysicsEngine {
         this.animationFrameId = null;
         this.frameCount = 0;
         this.evolutionSpeed = 1;
+        this.timeScale = 1; // Speed multiplier for visual simulation
         this.computationalBudget = 100;
 
         // Time series tracking (optional)
@@ -693,8 +694,8 @@ class ObserverPhysicsEngine {
 
         // Update positions
         this.particles.forEach(p => {
-            p.x += p.vx;
-            p.y += p.vy;
+            p.x += p.vx * this.timeScale;
+            p.y += p.vy * this.timeScale;
 
             // Bounce off edges
             if (p.x < 0 || p.x > this.width) p.vx *= -1;
