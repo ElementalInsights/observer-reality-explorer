@@ -165,17 +165,18 @@
         }
 
         .benchmark-stats {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid #444;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid #555;
             border-radius: 8px;
             padding: 15px;
-            margin-bottom: 20px;
+            margin-top: 20px;
         }
 
         .benchmark-stats h3 {
             color: #fff;
-            margin-bottom: 10px;
-            font-size: 1.1em;
+            margin-bottom: 15px;
+            font-size: 1em;
+            letter-spacing: 0.5px;
         }
 
         .stat-row {
@@ -190,14 +191,37 @@
         }
 
         .stat-label {
-            color: #888;
+            color: #aaa;
             font-size: 0.85em;
         }
 
         .stat-value {
             color: #fff;
             font-weight: bold;
-            font-size: 0.9em;
+            font-size: 0.95em;
+        }
+
+        /* Override telemetry colors to monochrome */
+        #telemetryDisplay h2 {
+            color: #fff !important;
+            border-bottom-color: #444 !important;
+        }
+
+        #telemetryDisplay > div {
+            border-color: #444 !important;
+            background: rgba(255,255,255,0.05) !important;
+        }
+
+        #telemetryDisplay .metric-value {
+            color: #fff !important;
+        }
+
+        #telemetryDisplay [style*="background: rgba(46,204,113"] {
+            background: rgba(255,255,255,0.1) !important;
+        }
+
+        #telemetryDisplay [style*="border"] {
+            border-color: #444 !important;
         }
     </style>
 </head>
@@ -238,19 +262,7 @@
                 <button id="playBtn" onclick="togglePlay()">▶️ Play</button>
                 <button onclick="resetSimulation()">🔄 Reset</button>
             </div>
-        </div>
 
-        <!-- Canvas -->
-        <div class="canvas-wrapper">
-            <canvas id="canvas"></canvas>
-            <div class="observer-info">
-                <h3 id="observerName">🌀 Quantum Observer</h3>
-                <p id="observerDesc">Seeing reality in superposition...</p>
-            </div>
-        </div>
-
-        <!-- Telemetry & Benchmarks -->
-        <div class="telemetry">
             <div class="benchmark-stats">
                 <h3>⚡ Performance Metrics</h3>
                 <div class="stat-row">
@@ -278,9 +290,19 @@
                     <span class="stat-value" id="memoryUsage">--</span>
                 </div>
             </div>
-
-            <div id="telemetryDisplay"></div>
         </div>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="canvas"></canvas>
+            <div class="observer-info">
+                <h3 id="observerName">🌀 Quantum Observer</h3>
+                <p id="observerDesc">Seeing reality in superposition...</p>
+            </div>
+        </div>
+
+        <!-- Telemetry -->
+        <div class="telemetry" id="telemetryDisplay"></div>
     </div>
 
     <script>
