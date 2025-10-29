@@ -67,9 +67,10 @@
             background: rgba(255,255,255,0.03);
             border-radius: 20px;
             border: 2px solid rgba(0,255,136,0.2);
-            padding: 30px;
+            padding: 0;
             position: relative;
             backdrop-filter: blur(10px);
+            overflow: hidden;
         }
 
         /* Math Panel */
@@ -85,11 +86,14 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+            direction: rtl; /* Reverse column order */
         }
 
         .panel-column {
             display: flex;
             flex-direction: column;
+            gap: 15px;
+            direction: ltr; /* Reset direction for content */
         }
 
         .math-panel h2 {
@@ -390,25 +394,131 @@
 
         /* Reality Grid - Optimized! */
         #reality-canvas {
+            display: block;
             width: 100%;
             height: 100%;
+            border-radius: 18px;
         }
 
-        /* Info Display */
-        .info-display {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(0,0,0,0.7);
-            padding: 15px 20px;
-            border-radius: 10px;
-            border-left: 4px solid #00ff88;
+        /* Inline Observer Info in System State */
+        .observer-info-inline {
+            margin-bottom: 15px;
         }
 
-        .info-display h3 {
+        .observer-name {
             color: #00ff88;
-            margin-bottom: 10px;
             font-size: 1.1em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .observer-desc-inline {
+            color: #aaa;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+
+        /* Live Stats Grid */
+        .live-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .live-stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(0,255,136,0.05);
+            border-radius: 6px;
+            border: 1px solid rgba(0,255,136,0.15);
+            position: relative;
+        }
+
+        .live-stat-label {
+            color: #888;
+            font-size: 0.85em;
+        }
+
+        .live-stat-value {
+            color: #00ff88;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 6px 0;
+            position: relative;
+        }
+
+        .stat-row-hover {
+            cursor: help;
+        }
+
+        .stat-tooltip {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: rgba(10,14,39,0.98);
+            border: 2px solid #9b59b6;
+            border-radius: 10px;
+            padding: 16px;
+            width: 420px;
+            z-index: 1000;
+            margin-top: 10px;
+            box-shadow: 0 4px 20px rgba(155,89,182,0.4);
+        }
+
+        .stat-row-hover:hover .stat-tooltip {
+            display: block;
+        }
+
+        .stat-tooltip h4 {
+            color: #9b59b6;
+            margin: 0 0 10px 0;
+            font-size: 1em;
+        }
+
+        .stat-tooltip p {
+            color: #ddd;
+            margin: 6px 0;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .stat-tooltip .why {
+            color: #f39c12;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        .stat-value {
+            color: #00ff88;
+            font-weight: 700;
+            font-size: 0.95em;
+        }
+
+        .perf-fps {
+            color: #27ae60;
+        }
+
+        .perf-lod {
+            color: #f39c12;
+        }
+
+        .perf-effects {
+            color: #9b59b6;
         }
 
         .info-display p {
@@ -434,6 +544,50 @@
             border-left: 4px solid #e74c3c;
             min-width: 180px;
         }
+
+        .perf-monitor {
+            position: absolute;
+            top: 150px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 12px 18px;
+            border-radius: 10px;
+            border-left: 4px solid #9b59b6;
+            min-width: 180px;
+            font-size: 0.85em;
+        }
+
+        .perf-monitor .perf-label {
+            color: #9b59b6;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .perf-monitor .perf-row {
+            color: #aaa;
+            margin: 4px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .perf-monitor .perf-row .perf-value {
+            color: #00ff88;
+            font-weight: 600;
+        }
+
+        .lod-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 700;
+            margin-left: 5px;
+        }
+
+        .lod-ultra { background: #27ae60; color: white; }
+        .lod-high { background: #f39c12; color: white; }
+        .lod-medium { background: #e74c3c; color: white; }
+        .lod-fast { background: #9b59b6; color: white; }
 
         .heat-label {
             color: #e74c3c;
@@ -500,47 +654,15 @@
     <!-- Main Visualization -->
     <div class="main-canvas">
         <div class="viz-container">
-            <!-- Info Display -->
-            <div class="info-display" id="infoDisplay">
-                <h3>Quantum Observer</h3>
-                <p>You are viewing reality through a <span class="emphasis">quantum lens</span></p>
-                <p>Sees: <span class="emphasis">Superpositions, Wave Functions, Uncertainty</span></p>
-            </div>
-
-            <!-- Heat Monitor -->
-            <div class="heat-monitor" id="heatMonitor">
-                <div class="heat-label">🌡️ System Temperature</div>
-                <div class="heat-bar-container">
-                    <div class="heat-bar" id="heatBar"></div>
-                </div>
-                <div class="heat-value" id="heatValue">T = 0.000</div>
-
-                <!-- Heat Tooltip -->
-                <div class="heat-tooltip">
-                    <h4>What is Heat?</h4>
-                    <p><strong>Heat = Random Kinetic Energy</strong></p>
-                    <p>At the microscopic level, "heat" is just particles moving randomly. Temperature measures the <em>average</em> kinetic energy of those particles.</p>
-                    <p class="why">Why does heat matter?</p>
-                    <p><strong>Heat drives entropy!</strong> Hot systems are chaotic and disordered. Cold systems can form structure and patterns.</p>
-                    <p>💡 <strong>Try this:</strong> Click "Add Heat" and watch:</p>
-                    <p>• Temperature ↑ (particles speed up)<br>
-                    • Kinetic Energy ↑ (more motion)<br>
-                    • Entropy ↑ (more disorder)<br>
-                    • Spatial Spread ↑ (particles diffuse faster)<br>
-                    • Free Energy changes (stability shifts)</p>
-                    <p><strong>Real-world connection:</strong> This is why hot coffee spreads aroma faster, why ice melts into water, why stars form from cold gas clouds!</p>
-                </div>
-            </div>
-
-            <!-- SVG Canvas (Optimized with Spatial Grid!) -->
-            <svg id="reality-canvas"></svg>
+            <!-- Canvas (GPU-Accelerated!) -->
+            <canvas id="reality-canvas"></canvas>
         </div>
 
         <!-- Controls & Calculations Panel -->
         <div class="math-panel">
             <div class="cascade-indicator" id="cascadeIndicator">⚡ Cascade Update</div>
 
-            <!-- LEFT COLUMN: CONTROLS -->
+            <!-- CONTROLS COLUMN (displayed on right via CSS) -->
             <div class="panel-column">
                 <h2>🎮 Controls</h2>
 
@@ -556,12 +678,12 @@
                 </div>
 
                 <div class="control-row">
-                    <label>Population Size (N) - WebGL Accelerated ⚡</label>
-                    <input type="range" id="populationSlider" min="20" max="20000" value="100" step="50" oninput="updatePopulation(this.value)">
+                    <label>Population Size (N) - GIGA SCALE (LOD Optimized) ⚡</label>
+                    <input type="range" id="populationSlider" min="20" max="5000" value="20" step="50" oninput="updatePopulation(this.value)">
                     <div class="control-values">
                         <span>20</span>
-                        <span id="populationValue">100</span>
-                        <span style="color: #00ff88; font-weight: 700;">20,000</span>
+                        <span id="populationValue">20</span>
+                        <span style="color: #00ff88; font-weight: 700;">5k</span>
                     </div>
                     <p style="color: #666; font-size: 0.7em; margin-top: 5px; line-height: 1.3;">
                         🚀 GPU-accelerated! Scale up to see emergent patterns at massive scale!
@@ -618,6 +740,52 @@
             <!-- RIGHT COLUMN: SYSTEM STATE & CALCULATIONS -->
             <div class="panel-column">
                 <h2>📊 System State & Calculations</h2>
+
+                <!-- Observer Info -->
+                <div class="observer-info-inline">
+                    <div class="observer-name" id="observerTitle">🌀 Quantum Observer</div>
+                    <div class="observer-desc-inline" id="observerDesc">Superpositions, Wave Functions, Uncertainty</div>
+                </div>
+
+                <div style="height: 1px; background: rgba(0,255,136,0.2); margin: 15px 0;"></div>
+
+                <!-- Live System Stats -->
+                <div class="live-stats-grid">
+                    <div class="live-stat stat-row-hover">
+                        <span class="live-stat-label">Population:</span>
+                        <span class="live-stat-value" id="popDisplay">20</span>
+                        <div class="stat-tooltip">
+                            <h4>📊 Population Size (N)</h4>
+                            <p><strong>Statistical Mechanics:</strong> As N increases, individual randomness averages out and collective behavior emerges!</p>
+                            <p class="why">Scale Effects:</p>
+                            <p>• <strong>Small N (10-100):</strong> See individual particles, random fluctuations dominate<br>
+                            • <strong>Medium N (100-1000):</strong> Patterns start emerging, statistics become reliable<br>
+                            • <strong>Large N (1000+):</strong> Thermodynamic laws emerge (entropy always increases, diffusion, equilibration)</p>
+                            <p class="why">Coarse-Graining:</p>
+                            <p>At high N, we can't track every particle! Use <strong>Observer Power</strong> slider to simulate limited resolution. Low power = coarse-grained view (particles appear as blobs).</p>
+                            <p class="why">Real-world analogy:</p>
+                            <p>A single water molecule is chaotic. A billion molecules? That's a wave with predictable physics!</p>
+                        </div>
+                    </div>
+                    <div class="live-stat">
+                        <span class="live-stat-label">Temperature:</span>
+                        <span class="live-stat-value" id="tempDisplay">T = 0.000</span>
+                    </div>
+                    <div class="live-stat">
+                        <span class="live-stat-label">FPS:</span>
+                        <span class="live-stat-value perf-fps" id="fpsValue">60</span>
+                    </div>
+                    <div class="live-stat">
+                        <span class="live-stat-label">LOD:</span>
+                        <span class="live-stat-value perf-lod" id="lodMode">HIGH</span>
+                    </div>
+                    <div class="live-stat">
+                        <span class="live-stat-label">Effects:</span>
+                        <span class="live-stat-value perf-effects" id="effectsActive">ALL</span>
+                    </div>
+                </div>
+
+                <div style="height: 1px; background: rgba(0,255,136,0.2); margin: 15px 0;"></div>
 
             <div class="math-section">
                 <div class="metric">
@@ -910,7 +1078,7 @@
         let timeEvolutionActive = false;
         let evolutionSpeed = 5;
         let evolutionTime = 0;
-        let populationSize = 100;
+        let populationSize = 20;
         let animationFrameId = null;
 
         const observerConfigs = {
@@ -978,12 +1146,9 @@
 
             // Update info display
             const infoDisplay = document.getElementById('infoDisplay');
-            infoDisplay.innerHTML = `
-                <h3>${config.name}</h3>
-                <p>You are viewing reality through a <span class="emphasis">${observerType} lens</span></p>
-                <p>Sees: <span class="emphasis">${config.emphasis}</span></p>
-            `;
-            infoDisplay.style.borderLeftColor = config.color;
+            // Update unified monitor observer info
+            document.getElementById('observerTitle').textContent = config.name;
+            document.getElementById('observerDesc').textContent = config.emphasis;
 
             // === WAVE FUNCTION COLLAPSE! ===
             if (previousObserver === 'quantum' && observerType !== 'quantum') {
@@ -1056,35 +1221,8 @@
             document.getElementById('budgetValue').textContent = value + '%';
             document.getElementById('observerPower').textContent = value + '%';
 
-            // REAL EFFECT: Coarse-grain the view
-            const particles = window.currentParticles || [];
-
-            if (computationalBudget < 100) {
-                // Low power = Group particles into coarse-grained clusters
-                const gridSize = Math.max(5, Math.floor(50 - (computationalBudget / 100) * 45)); // 5-50 grid size
-
-                d3.selectAll('.particle').each(function(d) {
-                    // Snap to grid (quantization)
-                    const quantizedX = Math.floor(d.x / gridSize) * gridSize + gridSize/2;
-                    const quantizedY = Math.floor(d.y / gridSize) * gridSize + gridSize/2;
-
-                    d3.select(this)
-                        .attr('cx', quantizedX)
-                        .attr('cy', quantizedY)
-                        .attr('r', Math.max(3, gridSize / 8)); // Bigger clusters at low power
-                });
-            } else {
-                // High power = Show actual positions
-                d3.selectAll('.particle').each(function(d) {
-                    d3.select(this)
-                        .attr('cx', d.x)
-                        .attr('cy', d.y)
-                        .attr('r', observerConfigs[currentObserver].particleSize);
-                });
-            }
-
-            // Update connections with coarse-graining
-            updateConnections();
+            // Coarse-graining now handled in Canvas rendering (no D3 needed!)
+            // The animation loop will apply quantization based on computationalBudget
 
             // Update math panel with CASCADE effect
             updateMathPanel(true);
@@ -1261,6 +1399,9 @@
             }
             if (heatValue) {
                 heatValue.textContent = `T = ${temperature.toFixed(3)}`;
+
+                // Update unified monitor temp
+                document.getElementById('tempDisplay').textContent = `T = ${temperature.toFixed(3)}`;
             }
 
             // Kinetic Energy (already calculated above)
@@ -1312,16 +1453,12 @@
         // ===== UPDATE OBSERVER VISUALIZATION (keep particles, change view) =====
         function updateObserverVisualization() {
             const config = observerConfigs[currentObserver];
-            const svg = d3.select('#reality-canvas');
-
             const particles = window.currentParticles || [];
+
             if (particles.length === 0 || particles.length !== populationSize) {
                 createReality();
                 return;
             }
-
-            const width = svg.node().clientWidth;
-            const height = svg.node().clientHeight;
 
             // Update cluster assignments if switching to/from social
             if (currentObserver === 'social' && config.clusterCount) {
@@ -1332,19 +1469,52 @@
                 });
             }
 
-            // Just redraw the visualization layers, keep particle positions
-            svg.selectAll('*').remove();
-            renderParticles(svg, particles, width, height);
+            // Cancel old animation and restart with new observer
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+
+            // Restart animation with new observer config
+            startAnimation();
+        }
+
+        // ===== CANVAS SETUP =====
+        let canvas, ctx, width, height;
+
+        function initCanvas() {
+            if (!canvas) {
+                canvas = document.getElementById('reality-canvas');
+                ctx = canvas.getContext('2d', { alpha: false }); // Opaque for better performance
+            }
+
+            // Set canvas size (can be called on resize)
+            const container = canvas.parentElement;
+            width = container.clientWidth;
+            height = container.clientHeight;
+
+            // Set canvas resolution to match display size
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+
+            // Scale context to match device pixel ratio
+            ctx.scale(dpr, dpr);
+
+            // Store dimensions
+            window.canvasWidth = width;
+            window.canvasHeight = height;
         }
 
         // ===== REALITY VISUALIZATION =====
         function createReality() {
             const config = observerConfigs[currentObserver];
-            const svg = d3.select('#reality-canvas');
-            svg.selectAll('*').remove();
 
-            const width = svg.node().clientWidth;
-            const height = svg.node().clientHeight;
+            // Initialize canvas if not done
+            if (!canvas) {
+                initCanvas();
+            }
 
             // Create NEW particles based on population slider
             const particles = Array.from({length: populationSize}, (_, i) => ({
@@ -1353,16 +1523,409 @@
                 y: Math.random() * height,
                 vx: (Math.random() - 0.5) * 2,
                 vy: (Math.random() - 0.5) * 2,
-                cluster: observerConfigs[currentObserver].clusterCount ? Math.floor(Math.random() * observerConfigs[currentObserver].clusterCount) : 0
+                cluster: observerConfigs[currentObserver].clusterCount ? Math.floor(Math.random() * observerConfigs[currentObserver].clusterCount) : 0,
+                trail: [] // For classical observer trails
             }));
 
             // Store globally
             window.currentParticles = particles;
 
-            renderParticles(svg, particles, width, height);
+            // Start animation loop
+            startAnimation();
         }
 
-        // ===== RENDER PARTICLES (shared by both create and update) =====
+        // ===== CANVAS ANIMATION LOOP (GIGA SCALE OPTIMIZED!) =====
+        function startAnimation() {
+            const particles = window.currentParticles;
+            if (!particles || particles.length === 0) return;
+
+            const config = observerConfigs[currentObserver];
+            const N = particles.length;
+
+            // === LOD (LEVEL OF DETAIL) SYSTEM ===
+            // Adaptive quality based on particle count for GIGA SCALE performance!
+            const lod = {
+                // Visual quality settings
+                useGlow: N < 5000,              // Shadows/glow only under 5k
+                useGhosts: N < 10000,           // Quantum ghosts only under 10k
+                useTrails: N < 5000,            // Classical trails only under 5k
+                particleSize: N < 10000 ? config.particleSize : Math.max(1, config.particleSize * 0.6),
+
+                // Update frequencies (higher N = less frequent updates)
+                connectionUpdateInterval: N < 5000 ? 1 : N < 20000 ? 3 : 5,
+                mathPanelUpdateInterval: N < 10000 ? 30 : 60,
+
+                // Drawing optimizations
+                maxConnectionsDrawn: Math.min(2000, Math.floor(100000 / N) * 10),
+                batchDrawConnections: N > 10000  // Batch connections for speed
+            };
+
+            // Setup quantum ghosts (LOD aware)
+            if (currentObserver === 'quantum' && lod.useGhosts) {
+                const ghosts = [];
+                particles.forEach(p => {
+                    for (let i = 0; i < 2; i++) {
+                        const angle = (i / 2) * Math.PI * 2;
+                        const radius = 20 + Math.random() * 15;
+                        ghosts.push({
+                            x: p.x + Math.cos(angle) * radius,
+                            y: p.y + Math.sin(angle) * radius,
+                            parent: p.id,
+                            angle: angle,
+                            radius: radius
+                        });
+                    }
+                });
+                window.ghostParticles = ghosts;
+            }
+
+            // Setup classical trails (LOD aware)
+            if (currentObserver === 'classical' && lod.useTrails) {
+                particles.forEach(p => {
+                    if (!p.trail) p.trail = [{x: p.x, y: p.y}];
+                });
+            }
+
+            // Setup social cluster colors
+            if (currentObserver === 'social') {
+                const clusterColors = ['#27ae60', '#2ecc71', '#16a085', '#1abc9c', '#229954'];
+                particles.forEach(p => {
+                    p.color = clusterColors[p.cluster % clusterColors.length];
+                });
+            }
+
+            // Cancel old animation
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+
+            let frameCount = 0;
+            let cachedConnections = null; // Cache connections!
+
+            // FPS tracking
+            let lastFrameTime = performance.now();
+            let frameTimes = [];
+
+            // Update LOD status display
+            const lodModeEl = document.getElementById('lodMode');
+            const effectsActiveEl = document.getElementById('effectsActive');
+
+            if (N < 5000) {
+                lodModeEl.textContent = 'ULTRA';
+                effectsActiveEl.textContent = 'ALL';
+            } else if (N < 10000) {
+                lodModeEl.textContent = 'HIGH';
+                effectsActiveEl.textContent = 'NO GLOW';
+            } else if (N < 20000) {
+                lodModeEl.textContent = 'MEDIUM';
+                effectsActiveEl.textContent = 'MINIMAL';
+            } else {
+                lodModeEl.textContent = 'FAST';
+                effectsActiveEl.textContent = 'BATCH';
+            }
+
+            function animate() {
+                // FPS calculation
+                const now = performance.now();
+                const delta = now - lastFrameTime;
+                lastFrameTime = now;
+
+                frameTimes.push(delta);
+                if (frameTimes.length > 30) frameTimes.shift();
+
+                if (frameCount % 10 === 0) {
+                    const avgDelta = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
+                    const fps = Math.round(1000 / avgDelta);
+                    document.getElementById('fpsValue').textContent = fps;
+                }
+                // === THERMODYNAMIC EVOLUTION ===
+                if (timeEvolutionActive) {
+                    evolutionTime += evolutionSpeed * 0.01;
+
+                    // Build spatial grid for O(N) force calculations
+                    const forceRange = config.connectionDistance * 0.5;
+                    const forceCellSize = forceRange;
+                    const forceGrid = {};
+
+                    particles.forEach(p => {
+                        const cellX = Math.floor(p.x / forceCellSize);
+                        const cellY = Math.floor(p.y / forceCellSize);
+                        const cellKey = `${cellX},${cellY}`;
+                        if (!forceGrid[cellKey]) forceGrid[cellKey] = [];
+                        forceGrid[cellKey].push(p);
+                    });
+
+                    // Apply repulsive forces (entropy increase!)
+                    particles.forEach(p => {
+                        let fx = 0, fy = 0;
+                        const cellX = Math.floor(p.x / forceCellSize);
+                        const cellY = Math.floor(p.y / forceCellSize);
+
+                        // Check 3x3 neighborhood only
+                        for (let dx = -1; dx <= 1; dx++) {
+                            for (let dy = -1; dy <= 1; dy++) {
+                                const neighborKey = `${cellX + dx},${cellY + dy}`;
+                                const neighbors = forceGrid[neighborKey] || [];
+
+                                neighbors.forEach(other => {
+                                    if (p.id !== other.id) {
+                                        const deltaX = p.x - other.x;
+                                        const deltaY = p.y - other.y;
+                                        const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+                                        if (dist < forceRange && dist > 0) {
+                                            const force = 0.01 * evolutionSpeed / (dist + 1);
+                                            fx += (deltaX / dist) * force;
+                                            fy += (deltaY / dist) * force;
+                                        }
+                                    }
+                                });
+                            }
+                        }
+
+                        // Thermal noise
+                        const thermalNoise = 0.02 * evolutionSpeed;
+                        fx += (Math.random() - 0.5) * thermalNoise;
+                        fy += (Math.random() - 0.5) * thermalNoise;
+
+                        p.vx += fx;
+                        p.vy += fy;
+
+                        // Damping
+                        p.vx *= 0.98;
+                        p.vy *= 0.98;
+
+                        // Cap velocity
+                        const maxVel = 3;
+                        const vel = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                        if (vel > maxVel) {
+                            p.vx = (p.vx / vel) * maxVel;
+                            p.vy = (p.vy / vel) * maxVel;
+                        }
+                    });
+                }
+
+                // === UPDATE POSITIONS ===
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    // Bounce
+                    if (p.x < 0 || p.x > width) p.vx *= -1;
+                    if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                    // Keep in bounds
+                    p.x = Math.max(0, Math.min(width, p.x));
+                    p.y = Math.max(0, Math.min(height, p.y));
+                });
+
+                // === CLEAR CANVAS ===
+                ctx.fillStyle = '#0a0e27';
+                ctx.fillRect(0, 0, width, height);
+
+                // === DRAW CONNECTIONS (Cached for performance!) ===
+                // Only recalculate connections every N frames (HUGE perf boost at giga scale!)
+                if (!cachedConnections || frameCount % lod.connectionUpdateInterval === 0) {
+                    cachedConnections = updateConnectionsData();
+                }
+                const links = cachedConnections.slice(0, lod.maxConnectionsDrawn);
+
+                // Batch draw connections for better performance at high N
+                if (lod.batchDrawConnections) {
+                    // ULTRA FAST MODE: Single path for all connections
+                    ctx.beginPath();
+                    ctx.strokeStyle = config.color;
+                    ctx.globalAlpha = 0.2;
+                    ctx.lineWidth = 1;
+                    links.forEach(link => {
+                        ctx.moveTo(link.source.x, link.source.y);
+                        ctx.lineTo(link.target.x, link.target.y);
+                    });
+                    ctx.stroke();
+                    ctx.globalAlpha = 1;
+                } else {
+                    // NORMAL MODE: Individual connections with observer effects
+                    if (currentObserver === 'ai') {
+                        // AI: Variable thickness by semantic distance
+                        links.forEach(link => {
+                            const strength = 1 - (link.distance / config.connectionDistance);
+                            ctx.strokeStyle = config.color;
+                            ctx.globalAlpha = (1 - link.distance / config.connectionDistance) * 0.5;
+                            ctx.lineWidth = 0.5 + strength * 3;
+                            ctx.beginPath();
+                            ctx.moveTo(link.source.x, link.source.y);
+                            ctx.lineTo(link.target.x, link.target.y);
+                            ctx.stroke();
+                        });
+                        ctx.globalAlpha = 1;
+                    } else if (currentObserver === 'social') {
+                        // Social: Only same-cluster connections
+                        const sameClusterLinks = links.filter(l => l.source.cluster === l.target.cluster);
+                        sameClusterLinks.forEach(link => {
+                            ctx.strokeStyle = link.source.color;
+                            ctx.globalAlpha = 0.4;
+                            ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            ctx.moveTo(link.source.x, link.source.y);
+                            ctx.lineTo(link.target.x, link.target.y);
+                            ctx.stroke();
+                        });
+                        ctx.globalAlpha = 1;
+                    } else {
+                        // Default connections
+                        ctx.lineWidth = 1;
+                        links.forEach(link => {
+                            ctx.strokeStyle = config.color;
+                            ctx.globalAlpha = (1 - link.distance / config.connectionDistance) * 0.3;
+                            ctx.beginPath();
+                            ctx.moveTo(link.source.x, link.source.y);
+                            ctx.lineTo(link.target.x, link.target.y);
+                            ctx.stroke();
+                        });
+                        ctx.globalAlpha = 1;
+                    }
+                }
+
+                // === DRAW CLASSICAL TRAILS (LOD aware) ===
+                if (currentObserver === 'classical' && lod.useTrails) {
+                    particles.forEach(p => {
+                        if (!p.trail) p.trail = [];
+                        p.trail.push({x: p.x, y: p.y});
+                        if (p.trail.length > 20) p.trail.shift();
+
+                        if (p.trail.length > 1) {
+                            ctx.strokeStyle = config.color;
+                            ctx.globalAlpha = 0.3;
+                            ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            ctx.moveTo(p.trail[0].x, p.trail[0].y);
+                            for (let i = 1; i < p.trail.length; i++) {
+                                ctx.lineTo(p.trail[i].x, p.trail[i].y);
+                            }
+                            ctx.stroke();
+                            ctx.globalAlpha = 1;
+                        }
+                    });
+                }
+
+                // === DRAW QUANTUM GHOSTS (LOD aware) ===
+                if (currentObserver === 'quantum' && lod.useGhosts && window.ghostParticles) {
+                    window.ghostParticles.forEach((ghost, i) => {
+                        const parent = particles[ghost.parent];
+                        if (parent) {
+                            // Ghosts orbit parent
+                            const angle = ghost.angle + (frameCount * 0.02);
+                            const radius = 20 + Math.sin(frameCount * 0.05 + i) * 12;
+                            ghost.x = parent.x + Math.cos(angle) * radius;
+                            ghost.y = parent.y + Math.sin(angle) * radius;
+                        }
+
+                        // Draw ghost with optional glow
+                        const opacity = 0.35 + Math.sin(frameCount * 0.05) * 0.15;
+                        const ghostSize = lod.particleSize * (1.0 + Math.sin(frameCount * 0.03) * 0.3);
+
+                        ctx.globalAlpha = opacity;
+                        ctx.fillStyle = config.color;
+                        ctx.strokeStyle = config.color;
+                        ctx.lineWidth = 1;
+
+                        // Glow only at low particle counts
+                        if (lod.useGlow) {
+                            ctx.shadowColor = config.color;
+                            ctx.shadowBlur = 8;
+                        }
+
+                        ctx.beginPath();
+                        ctx.arc(ghost.x, ghost.y, ghostSize, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+
+                        ctx.shadowBlur = 0;
+                        ctx.globalAlpha = 1;
+                    });
+                }
+
+                // === CALCULATE CONSCIOUS PREDICTION ERRORS ===
+                if (currentObserver === 'conscious') {
+                    particles.forEach(p => {
+                        const expectedX = p.x + p.vx;
+                        const expectedY = p.y + p.vy;
+                        const actualX = p.x;
+                        const actualY = p.y;
+                        const error = Math.sqrt((expectedX - actualX)**2 + (expectedY - actualY)**2);
+                        p.predictionError = error;
+                    });
+                }
+
+                // === DRAW PARTICLES (LOD optimized + Observer Power) ===
+                ctx.globalAlpha = 0.8;
+
+                // Glow only at low particle counts (expensive!)
+                if (lod.useGlow) {
+                    ctx.shadowColor = config.color;
+                    ctx.shadowBlur = 5;
+                }
+
+                // Observer Power coarse-graining
+                const gridSize = computationalBudget < 100 ?
+                    Math.max(5, Math.floor(50 - (computationalBudget / 100) * 45)) : 0;
+
+                particles.forEach(p => {
+                    let fillColor = config.color;
+
+                    // Social: cluster colors
+                    if (currentObserver === 'social') {
+                        fillColor = p.color;
+                    }
+
+                    // Conscious: error-based coloring
+                    if (currentObserver === 'conscious') {
+                        const errorIntensity = Math.min(p.predictionError / 5, 1);
+                        fillColor = errorIntensity > 0.5 ? '#e74c3c' : config.color;
+                    }
+
+                    // Apply coarse-graining (quantization) if observer power < 100%
+                    let drawX = p.x;
+                    let drawY = p.y;
+                    let drawSize = lod.particleSize;
+
+                    if (gridSize > 0) {
+                        // Snap to grid (coarse-grained observation)
+                        drawX = Math.floor(p.x / gridSize) * gridSize + gridSize/2;
+                        drawY = Math.floor(p.y / gridSize) * gridSize + gridSize/2;
+                        drawSize = Math.max(3, gridSize / 8); // Bigger clusters at low power
+                    }
+
+                    ctx.fillStyle = fillColor;
+                    ctx.beginPath();
+                    ctx.arc(drawX, drawY, drawSize, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Social: white stroke
+                    if (currentObserver === 'social' && lod.useGlow) {
+                        ctx.strokeStyle = 'white';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                });
+
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+
+                // === UPDATE MATH PANEL (Less frequently at high N) ===
+                frameCount++;
+                if (frameCount % lod.mathPanelUpdateInterval === 0) {
+                    updateMathPanel();
+                }
+
+                animationFrameId = requestAnimationFrame(animate);
+            }
+
+            animate();
+            updateMathPanel();
+        }
+
+        // ===== OLD SVG RENDERING (DEPRECATED - keeping for reference) =====
         function renderParticles(svg, particles, width, height) {
             const config = observerConfigs[currentObserver];
 
@@ -1766,6 +2329,9 @@
             populationSize = parseInt(value);
             document.getElementById('populationValue').textContent = value;
 
+            // Update unified monitor
+            document.getElementById('popDisplay').textContent = value;
+
             // Recreate reality with new population
             createReality();
 
@@ -1786,8 +2352,8 @@
             // === SPATIAL GRID OPTIMIZATION ===
             // Only check particles in nearby grid cells (O(N) instead of O(N²)!)
             const cellSize = config.connectionDistance;
-            const gridWidth = Math.ceil(1200 / cellSize); // Approximate canvas width
-            const gridHeight = Math.ceil(800 / cellSize); // Approximate canvas height
+            const canvasWidth = window.canvasWidth || 1200;
+            const canvasHeight = window.canvasHeight || 800;
             const grid = {};
 
             // Assign particles to grid cells
