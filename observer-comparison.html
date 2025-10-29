@@ -497,6 +497,17 @@
 
         // Animation loop
         function animate() {
+            // FPS calculation
+            const now = performance.now();
+            const delta = now - lastFrameTime;
+            lastFrameTime = now;
+
+            frameTimes.push(delta);
+            if (frameTimes.length > 30) frameTimes.shift();
+
+            const avgDelta = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
+            currentFPS = Math.round(1000 / avgDelta);
+
             // Update particles
             if (isPlaying) {
                 for (let step = 0; step < evolutionSpeed; step++) {
@@ -571,24 +582,71 @@
             title: '📊 Right Observer Metrics'
         });
 
-        // Update telemetry every 100ms
+        // FPS tracking
+        let lastFrameTime = performance.now();
+        let frameTimes = [];
+        let currentFPS = 60;
+
+        // Update telemetry every 100ms with REAL calculations
         setInterval(() => {
-            // For now, calculate shared metrics manually
-            // TODO: Update to use separate engines for each observer
+            if (particles.length === 0) return;
+
+            // Calculate kinetic energy (with proper ½ factor!)
+            const kineticEnergy = particles.reduce((sum, p) => {
+                return sum + 0.5 * (p.vx * p.vx + p.vy * p.vy);
+            }, 0) / particles.length;
+
+            // Calculate temperature
+            const temperature = Math.sqrt(kineticEnergy) * 0.1;
+
+            // Calculate average velocity
+            const avgVelocity = particles.reduce((sum, p) => {
+                return sum + Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+            }, 0) / particles.length;
+
+            // Calculate spatial spread (RMS distance from center)
+            const centerX = particles.reduce((sum, p) => sum + p.x, 0) / particles.length;
+            const centerY = particles.reduce((sum, p) => sum + p.y, 0) / particles.length;
+            const spatialSpread = Math.sqrt(
+                particles.reduce((sum, p) => {
+                    const dx = p.x - centerX;
+                    const dy = p.y - centerY;
+                    return sum + (dx * dx + dy * dy);
+                }, 0) / particles.length
+            );
+
+            // Calculate position/velocity variance for uncertainty
+            const meanVx = particles.reduce((sum, p) => sum + p.vx, 0) / particles.length;
+            const meanVy = particles.reduce((sum, p) => sum + p.vy, 0) / particles.length;
+
+            const posVariance = particles.reduce((sum, p) => {
+                const dx = p.x - centerX;
+                const dy = p.y - centerY;
+                return sum + (dx * dx + dy * dy);
+            }, 0) / particles.length;
+
+            const velVariance = particles.reduce((sum, p) => {
+                const dvx = p.vx - meanVx;
+                const dvy = p.vy - meanVy;
+                return sum + (dvx * dvx + dvy * dvy);
+            }, 0) / particles.length;
+
+            const uncertainty = Math.sqrt(posVariance) * Math.sqrt(velVariance);
+
             const sharedTelemetry = {
-                fps: 60, // Placeholder
+                fps: currentFPS,
                 particleCount: particles.length,
-                connectionCount: 0,
-                temperature: 0,
-                entropy: 0,
-                kineticEnergy: 0,
-                potentialEnergy: 0,
-                totalEnergy: 0,
-                uncertainty: 0,
+                connectionCount: 0, // Connections not tracked in comparison mode
+                temperature: temperature,
+                entropy: 0, // Would need grid calculation
+                kineticEnergy: kineticEnergy,
+                potentialEnergy: 0, // Would need pairwise calculation
+                totalEnergy: kineticEnergy,
+                uncertainty: uncertainty,
                 networkDensity: 0,
                 freeEnergy: 0,
-                spatialSpread: 0,
-                avgVelocity: 0,
+                spatialSpread: spatialSpread,
+                avgVelocity: avgVelocity,
                 infoDeficit: 0,
                 computationalCost: particles.length * particles.length
             };
