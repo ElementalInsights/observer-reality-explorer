@@ -99,6 +99,24 @@ class TelemetryDisplay {
 
                     <div style="height: 1px; background: rgba(46,204,113,0.2); margin: 15px 0;"></div>
 
+                    <!-- Relativistic (only shown for relativistic observer) -->
+                    <div id="relativistic-section" style="display: none;">
+                        <div class="metric-row">
+                            <span class="metric-label">Avg Beta (β = v/c):</span>
+                            <span class="metric-value" id="telemetry-beta">0.000</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Avg Lorentz (γ):</span>
+                            <span class="metric-value" id="telemetry-gamma">1.000</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Near Lightspeed:</span>
+                            <span class="metric-value" id="telemetry-near-c">0 particles</span>
+                        </div>
+
+                        <div style="height: 1px; background: rgba(46,204,113,0.2); margin: 15px 0;"></div>
+                    </div>
+
                     <!-- Computational -->
                     <div class="metric-row">
                         <span class="metric-label">Complexity (C):</span>
@@ -147,6 +165,17 @@ class TelemetryDisplay {
         document.getElementById('telemetry-spread').textContent = (telemetry.spatialSpread || 0).toFixed(3);
         document.getElementById('telemetry-velocity').textContent = (telemetry.avgVelocity || 0).toFixed(3);
         document.getElementById('telemetry-complexity').textContent = `${(telemetry.computationalCost || 0).toLocaleString()} ops`;
+
+        // Show/hide and update relativistic metrics
+        const relativisticSection = document.getElementById('relativistic-section');
+        if (telemetry.avgBeta !== undefined && telemetry.avgBeta > 0) {
+            relativisticSection.style.display = 'block';
+            document.getElementById('telemetry-beta').textContent = (telemetry.avgBeta || 0).toFixed(3);
+            document.getElementById('telemetry-gamma').textContent = (telemetry.avgGamma || 1).toFixed(3);
+            document.getElementById('telemetry-near-c').textContent = `${telemetry.particlesNearC || 0} particles`;
+        } else {
+            relativisticSection.style.display = 'none';
+        }
     }
 }
 

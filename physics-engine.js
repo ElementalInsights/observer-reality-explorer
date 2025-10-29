@@ -406,6 +406,31 @@ class ObserverPhysicsEngine {
             avgVelocity = totalSpeed / particles.length;
         }
 
+        // 13. RELATIVISTIC METRICS (only for relativistic observer)
+        let avgBeta = 0;
+        let avgGamma = 1;
+        let particlesNearC = 0;
+
+        if (this.config.observerType === 'relativistic' && particles.length > 0) {
+            const c = config.speedOfLight;
+            let totalBeta = 0;
+            let totalGamma = 0;
+
+            particles.forEach(p => {
+                const vel = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                const beta = Math.min(vel / c, 0.99); // Cap to avoid division issues
+                const gamma = 1 / Math.sqrt(1 - beta * beta);
+
+                totalBeta += beta;
+                totalGamma += gamma;
+
+                if (beta > 0.7) particlesNearC++; // Count particles at >70% light speed
+            });
+
+            avgBeta = totalBeta / particles.length;
+            avgGamma = totalGamma / particles.length;
+        }
+
         // Update telemetry
         this.telemetry = {
             fps: this.telemetry.fps, // Updated separately
@@ -422,7 +447,11 @@ class ObserverPhysicsEngine {
             spatialSpread: spatialSpread,
             avgVelocity: avgVelocity,
             infoDeficit: infoDeficit,
-            computationalCost: complexity
+            computationalCost: complexity,
+            // Relativistic metrics
+            avgBeta: avgBeta,
+            avgGamma: avgGamma,
+            particlesNearC: particlesNearC
         };
 
         return this.telemetry;
