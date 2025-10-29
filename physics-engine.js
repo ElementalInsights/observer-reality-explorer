@@ -60,54 +60,131 @@ class ObserverPhysicsEngine {
                 color: '#9b59b6',
                 particleSize: 3,
                 connectionDistance: 100,
-                showGhosts: true
+                showGhosts: true,
+                description: 'Particles exist in superposition - multiple states simultaneously until measured.',
+                theory: 'Based on quantum mechanics and wave-particle duality. Each particle is described by a wavefunction ψ that encodes probability amplitudes for all possible states.',
+                mathematics: [
+                    'Wavefunction: |ψ⟩ = α|0⟩ + β|1⟩',
+                    'Probability: P = |ψ|² = |α|² + |β|²',
+                    'Uncertainty: ΔxΔp ≥ ℏ/2',
+                    'Superposition collapse on measurement'
+                ],
+                visualization: 'Ghost particles show superposition states orbiting the measured position'
             },
             classical: {
                 name: '🎯 Classical Observer',
                 color: '#3498db',
                 particleSize: 5,
                 connectionDistance: 150,
-                showTrails: true
+                showTrails: true,
+                description: 'Deterministic Newtonian physics - precise positions and velocities define complete state.',
+                theory: 'Based on classical mechanics. If you know initial conditions perfectly, you can predict the future with certainty. Reality is a clockwork universe.',
+                mathematics: [
+                    'Position: x(t) = x₀ + v₀t + ½at²',
+                    'Velocity: v(t) = v₀ + at',
+                    'Force: F = ma',
+                    'Momentum: p = mv (conserved)'
+                ],
+                visualization: 'Trajectory trails show precise paths through spacetime'
             },
             social: {
                 name: '🌐 Social Observer',
                 color: '#27ae60',
                 particleSize: 6,
                 connectionDistance: 120,
-                clusterCount: 5
+                clusterCount: 5,
+                description: 'Reality as tribal clusters - entities defined by group membership and in-group connections.',
+                theory: 'Based on social network theory. Identity emerges from relationships. Connections form only within groups (echo chambers). Reality is relational, not individual.',
+                mathematics: [
+                    'Cluster coefficient: C = 3×triangles / triads',
+                    'Modularity: Q = ½m Σ(Aᵢⱼ - kᵢkⱼ/2m)δ(cᵢ,cⱼ)',
+                    'In-group edges >> out-group edges',
+                    'Identity = f(cluster_membership)'
+                ],
+                visualization: 'Different colors = different tribes. Connections only within groups'
             },
             conscious: {
                 name: '🧠 Conscious Observer',
                 color: '#e67e22',
                 particleSize: 4,
-                connectionDistance: 110
+                connectionDistance: 110,
+                description: 'Free energy minimization - particles predict future states and minimize surprise (prediction errors).',
+                theory: 'Based on predictive processing and the Free Energy Principle. Agents build internal models to predict sensory input, then minimize prediction errors by updating beliefs or actions.',
+                mathematics: [
+                    'Free Energy: F = E_q[log q(x) - log p(x,y)]',
+                    'Prediction: x̂ₜ₊₁ = x̂ₜ + v̂ₜ',
+                    'Error: ε = ||x_actual - x_predicted||',
+                    'Update: belief ← belief - α∇F',
+                    'Surprise = -log P(observation)'
+                ],
+                visualization: 'Colors show prediction error: 🟢 green=low 🟠 orange=medium 🔴 red=high'
             },
             ai: {
                 name: '🤖 AI Observer',
                 color: '#1abc9c',
                 particleSize: 3,
-                connectionDistance: 90
+                connectionDistance: 90,
+                description: 'High-dimensional semantic embeddings - particles as vectors in latent space.',
+                theory: 'Based on transformer models and embedding spaces (word2vec, BERT). Semantic similarity = cosine similarity in vector space. Attention weights determine connection strength.',
+                mathematics: [
+                    'Embedding: xᵢ ∈ ℝᵈ (d-dimensional space)',
+                    'Similarity: sim(xᵢ,xⱼ) = xᵢ·xⱼ / (||xᵢ|| ||xⱼ||)',
+                    'Attention: αᵢⱼ = softmax(QKᵀ/√dₖ)',
+                    'Distance: d = 1 - cosine_similarity'
+                ],
+                visualization: 'Connection thickness = semantic similarity. Closer = more related meaning'
             },
             thermodynamic: {
                 name: '🔥 Thermodynamic Observer',
                 color: '#e74c3c',
                 particleSize: 5,
                 connectionDistance: 100,
-                showHeatFlow: true
+                showHeatFlow: true,
+                description: 'Heat flow and temperature gradients - kinetic energy manifests as thermal energy.',
+                theory: 'Based on statistical mechanics and thermodynamics. Temperature emerges from average kinetic energy. Heat flows from hot to cold until equilibrium. Entropy always increases.',
+                mathematics: [
+                    'Temperature: T = ⟨½mv²⟩ / (3/2)kᵦ',
+                    'Heat flow: dQ/dt = -κ∇T',
+                    'Entropy: S = kᵦ log Ω',
+                    'Boltzmann: P(E) ∝ e^(-E/kᵦT)',
+                    'Second Law: dS/dt ≥ 0'
+                ],
+                visualization: 'Color = temperature: 🔵 blue=cold 🟠 orange=warm 🔴 red=hot. Glow = heat radiation'
             },
             relativistic: {
                 name: '⚡ Relativistic Observer',
                 color: '#f39c12',
                 particleSize: 4,
                 connectionDistance: 80,
-                speedOfLight: 5
+                speedOfLight: 5,
+                description: 'Special relativity - time dilation, length contraction, and universal speed limit.',
+                theory: 'Based on Einstein\'s special relativity. Nothing travels faster than light. Moving clocks run slower. Fast-moving objects contract in direction of motion. Spacetime is unified.',
+                mathematics: [
+                    'Lorentz factor: γ = 1/√(1 - v²/c²)',
+                    'Time dilation: Δt = γΔτ (proper time)',
+                    'Length contraction: L = L₀/γ',
+                    'Relativistic momentum: p = γmv',
+                    'Energy: E² = (pc)² + (mc²)²',
+                    'Speed limit: v < c always'
+                ],
+                visualization: 'Redshift = approaching light speed. Size = length contraction. Light cones show causal structure'
             },
             probabilistic: {
                 name: '🎲 Probabilistic Observer',
                 color: '#16a085',
                 particleSize: 4,
                 connectionDistance: 100,
-                showUncertainty: true
+                showUncertainty: true,
+                description: 'Bayesian probability distributions - uncertainty and likelihood over possible states.',
+                theory: 'Based on Bayesian inference. Every measurement updates probability distributions. Reality is inherently uncertain. We have beliefs (priors) that get updated by evidence (likelihoods).',
+                mathematics: [
+                    'Bayes: P(H|E) = P(E|H)P(H) / P(E)',
+                    'Prior: P(x) ∝ e^(-x²/2σ²)',
+                    'Likelihood: L(θ|data) = P(data|θ)',
+                    'Posterior ∝ Likelihood × Prior',
+                    'Variance: σ² = E[(X-μ)²]'
+                ],
+                visualization: 'Opacity = probability. Circle size = variance (uncertainty). Faint = unlikely, bright = likely'
             }
         };
 
