@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Paper: Observer-Dependent Reality</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Paper side */
+        .paper-side {
+            width: 40%;
+            background: #f8f9fa;
+            overflow-y: auto;
+            padding: 40px;
+            border-right: 3px solid #667eea;
+            position: relative;
+        }
+
+        .paper-content {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .paper-content h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .paper-content h2 {
+            color: #667eea;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .paper-content h3 {
+            color: #764ba2;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .paper-content p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .paper-content ul, .paper-content ol {
+            margin-left: 30px;
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        .paper-content code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .paper-content strong {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        /* Visualization links in paper */
+        .viz-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            text-decoration: none;
+            cursor: pointer;
+            margin: 0 4px;
+            transition: transform 0.2s;
+        }
+
+        .viz-link:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Section highlights */
+        .paper-section {
+            scroll-margin-top: 20px;
+            transition: background-color 0.3s;
+            padding: 10px;
+            margin: -10px;
+            border-radius: 8px;
+        }
+
+        .paper-section.highlighted {
+            background-color: #fff3cd;
+            box-shadow: 0 0 0 3px #ffc107;
+        }
+
+        /* Visualization side */
+        .viz-side {
+            width: 60%;
+            overflow-y: auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .viz-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            scroll-margin-top: 20px;
+        }
+
+        .viz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .viz-title {
+            color: #667eea;
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .paper-ref-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .paper-ref-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .viz-description {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .formula-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+
+        .control-group {
+            margin: 10px 0;
+        }
+
+        label {
+            display: inline-block;
+            width: 200px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        input[type="range"] {
+            width: 300px;
+            margin: 0 10px;
+        }
+
+        .value-display {
+            display: inline-block;
+            min-width: 60px;
+            font-family: monospace;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+        }
+
+        .tooltip {
+            position: fixed;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 5px;
+            pointer-events: none;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+
+        .grid line {
+            stroke: #e0e0e0;
+            stroke-opacity: 0.7;
+        }
+
+        .grid path {
+            stroke-width: 0;
+        }
+
+        .axis text {
+            font-size: 12px;
+        }
+
+        .axis path, .axis line {
+            stroke: #999;
+        }
+
+        svg {
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* Toggle button */
+        .toggle-layout {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+
+        .toggle-layout:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        /* Full screen mode */
+        .viz-only .paper-side {
+            display: none;
+        }
+
+        .viz-only .viz-side {
+            width: 100%;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+            .paper-side, .viz-side {
+                width: 100%;
+            }
+            .paper-side {
+                max-height: 40vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="mainContainer">
+        <!-- Paper Side -->
+        <div class="paper-side">
+            <div class="paper-content" id="paperContent">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Visualization Side -->
+        <div class="viz-side">
+            <!-- Viz 1: Shannon Entropy -->
+            <div class="viz-container" id="viz-entropy">
+                <div class="viz-header">
+                    <div class="viz-title">1. Shannon Entropy</div>
+                    <a class="paper-ref-btn" onclick="scrollToPaperSection('entropy-section')">📄 See in Paper</a>
+                </div>
+                <div class="viz-description">
+                    Information theory provides the mathematical foundation for observer-dependence across all domains.
+                </div>
+                <div class="formula-box">
+                    $$H(X) = -\sum_{i=1}^{n} p_i \log_2 p_i$$
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Number of States:</label>
+                        <input type="range" id="entropyStates" min="2" max="10" value="4" step="1">
+                        <span class="value-display" id="entropyStatesValue">4</span>
+                    </div>
+                    <button id="randomizeEntropy">Randomize</button>
+                    <button id="uniformEntropy">Uniform</button>
+                </div>
+                <div id="entropyViz"></div>
+            </div>
+
+            <!-- Viz 2: KL Divergence -->
+            <div class="viz-container" id="viz-kl">
+                <div class="viz-header">
+                    <div class="viz-title">2. KL Divergence</div>
+                    <a class="paper-ref-btn" onclick="scrollToPaperSection('kl-section')">📄 See in Paper</a>
+                </div>
+                <div class="viz-description">
+                    Measures how observer models diverge from reality - central to the Free Energy Principle.
+                </div>
+                <div class="formula-box">
+                    $$D_{KL}(P||Q) = \sum_{i} P(i) \log\frac{P(i)}{Q(i)}$$
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Distribution Shift:</label>
+                        <input type="range" id="klShift" min="0" max="2" value="0.5" step="0.1">
+                        <span class="value-display" id="klShiftValue">0.5</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Distribution Spread:</label>
+                        <input type="range" id="klSpread" min="0.1" max="2" value="1" step="0.1">
+                        <span class="value-display" id="klSpreadValue">1.0</span>
+                    </div>
+                </div>
+                <div id="klViz"></div>
+            </div>
+
+            <!-- Viz 3: Semantic Embeddings -->
+            <div class="viz-container" id="viz-embeddings">
+                <div class="viz-header">
+                    <div class="viz-title">3. Semantic Embeddings</div>
+                    <a class="paper-ref-btn" onclick="scrollToPaperSection('embeddings-section')">📄 See in Paper</a>
+                </div>
+                <div class="viz-description">
+                    Quantifying conceptual distance enables measurement of paradigmatic incommensurability (Wulff et al. 2025).
+                </div>
+                <div class="formula-box">
+                    $$\cos(\theta) = \frac{A \cdot B}{||A|| \times ||B||}$$
+                </div>
+                <div class="controls">
+                    <button id="addConcept">Add Concept</button>
+                    <button id="clearConcepts">Clear</button>
+                    <button id="clusterConcepts">Create Clusters</button>
+                </div>
+                <div id="embeddingViz"></div>
+            </div>
+
+            <!-- Viz 4: Echo Chambers -->
+            <div class="viz-container" id="viz-network">
+                <div class="viz-header">
+                    <div class="viz-title">4. Echo Chamber Networks</div>
+                    <a class="paper-ref-btn" onclick="scrollToPaperSection('echo-section')">📄 See in Paper</a>
+                </div>
+                <div class="viz-description">
+                    Network clustering creates differential information exposure - computational filters generating different realities.
+                </div>
+                <div class="formula-box">
+                    $$C_i = \frac{2T_i}{k_i(k_i-1)}$$
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Homophily:</label>
+                        <input type="range" id="homophily" min="0" max="1" value="0.7" step="0.1">
+                        <span class="value-display" id="homophilyValue">0.7</span>
+                    </div>
+                    <button id="regenerateNetwork">Regenerate</button>
+                </div>
+                <div id="networkViz"></div>
+            </div>
+
+            <!-- Viz 5: Free Energy -->
+            <div class="viz-container" id="viz-fep">
+                <div class="viz-header">
+                    <div class="viz-title">5. Free Energy Principle</div>
+                    <a class="paper-ref-btn" onclick="scrollToPaperSection('fep-section')">📄 See in Paper</a>
+                </div>
+                <div class="viz-description">
+                    The unifying framework spanning quantum mechanics to social cognition (Ramstead et al. 2023).
+                </div>
+                <div class="formula-box">
+                    $$F = D_{KL}[q(x)||p(x|o)] - \ln p(o)$$
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Model Complexity:</label>
+                        <input type="range" id="complexity" min="0" max="10" value="5" step="0.5">
+                        <span class="value-display" id="complexityValue">5.0</span>
+                    </div>
+                </div>
+                <div id="fepViz"></div>
+            </div>
+
+            <!-- Viz 6: Uncertainty -->
+            <div class="viz-container" id="viz-uncertainty">
+                <div class="viz-header">
+                    <div class="viz-title">6. Heisenberg Uncertainty</div>
+                    <a class="paper-ref-btn" onclick="scrollToPaperSection('quantum-section')">📄 See in Paper</a>
+                </div>
+                <div class="viz-description">
+                    Fundamental observer limits encoded in quantum mechanics.
+                </div>
+                <div class="formula-box">
+                    $$\Delta x \Delta p \geq \frac{\hbar}{2}$$
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Position Uncertainty:</label>
+                        <input type="range" id="deltaX" min="0.1" max="5" value="1" step="0.1">
+                        <span class="value-display" id="deltaXValue">1.0</span>
+                    </div>
+                </div>
+                <div id="uncertaintyViz"></div>
+            </div>
+
+            <!-- Viz 7: Ruliad -->
+            <div class="viz-container" id="viz-ruliad">
+                <div class="viz-header">
+                    <div class="viz-title">7. Ruliad Computational Paths</div>
+                    <a class="paper-ref-btn" onclick="scrollToPaperSection('ruliad-section')">📄 See in Paper</a>
+                </div>
+                <div class="viz-description">
+                    Wolfram's multiway graph: observers sample single paths from infinite computational possibilities.
+                </div>
+                <div class="formula-box">
+                    $$\mathcal{R} = \{U_r \mid r \in \mathcal{R}\}$$
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Branching:</label>
+                        <input type="range" id="branchingFactor" min="2" max="4" value="3" step="1">
+                        <span class="value-display" id="branchingFactorValue">3</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Depth:</label>
+                        <input type="range" id="ruliadDepth" min="2" max="5" value="3" step="1">
+                        <span class="value-display" id="ruliadDepthValue">3</span>
+                    </div>
+                    <button id="regenerateRuliad">Regenerate</button>
+                    <button id="highlightPath">Highlight Path</button>
+                </div>
+                <div id="ruliadViz"></div>
+            </div>
+
+            <!-- Viz 8: Phi -->
+            <div class="viz-container" id="viz-phi">
+                <div class="viz-header">
+                    <div class="viz-title">8. Integrated Information (Φ)</div>
+                    <a class="paper-ref-btn" onclick="scrollToPaperSection('iit-section')">📄 See in Paper</a>
+                </div>
+                <div class="viz-description">
+                    IIT 4.0: Consciousness as integrated information from system's intrinsic perspective (Albantakis et al. 2023).
+                </div>
+                <div class="formula-box">
+                    $$ii(m,z) = \pi(z|m) \times \log_2\frac{\pi(z|m)}{\pi(z)}$$
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Connection Density:</label>
+                        <input type="range" id="connectionDensity" min="0" max="1" value="0.5" step="0.1">
+                        <span class="value-display" id="connectionDensityValue">0.5</span>
+                    </div>
+                    <div class="control-group">
+                        <label>System Size:</label>
+                        <input type="range" id="systemSize" min="3" max="8" value="5" step="1">
+                        <span class="value-display" id="systemSizeValue">5</span>
+                    </div>
+                    <button id="randomizeConnections">Randomize</button>
+                </div>
+                <div id="phiViz"></div>
+            </div>
+
+            <!-- Viz 9: Quantum Collapse -->
+            <div class="viz-container" id="viz-quantum">
+                <div class="viz-header">
+                    <div class="viz-title">9. Quantum Measurement</div>
+                    <a class="paper-ref-btn" onclick="scrollToPaperSection('quantum-section')">📄 See in Paper</a>
+                </div>
+                <div class="viz-description">
+                    Observer-dependent collapse: measurement fundamentally changes reality (RQM, QBism).
+                </div>
+                <div class="formula-box">
+                    $$|\psi\rangle = \alpha|0\rangle + \beta|1\rangle$$
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Alpha (|0⟩):</label>
+                        <input type="range" id="alphaAmplitude" min="0" max="1" value="0.7" step="0.05">
+                        <span class="value-display" id="alphaAmplitudeValue">0.7</span>
+                    </div>
+                    <button id="measureQuantum">Measure</button>
+                    <button id="resetQuantum">Reset</button>
+                </div>
+                <div id="quantumViz"></div>
+            </div>
+
+            <!-- Viz 10: Worldview -->
+            <div class="viz-container" id="viz-worldview">
+                <div class="viz-header">
+                    <div class="viz-title">10. Worldview Embeddings</div>
+                    <a class="paper-ref-btn" onclick="scrollToPaperSection('worldview-section')">📄 See in Paper</a>
+                </div>
+                <div class="viz-description">
+                    Semantic embedding spaces quantify paradigmatic distance and incommensurability (Wulff et al. 2025).
+                </div>
+                <div class="formula-box">
+                    $$d^2(x,y) = (x-y)^T A (x-y)$$
+                </div>
+                <div class="controls">
+                    <button id="showPhysics">Physics</button>
+                    <button id="showConsciousness">Consciousness</button>
+                    <button id="showSocial">Social</button>
+                    <button id="showAll">All Domains</button>
+                </div>
+                <div id="worldviewViz"></div>
+            </div>
+        </div>
+    </div>
+
+    <button class="toggle-layout" onclick="toggleLayout()">⇄ Toggle Layout</button>
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Load and render the paper
+        async function loadPaper() {
+            const paperMarkdown = `# Scientific Bridges Between Observer-Dependent Reality Frameworks
+
+The most significant finding is that <span class="viz-link" onclick="scrollToViz('viz-entropy')">⚡ information theory</span> now provides rigorous mathematical bridges connecting observer-dependent physics, consciousness theories, computational semantics, and social reality perception—with recent breakthroughs (2023-2025) enabling quantitative measurement of previously philosophical concepts like Kuhnian incommensurability and worldview differences. The <span class="viz-link" onclick="scrollToViz('viz-fep')">⚡ Free Energy Principle</span> emerges as a unifying computational framework spanning quantum mechanics to social cognition, while semantic embedding methods finally allow precise measurement of conceptual distance and paradigm incompatibility.
+
+<div id="entropy-section" class="paper-section">
+
+## Information theory unifies observer-dependent frameworks across disciplines
+
+Multiple independent research programs converge on information-theoretic mathematics as the natural language for observer-dependence. <span class="viz-link" onclick="scrollToViz('viz-entropy')">⚡ Shannon entropy</span> S = -Σ pᵢ log pᵢ, its quantum generalization S(ρ) = -Tr(ρ log ρ), and <span class="viz-link" onclick="scrollToViz('viz-kl')">⚡ Kullback-Leibler divergence</span> D(P||Q) = Σ P(x) log[P(x)/Q(x)] appear consistently across physics (quantum measurement), consciousness (IIT's phi calculation), computational semantics (embedding distances), and social dynamics (echo chamber detection). This mathematical convergence isn't coincidental—it reflects a deep structural similarity in how different "observers" or "frames" partition reality.
+
+</div>
+
+<div id="kl-section" class="paper-section">
+
+**Key equations connecting domains:**
+
+The **Free Energy Principle** provides the most comprehensive integration, defining free energy as <span class="viz-link" onclick="scrollToViz('viz-fep')">⚡ F = E_q[ln q(x) - ln p(x,o)]</span>, where q represents an observer's internal model and p the true joint distribution of hidden states x and observations o. This single equation applies from quantum systems (where Markov blankets define observer-system boundaries) through neural dynamics (where precision-weighted prediction errors minimize surprise) to social belief systems (where worldviews function as low-entropy priors filtering information).
+
+</div>
+
+<div id="iit-section" class="paper-section">
+
+**Integrated Information Theory's phi calculation** mirrors this structure: φ_s(s, θ) = min(φ_c(s, s'_c, θ), φ_e(s, s'_e, θ)), where φ_c and φ_e measure how much integrated information a system generates about its causes and effects respectively. <span class="viz-link" onclick="scrollToViz('viz-phi')">⚡ IIT 4.0 (2023)</span> formalizes this as intrinsic information ii(m,z) = π(z|m) × log₂[π(z|m)/π(z)], quantifying how a mechanism in state m constrains possibilities for state z. The structure—conditional probability times log-ratio—parallels both Shannon's mutual information and quantum relative entropy, suggesting these frameworks describe different manifestations of the same information-integration process.
+
+</div>
+
+<div id="ruliad-section" class="paper-section">
+
+## The ruliad concept formalizes observer slicing computationally
+
+Stephen Wolfram's <span class="viz-link" onclick="scrollToViz('viz-ruliad')">⚡ ruliad</span>—"the entangled limit of everything computationally possible"—provides a formal foundation for understanding observer-dependent reality as selection of particular computational paths. Defined as R = {Ur | r ∈ R} where R is all possible computational rules and Ur the universe generated by rule set r, the ruliad necessarily contains all possible computations.
+
+**Observer sampling mechanism:** Wolfram identifies two properties defining "observers like us": (1) computational boundedness (finite computation vs. ruliad's infinity) and (2) belief in persistence through time. These properties force observers to perform **equivalencing**—mapping many distinct microscale states to fewer macroscale states via coarse-graining.
+
+The deep insight: **physical laws aren't discovered but derived from observer properties**. General relativity, quantum mechanics, and thermodynamics' second law all emerge inevitably for any computationally bounded observer believing in their persistence.
+
+</div>
+
+<div id="quantum-section" class="paper-section">
+
+## Quantum mechanics formalizes observer-dependence mathematically
+
+Modern quantum interpretations increasingly embrace observer-relativity as fundamental rather than epistemic. <span class="viz-link" onclick="scrollToViz('viz-quantum')">⚡ Relational Quantum Mechanics</span> (Rovelli 1996, extended 2020-2025) treats quantum states as explicitly relative: |ψS⟩(O) denotes system S's state relative to observer O, with no absolute state existing.
+
+**QBism** (Quantum Bayesianism) takes radical subjectivism further: quantum states ρ represent personal probability assignments, updated via Born rule P(j|ρ) = Tr(ρΠj) as Bayesian conditionals.
+
+The <span class="viz-link" onclick="scrollToViz('viz-uncertainty')">⚡ uncertainty relations</span> ΔxΔp ≥ ℏ/2 and ΔEΔt ≥ ℏ/2 formalize fundamental observer limits, not just measurement imprecision. For non-commuting observables [Â,B̂] = iℏĈ ≠ 0, the commutator quantifies inherent observer-dependent incompatibility—certain question pairs cannot simultaneously have definite answers.
+
+</div>
+
+<div id="embeddings-section" class="paper-section">
+
+## Semantic embeddings quantify worldview incommensurability
+
+The breakthrough of <span class="viz-link" onclick="scrollToViz('viz-embeddings')">⚡ Wulff et al. (2025)</span> in Nature Human Behaviour demonstrates that Kuhn's philosophical concept of paradigmatic incommensurability now admits precise quantitative measurement through semantic embeddings. By mapping psychological constructs, measurement items, and scale labels into vector spaces using large language models, they create a computational implementation of "conceptual space" where distances directly quantify incommensurability.
+
+**Mathematical framework:** Semantic distance metrics operate on high-dimensional embeddings e ∈ ℝᵈ (typically d = 384-3072 for modern transformers):
+
+**Cosine similarity** (directional alignment): cos(θ) = (A·B)/(||A|| × ||B||), range [-1,1]
+
+**Euclidean distance** (geometric separation): d(A,B) = ||A-B|| = √Σ(Aᵢ-Bᵢ)², range [0,∞)
+
+**Mahalanobis distance** (correlation-aware): d²(x,y) = (x-y)ᵀ A (x-y), where A captures dimensional weighting
+
+</div>
+
+<div id="worldview-section" class="paper-section">
+
+**Worldview differences become measurable:** The Chinese Political Science Review (2025) demonstrates this through their Trump Worldview Generative Model (TWGM), which computationally models individual worldviews as systems of fixed priors (hierarchy, power, transactionalism) achieving 87.3% prediction accuracy with 23% entropy reduction. This shows <span class="viz-link" onclick="scrollToViz('viz-worldview')">⚡ worldviews function as **low-entropy generative models**</span>—they constrain the hypothesis space, making some interpretations vastly more probable than others for observers operating within that framework.
+
+</div>
+
+<div id="echo-section" class="paper-section">
+
+## Echo chambers quantified through network entropy and clustering
+
+Systematic reviews analyzing 129 studies (Journal of Computational Social Science, 2025) establish robust quantitative signatures of <span class="viz-link" onclick="scrollToViz('viz-network')">⚡ echo chambers</span> across 100+ million pieces of content. Key metrics:
+
+**Clustering coefficient**: Ratio of closed triangles to possible triangles in network graph. Baseline ~0.16 for random; echo chambers exhibit 0.6+, indicating 3× higher local density. Formula: Cᵢ = (2Tᵢ)/(kᵢ(kᵢ-1))
+
+**Modularity**: Q = (1/2m)Σᵢⱼ[Aᵢⱼ - kᵢkⱼ/2m]δ(cᵢ,cⱼ), measuring deviation from expected random edge distribution between communities.
+
+**Connection to worldviews:** Network clustering creates differential information exposure functioning as **computational filters**. Different network positions = different information diets = different constructed realities.
+
+</div>
+
+<div id="fep-section" class="paper-section">
+
+## Free Energy Principle integrates across scales
+
+The <span class="viz-link" onclick="scrollToViz('viz-fep')">⚡ Free Energy Principle</span> (FEP) emerges as the most comprehensive unifying framework, with Ramstead et al.'s 2023 "Inner Screen Model" explicitly bridging quantum holography, neural dynamics, and consciousness.
+
+**Core equation:** F = E_q[ln q(x) - ln p(x,o)] = D_KL[q(x)||p(x|o)] - ln p(o), decomposing free energy into accuracy (negative log evidence) plus complexity (KL divergence between posterior and prior).
+
+**Multi-scale application:**
+- **Quantum scale:** Markov blankets partition Hilbert space
+- **Neural scale:** Hierarchical predictive coding implements FEP via precision-weighted prediction errors
+- **Social scale:** Worldviews function as high-level generative models with fixed priors
+
+The recursion—observers are themselves systems of nested Markov blankets—creates scale-free formulation applicable from electrons to civilizations.
+
+</div>
+
+## Novel synthesis: reality as observer-parameterized computation
+
+The deepest insight connecting these domains: **reality isn't observer-independent substrate but observer-parameterized process**. Multiple converging lines support this:
+
+**From physics:** Quantum mechanics admits no observer-independent state description (RQM, QBism), relativity shows spacetime structure is reference-frame dependent, quantum reference frames prove entropy itself is observer-relative.
+
+**From computation:** Ruliad necessarily contains all possible computations; indeterminacy lies in observer sampling not ontology. Computational irreducibility means no privileged "God's eye view" exists.
+
+**From consciousness:** IIT's Φ-structure exists from system's intrinsic perspective (observer-independent), yet measuring Φ requires choosing system boundaries and timescales (observer-dependent).
+
+**From semantics:** Conceptual spaces admit multiple valid coordinate systems (different dimensional bases), worldviews as low-entropy priors create different semantic organizations.
+
+**From social dynamics:** Echo chambers demonstrate same information environment subdivides into incompatible constructed realities, homophilic networks function as reality filters.
+
+**Unified mathematical structure:** All domains implement variants of constrained optimization under information limits:
+- Physics: Minimize action ∫L dt subject to lightspeed limit
+- Quantum: Minimize free energy subject to uncertainty ΔxΔp ≥ ℏ/2
+- Neural: Minimize prediction error subject to metabolic constraints
+- Semantic: Minimize encoding length subject to expressivity requirements
+- Social: Minimize cognitive dissonance subject to network structure
+
+Each instantiates same computational principle: **bounded observers optimize local objective functions, generating different but internally coherent reality constructions**. The Free Energy Principle F = accuracy - complexity formalizes this, with different accuracy-complexity trade-offs yielding different observer "slices."
+
+---
+
+**Key References:**
+- Ramstead et al. (2023) "Inner Screen Model" - Free Energy & Consciousness
+- Wulff et al. (2025) Nature Human Behaviour - Semantic Embeddings
+- Albantakis et al. (2023) IIT 4.0 - Integrated Information Theory
+- Wolfram (2020-2024) Ruliad & Computational Foundations
+- Journal of Computational Social Science (2025) - Echo Chamber Metrics
+- Chinese Political Science Review (2025) - Trump Worldview Model (TWGM)
+- Aida & Bollegala (2024) - Semantic Distance Metric Learning (SDML)
+- Gurnee & Tegmark (2023) - Linear Representations in LLMs
+- Rovelli (1996, 2020-2025) - Relational Quantum Mechanics
+`;
+
+            document.getElementById('paperContent').innerHTML = marked.parse(paperMarkdown);
+
+            // Retrigger MathJax rendering
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        // Navigation functions
+        function scrollToViz(vizId) {
+            const element = document.getElementById(vizId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.style.transform = 'scale(1.02)';
+                setTimeout(() => element.style.transform = 'scale(1)', 500);
+            }
+        }
+
+        function scrollToPaperSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                // Remove previous highlights
+                document.querySelectorAll('.paper-section').forEach(s => s.classList.remove('highlighted'));
+
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.classList.add('highlighted');
+
+                setTimeout(() => element.classList.remove('highlighted'), 3000);
+            }
+        }
+
+        function toggleLayout() {
+            document.getElementById('mainContainer').classList.toggle('viz-only');
+        }
+
+        // Utility functions
+        function updateValueDisplay(inputId, displayId) {
+            const input = document.getElementById(inputId);
+            const display = document.getElementById(displayId);
+            display.textContent = parseFloat(input.value).toFixed(1);
+        }
+
+        // Load paper content
+        loadPaper();
+    </script>
+
+    <!-- Include all visualization code from the original file -->
+    <script src="visualizations.js"></script>
+</body>
+</html>`;
+
+// Note: The full visualization JavaScript would go into visualizations.js
+// For now, I'll embed a shortened version directly

@@ -1,0 +1,2524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Observer-Dependent Reality Explorer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .main-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Paper side */
+        .paper-side {
+            width: 40%;
+            background: #f8f9fa;
+            overflow-y: auto;
+            padding: 40px;
+            border-right: 3px solid #667eea;
+        }
+
+        .paper-content {
+            width: 100%;
+            margin: 0;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .paper-content h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .paper-content h2 {
+            color: #667eea;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .paper-content h3 {
+            color: #764ba2;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .paper-content p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .paper-content strong {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .paper-section {
+            scroll-margin-top: 20px;
+            transition: background-color 0.3s;
+            padding: 10px;
+            margin: -10px;
+            border-radius: 8px;
+        }
+
+        .paper-section.highlighted {
+            background-color: #fff3cd;
+            box-shadow: 0 0 0 3px #ffc107;
+        }
+
+        .viz-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            cursor: pointer;
+            margin: 0 2px;
+            transition: transform 0.2s;
+        }
+
+        .viz-link:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Visualization side */
+        .viz-side {
+            width: 60%;
+            overflow-y: auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-style: italic;
+        }
+
+        .section {
+            margin: 40px 0;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            scroll-margin-top: 20px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .paper-ref-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .paper-ref-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        h3 {
+            color: #764ba2;
+            margin: 20px 0 10px 0;
+            font-size: 1.3em;
+        }
+
+        .formula-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        .visualization {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+
+        .control-group {
+            margin: 10px 0;
+        }
+
+        label {
+            display: inline-block;
+            width: 200px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        input[type="range"] {
+            width: 300px;
+            margin: 0 10px;
+        }
+
+        .value-display {
+            display: inline-block;
+            min-width: 60px;
+            font-family: monospace;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        svg {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .axis text {
+            font-size: 12px;
+        }
+
+        .axis path,
+        .axis line {
+            stroke: #999;
+        }
+
+        .tooltip {
+            position: absolute;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 5px;
+            pointer-events: none;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+        }
+
+        .description {
+            line-height: 1.6;
+            color: #495057;
+            margin: 15px 0;
+        }
+
+        .grid line {
+            stroke: #e0e0e0;
+            stroke-opacity: 0.7;
+        }
+
+        .grid path {
+            stroke-width: 0;
+        }
+
+        svg {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .visualization > div {
+            width: 100%;
+        }
+
+        #embeddingViz, #networkViz, #worldviewViz, #ruliadViz, #phiViz {
+            min-height: 600px;
+        }
+
+        .axis text {
+            font-size: 12px;
+        }
+
+        .axis path, .axis line {
+            stroke: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Paper Side -->
+        <div class="paper-side">
+            <div class="paper-content" id="paperContent">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Visualization Side -->
+        <div class="viz-side">
+            <div class="container">
+                <h1>Interactive Visualizations</h1>
+                <p class="subtitle">Explore the Mathematics of Observer-Dependent Reality</p>
+            </div>
+
+        <!-- Shannon Entropy Section -->
+        <div class="section" id="viz-entropy">
+            <div class="section-header">
+                <h2>1. Shannon Entropy</h2>
+                <button class="paper-ref-btn" onclick="scrollToPaperSection('entropy-section')">📄 See in Paper</button>
+            </div>
+            <div class="description">
+                Shannon entropy measures the uncertainty or information content in a probability distribution.
+                It's fundamental to information theory and appears across physics, consciousness theories, and social dynamics.
+            </div>
+
+            <div class="formula-box">
+                <h3>Formula:</h3>
+                $$H(X) = -\sum_{i=1}^{n} p_i \log_2 p_i$$
+                <p style="margin-top: 10px; color: #666;">where \(p_i\) is the probability of outcome \(i\)</p>
+            </div>
+
+            <div class="visualization">
+                <h3>Interactive Visualization:</h3>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Number of States:</label>
+                        <input type="range" id="entropyStates" min="2" max="10" value="4" step="1">
+                        <span class="value-display" id="entropyStatesValue">4</span>
+                    </div>
+                    <button id="randomizeEntropy">Randomize Probabilities</button>
+                    <button id="uniformEntropy">Uniform Distribution</button>
+                </div>
+                <div id="entropyViz"></div>
+            </div>
+        </div>
+
+        <!-- KL Divergence Section -->
+        <div class="section" id="viz-kl">
+            <div class="section-header">
+                <h2>2. Kullback-Leibler Divergence</h2>
+                <button class="paper-ref-btn" onclick="scrollToPaperSection('kl-section')">📄 See in Paper</button>
+            </div>
+            <div class="description">
+                KL divergence measures how one probability distribution differs from another.
+                It's crucial for understanding how observers' models differ from reality and appears in the Free Energy Principle.
+            </div>
+
+            <div class="formula-box">
+                <h3>Formula:</h3>
+                $$D_{KL}(P||Q) = \sum_{i} P(i) \log\frac{P(i)}{Q(i)}$$
+                <p style="margin-top: 10px; color: #666;">Measures the divergence of distribution \(Q\) from \(P\)</p>
+            </div>
+
+            <div class="visualization">
+                <h3>Interactive Visualization:</h3>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Distribution Shift:</label>
+                        <input type="range" id="klShift" min="0" max="2" value="0.5" step="0.1">
+                        <span class="value-display" id="klShiftValue">0.5</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Distribution Spread:</label>
+                        <input type="range" id="klSpread" min="0.1" max="2" value="1" step="0.1">
+                        <span class="value-display" id="klSpreadValue">1.0</span>
+                    </div>
+                </div>
+                <div id="klViz"></div>
+            </div>
+        </div>
+
+        <!-- Semantic Embeddings Section -->
+        <div class="section" id="viz-embeddings">
+            <div class="section-header">
+                <h2>3. Semantic Embeddings & Cosine Similarity</h2>
+                <button class="paper-ref-btn" onclick="scrollToPaperSection('embeddings-section')">📄 See in Paper</button>
+            </div>
+            <div class="description">
+                Semantic embeddings map concepts to vectors in high-dimensional space.
+                Cosine similarity measures the directional alignment between concepts, quantifying conceptual distance.
+            </div>
+
+            <div class="formula-box">
+                <h3>Cosine Similarity:</h3>
+                $$\cos(\theta) = \frac{A \cdot B}{||A|| \times ||B||} = \frac{\sum A_i B_i}{\sqrt{\sum A_i^2} \times \sqrt{\sum B_i^2}}$$
+
+                <h3>Euclidean Distance:</h3>
+                $$d(A,B) = ||A-B|| = \sqrt{\sum (A_i - B_i)^2}$$
+            </div>
+
+            <div class="visualization">
+                <h3>Interactive 2D Embedding Space:</h3>
+                <div class="controls">
+                    <button id="addConcept">Add Random Concept</button>
+                    <button id="clearConcepts">Clear All</button>
+                    <button id="clusterConcepts">Create Clusters</button>
+                </div>
+                <div id="embeddingViz"></div>
+            </div>
+        </div>
+
+        <!-- Echo Chamber Network Section -->
+        <div class="section" id="viz-network">
+            <div class="section-header">
+                <h2>4. Echo Chamber Network Dynamics</h2>
+                <button class="paper-ref-btn" onclick="scrollToPaperSection('echo-section')">📄 See in Paper</button>
+            </div>
+            <div class="description">
+                Network clustering creates information bubbles where similar ideas reinforce each other.
+                Modularity and clustering coefficients quantify echo chamber formation.
+            </div>
+
+            <div class="formula-box">
+                <h3>Clustering Coefficient:</h3>
+                $$C_i = \frac{2T_i}{k_i(k_i-1)}$$
+                <p style="margin-top: 10px; color: #666;">where \(T_i\) = triangles through node \(i\), \(k_i\) = node degree</p>
+
+                <h3>Modularity:</h3>
+                $$Q = \frac{1}{2m}\sum_{ij}\left[A_{ij} - \frac{k_i k_j}{2m}\right]\delta(c_i, c_j)$$
+            </div>
+
+            <div class="visualization">
+                <h3>Interactive Network:</h3>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Homophily Strength:</label>
+                        <input type="range" id="homophily" min="0" max="1" value="0.7" step="0.1">
+                        <span class="value-display" id="homophilyValue">0.7</span>
+                    </div>
+                    <button id="regenerateNetwork">Regenerate Network</button>
+                </div>
+                <div id="networkViz"></div>
+            </div>
+        </div>
+
+        <!-- Free Energy Principle Section -->
+        <div class="section" id="viz-fep">
+            <div class="section-header">
+                <h2>5. Free Energy Principle</h2>
+                <button class="paper-ref-btn" onclick="scrollToPaperSection('fep-section')">📄 See in Paper</button>
+            </div>
+            <div class="description">
+                The Free Energy Principle unifies perception, action, and learning as minimization of surprise.
+                It bridges quantum mechanics, neural dynamics, and social cognition.
+            </div>
+
+            <div class="formula-box">
+                <h3>Free Energy:</h3>
+                $$F = E_q[\ln q(x) - \ln p(x,o)]$$
+
+                <h3>Decomposition:</h3>
+                $$F = D_{KL}[q(x)||p(x|o)] - \ln p(o)$$
+                $$F = \text{Complexity} - \text{Accuracy}$$
+            </div>
+
+            <div class="visualization">
+                <h3>Accuracy-Complexity Trade-off:</h3>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Model Complexity:</label>
+                        <input type="range" id="complexity" min="0" max="10" value="5" step="0.5">
+                        <span class="value-display" id="complexityValue">5.0</span>
+                    </div>
+                </div>
+                <div id="fepViz"></div>
+            </div>
+        </div>
+
+        <!-- Quantum Uncertainty Section -->
+        <div class="section" id="viz-uncertainty">
+            <div class="section-header">
+                <h2>6. Heisenberg Uncertainty Principle</h2>
+                <button class="paper-ref-btn" onclick="scrollToPaperSection('quantum-section')">📄 See in Paper</button>
+            </div>
+            <div class="description">
+                Fundamental limits on observer knowledge encoded in quantum mechanics.
+                Certain observables cannot be simultaneously known with arbitrary precision.
+            </div>
+
+            <div class="formula-box">
+                <h3>Position-Momentum Uncertainty:</h3>
+                $$\Delta x \Delta p \geq \frac{\hbar}{2}$$
+
+                <h3>Energy-Time Uncertainty:</h3>
+                $$\Delta E \Delta t \geq \frac{\hbar}{2}$$
+
+                <p style="margin-top: 10px; color: #666;">where \(\hbar = 1.054 \times 10^{-34}\) J·s</p>
+            </div>
+
+            <div class="visualization">
+                <h3>Uncertainty Visualization:</h3>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Position Uncertainty (Δx):</label>
+                        <input type="range" id="deltaX" min="0.1" max="5" value="1" step="0.1">
+                        <span class="value-display" id="deltaXValue">1.0</span>
+                    </div>
+                </div>
+                <div id="uncertaintyViz"></div>
+            </div>
+        </div>
+
+        <!-- Ruliad Computational Paths Section -->
+        <div class="section" id="viz-ruliad">
+            <div class="section-header">
+                <h2>7. Ruliad: Observer-Dependent Computational Paths</h2>
+                <button class="paper-ref-btn" onclick="scrollToPaperSection('ruliad-section')">📄 See in Paper</button>
+            </div>
+            <div class="description">
+                Wolfram's ruliad contains all possible computations. Different observers sample different paths through this computational space.
+                Computational boundedness forces observers to perform "equivalencing" - creating observer-dependent reality slices.
+            </div>
+
+            <div class="formula-box">
+                <h3>Ruliad Definition:</h3>
+                $$\mathcal{R} = \{U_r \mid r \in \mathcal{R}\}$$
+                <p style="margin-top: 10px; color: #666;">where \(\mathcal{R}\) is all possible computational rules and \(U_r\) is the universe generated by rule set \(r\)</p>
+
+                <h3>Observer Equivalencing:</h3>
+                <p style="margin-top: 10px; color: #666;">Computationally bounded observers map many microscale states → fewer macroscale states</p>
+            </div>
+
+            <div class="visualization">
+                <h3>Interactive Multiway Graph:</h3>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Branching Factor:</label>
+                        <input type="range" id="branchingFactor" min="2" max="4" value="3" step="1">
+                        <span class="value-display" id="branchingFactorValue">3</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Depth:</label>
+                        <input type="range" id="ruliadDepth" min="2" max="5" value="3" step="1">
+                        <span class="value-display" id="ruliadDepthValue">3</span>
+                    </div>
+                    <button id="regenerateRuliad">Regenerate Paths</button>
+                    <button id="highlightPath">Highlight Observer Path</button>
+                </div>
+                <div id="ruliadViz"></div>
+            </div>
+        </div>
+
+        <!-- Integrated Information (Phi) Section -->
+        <div class="section" id="viz-phi">
+            <div class="section-header">
+                <h2>8. Integrated Information Theory (Φ)</h2>
+                <button class="paper-ref-btn" onclick="scrollToPaperSection('iit-section')">📄 See in Paper</button>
+            </div>
+            <div class="description">
+                IIT proposes that consciousness is identical to integrated information (Φ). A system is conscious to the degree that it integrates information beyond its parts.
+                Φ measures how much a system constrains its own past and future states.
+            </div>
+
+            <div class="formula-box">
+                <h3>Intrinsic Information:</h3>
+                $$ii(m,z) = \pi(z|m) \times \log_2\frac{\pi(z|m)}{\pi(z)}$$
+
+                <h3>Integrated Information:</h3>
+                $$\phi_s(s,\theta) = \min[\phi_c(s,s'_c,\theta), \phi_e(s,s'_e,\theta)]$$
+                <p style="margin-top: 10px; color: #666;">where \(\phi_c\) and \(\phi_e\) measure cause and effect integrated information</p>
+            </div>
+
+            <div class="visualization">
+                <h3>System Connectivity & Φ:</h3>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Connection Density:</label>
+                        <input type="range" id="connectionDensity" min="0" max="1" value="0.5" step="0.1">
+                        <span class="value-display" id="connectionDensityValue">0.5</span>
+                    </div>
+                    <div class="control-group">
+                        <label>System Size:</label>
+                        <input type="range" id="systemSize" min="3" max="8" value="5" step="1">
+                        <span class="value-display" id="systemSizeValue">5</span>
+                    </div>
+                    <button id="randomizeConnections">Randomize Connections</button>
+                </div>
+                <div id="phiViz"></div>
+            </div>
+        </div>
+
+        <!-- Quantum State Collapse Section -->
+        <div class="section" id="viz-quantum">
+            <div class="section-header">
+                <h2>9. Quantum Measurement & Observer-Dependent Collapse</h2>
+                <button class="paper-ref-btn" onclick="scrollToPaperSection('quantum-section')">📄 See in Paper</button>
+            </div>
+            <div class="description">
+                Before measurement, quantum systems exist in superposition of states. Measurement "collapses" the wavefunction to a definite state.
+                This demonstrates radical observer-dependence: the act of observation fundamentally changes reality.
+            </div>
+
+            <div class="formula-box">
+                <h3>Superposition State:</h3>
+                $$|\psi\rangle = \alpha|0\rangle + \beta|1\rangle$$
+                <p style="margin-top: 10px; color: #666;">where \(|\alpha|^2 + |\beta|^2 = 1\)</p>
+
+                <h3>Measurement Probability:</h3>
+                $$P(j|\rho) = \text{Tr}(\rho \Pi_j)$$
+                <p style="margin-top: 10px; color: #666;">Born rule: probability from trace with projection operator</p>
+            </div>
+
+            <div class="visualization">
+                <h3>Animated Wavefunction Collapse:</h3>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Alpha Amplitude (|0⟩):</label>
+                        <input type="range" id="alphaAmplitude" min="0" max="1" value="0.7" step="0.05">
+                        <span class="value-display" id="alphaAmplitudeValue">0.7</span>
+                    </div>
+                    <button id="measureQuantum">Perform Measurement</button>
+                    <button id="resetQuantum">Reset to Superposition</button>
+                </div>
+                <div id="quantumViz"></div>
+            </div>
+        </div>
+
+        <!-- Worldview Embeddings Section -->
+        <div class="section" id="viz-worldview">
+            <div class="section-header">
+                <h2>10. Worldview Embeddings & Paradigm Distance</h2>
+                <button class="paper-ref-btn" onclick="scrollToPaperSection('worldview-section')">📄 See in Paper</button>
+            </div>
+            <div class="description">
+                Semantic embeddings enable quantitative measurement of conceptual incommensurability. Different worldviews occupy distant regions in embedding space,
+                making translation between paradigms computationally difficult. This formalizes Kuhn's philosophical insights.
+            </div>
+
+            <div class="formula-box">
+                <h3>Mahalanobis Distance:</h3>
+                $$d^2(x,y) = (x-y)^T A (x-y)$$
+                <p style="margin-top: 10px; color: #666;">where \(A\) captures semantic-change-aware dimensional weighting</p>
+
+                <h3>Worldview as Low-Entropy Prior:</h3>
+                $$\Delta H = H(\text{all hypotheses}) - H(\text{constrained by worldview})$$
+            </div>
+
+            <div class="visualization">
+                <h3>Conceptual Space with Paradigms:</h3>
+                <div class="controls">
+                    <button id="showPhysics">Physics Concepts</button>
+                    <button id="showConsciousness">Consciousness Concepts</button>
+                    <button id="showSocial">Social Concepts</button>
+                    <button id="showAll">Show All Domains</button>
+                </div>
+                <div id="worldviewViz"></div>
+            </div>
+        </div>
+
+        </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Load paper content
+        async function loadPaper() {
+            const paperHTML = `
+<h1>Scientific Bridges Between Observer-Dependent Reality Frameworks</h1>
+
+<p>The most significant finding is that <span class="viz-link" onclick="scrollToViz('viz-entropy')">⚡ information theory</span> now provides rigorous mathematical bridges connecting observer-dependent physics, consciousness theories, computational semantics, and social reality perception—with recent breakthroughs (2023-2025) enabling quantitative measurement of previously philosophical concepts like Kuhnian incommensurability and worldview differences. The <span class="viz-link" onclick="scrollToViz('viz-fep')">⚡ Free Energy Principle</span> emerges as a unifying computational framework spanning quantum mechanics to social cognition, while semantic embedding methods finally allow precise measurement of conceptual distance and paradigm incompatibility.</p>
+
+<div id="entropy-section" class="paper-section">
+<h2>Information theory unifies observer-dependent frameworks</h2>
+
+<p>Multiple independent research programs converge on information-theoretic mathematics as the natural language for observer-dependence. <span class="viz-link" onclick="scrollToViz('viz-entropy')">⚡ Shannon entropy</span> S = -Σ pᵢ log pᵢ, its quantum generalization S(ρ) = -Tr(ρ log ρ), and <span class="viz-link" onclick="scrollToViz('viz-kl')">⚡ Kullback-Leibler divergence</span> D(P||Q) = Σ P(x) log[P(x)/Q(x)] appear consistently across physics (quantum measurement), consciousness (IIT's phi calculation), computational semantics (embedding distances), and social dynamics (echo chamber detection).</p>
+</div>
+
+<div id="kl-section" class="paper-section">
+<h3>Key equations connecting domains</h3>
+
+<p>The <span class="viz-link" onclick="scrollToViz('viz-fep')">⚡ Free Energy Principle</span> provides the most comprehensive integration, defining free energy as <strong>F = E_q[ln q(x) - ln p(x,o)]</strong>, where q represents an observer's internal model and p the true joint distribution of hidden states x and observations o. This single equation applies from quantum systems (where Markov blankets define observer-system boundaries) through neural dynamics (where precision-weighted prediction errors minimize surprise) to social belief systems (where worldviews function as low-entropy priors filtering information).</p>
+</div>
+
+<div id="iit-section" class="paper-section">
+<h3>Integrated Information Theory</h3>
+
+<p><span class="viz-link" onclick="scrollToViz('viz-phi')">⚡ IIT 4.0 (2023)</span> formalizes <strong>Integrated Information Theory's phi calculation</strong>: φ_s(s, θ) = min(φ_c(s, s'_c, θ), φ_e(s, s'_e, θ)), where φ_c and φ_e measure how much integrated information a system generates about its causes and effects respectively. Intrinsic information ii(m,z) = π(z|m) × log₂[π(z|m)/π(z)], quantifying how a mechanism in state m constrains possibilities for state z.</p>
+</div>
+
+<div id="ruliad-section" class="paper-section">
+<h2>The ruliad concept formalizes observer slicing computationally</h2>
+
+<p>Stephen Wolfram's <span class="viz-link" onclick="scrollToViz('viz-ruliad')">⚡ ruliad</span>—"the entangled limit of everything computationally possible"—provides a formal foundation for understanding observer-dependent reality as selection of particular computational paths. Defined as <strong>R = {Ur | r ∈ R}</strong> where R is all possible computational rules and Ur the universe generated by rule set r, the ruliad necessarily contains all possible computations.</p>
+
+<p><strong>Observer sampling mechanism:</strong> Wolfram identifies two properties defining "observers like us": (1) computational boundedness (finite computation vs. ruliad's infinity) and (2) belief in persistence through time. These properties force observers to perform <strong>equivalencing</strong>—mapping many distinct microscale states to fewer macroscale states via coarse-graining.</p>
+
+<p>The deep insight: <strong>physical laws aren't discovered but derived from observer properties</strong>. General relativity, quantum mechanics, and thermodynamics' second law all emerge inevitably for any computationally bounded observer believing in their persistence.</p>
+</div>
+
+<div id="quantum-section" class="paper-section">
+<h2>Quantum mechanics formalizes observer-dependence mathematically</h2>
+
+<p>Modern quantum interpretations increasingly embrace observer-relativity as fundamental rather than epistemic. <span class="viz-link" onclick="scrollToViz('viz-quantum')">⚡ Relational Quantum Mechanics</span> (Rovelli 1996, extended 2020-2025) treats quantum states as explicitly relative: |ψS⟩(O) denotes system S's state relative to observer O, with no absolute state existing.</p>
+
+<p><strong>QBism</strong> (Quantum Bayesianism) takes radical subjectivism further: quantum states ρ represent personal probability assignments, updated via Born rule P(j|ρ) = Tr(ρΠj) as Bayesian conditionals.</p>
+
+<p>The <span class="viz-link" onclick="scrollToViz('viz-uncertainty')">⚡ uncertainty relations</span> <strong>ΔxΔp ≥ ℏ/2 and ΔEΔt ≥ ℏ/2</strong> formalize fundamental observer limits, not just measurement imprecision. For non-commuting observables [Â,B̂] = iℏĈ ≠ 0, the commutator quantifies inherent observer-dependent incompatibility.</p>
+</div>
+
+<div id="embeddings-section" class="paper-section">
+<h2>Semantic embeddings quantify worldview incommensurability</h2>
+
+<p>The breakthrough of <span class="viz-link" onclick="scrollToViz('viz-embeddings')">⚡ Wulff et al. (2025)</span> in <em>Nature Human Behaviour</em> demonstrates that Kuhn's philosophical concept of paradigmatic incommensurability now admits precise quantitative measurement through semantic embeddings. By mapping psychological constructs, measurement items, and scale labels into vector spaces using large language models, they create a computational implementation of "conceptual space" where distances directly quantify incommensurability.</p>
+
+<p><strong>Mathematical framework:</strong> Semantic distance metrics operate on high-dimensional embeddings e ∈ ℝᵈ (typically d = 384-3072 for modern transformers):</p>
+
+<p><strong>Cosine similarity</strong> (directional alignment): cos(θ) = (A·B)/(||A|| × ||B||), range [-1,1]</p>
+<p><strong>Euclidean distance</strong> (geometric separation): d(A,B) = ||A-B|| = √Σ(Aᵢ-Bᵢ)², range [0,∞)</p>
+<p><strong>Mahalanobis distance</strong> (correlation-aware): d²(x,y) = (x-y)ᵀ A (x-y), where A captures dimensional weighting</p>
+</div>
+
+<div id="worldview-section" class="paper-section">
+<h3>Worldview differences become measurable</h3>
+
+<p>The Chinese Political Science Review (2025) demonstrates this through their Trump Worldview Generative Model (TWGM), which computationally models individual <span class="viz-link" onclick="scrollToViz('viz-worldview')">⚡ worldviews as systems of fixed priors</span> (hierarchy, power, transactionalism) achieving 87.3% prediction accuracy with 23% entropy reduction. This shows worldviews function as <strong>low-entropy generative models</strong>—they constrain the hypothesis space, making some interpretations vastly more probable than others.</p>
+</div>
+
+<div id="echo-section" class="paper-section">
+<h2>Echo chambers quantified through network entropy and clustering</h2>
+
+<p>Systematic reviews analyzing 129 studies (Journal of Computational Social Science, 2025) establish robust quantitative signatures of <span class="viz-link" onclick="scrollToViz('viz-network')">⚡ echo chambers</span> across 100+ million pieces of content.</p>
+
+<p><strong>Key metrics:</strong></p>
+
+<p><strong>Clustering coefficient:</strong> Ratio of closed triangles to possible triangles in network graph. Baseline ~0.16 for random; echo chambers exhibit 0.6+, indicating 3× higher local density. Formula: <strong>Cᵢ = (2Tᵢ)/(kᵢ(kᵢ-1))</strong></p>
+
+<p><strong>Modularity:</strong> Q = (1/2m)Σᵢⱼ[Aᵢⱼ - kᵢkⱼ/2m]δ(cᵢ,cⱼ), measuring deviation from expected random edge distribution between communities.</p>
+
+<p><strong>Connection to worldviews:</strong> Network clustering creates differential information exposure functioning as computational filters. Different network positions = different information diets = different constructed realities.</p>
+</div>
+
+<div id="fep-section" class="paper-section">
+<h2>Free Energy Principle integrates across scales</h2>
+
+<p>The <span class="viz-link" onclick="scrollToViz('viz-fep')">⚡ Free Energy Principle</span> (FEP) emerges as the most comprehensive unifying framework, with Ramstead et al.'s 2023 "Inner Screen Model" explicitly bridging quantum holography, neural dynamics, and consciousness.</p>
+
+<p><strong>Core equation:</strong> F = E_q[ln q(x) - ln p(x,o)] = D_KL[q(x)||p(x|o)] - ln p(o), decomposing free energy into accuracy (negative log evidence) plus complexity (KL divergence between posterior and prior).</p>
+
+<p><strong>Multi-scale application:</strong></p>
+<ul>
+<li><strong>Quantum scale:</strong> Markov blankets partition Hilbert space</li>
+<li><strong>Neural scale:</strong> Hierarchical predictive coding implements FEP via precision-weighted prediction errors</li>
+<li><strong>Social scale:</strong> Worldviews function as high-level generative models with fixed priors</li>
+</ul>
+
+<p>The recursion—observers are themselves systems of nested Markov blankets—creates scale-free formulation applicable from electrons to civilizations.</p>
+</div>
+
+<h2>Novel synthesis: reality as observer-parameterized computation</h2>
+
+<p>The deepest insight connecting these domains: <strong>reality isn't observer-independent substrate but observer-parameterized process</strong>. Multiple converging lines support this:</p>
+
+<p><strong>From physics:</strong> Quantum mechanics admits no observer-independent state description (RQM, QBism), relativity shows spacetime structure is reference-frame dependent.</p>
+
+<p><strong>From computation:</strong> Ruliad necessarily contains all possible computations; indeterminacy lies in observer sampling not ontology.</p>
+
+<p><strong>From consciousness:</strong> IIT's Φ-structure exists from system's intrinsic perspective (observer-independent), yet measuring Φ requires choosing system boundaries and timescales (observer-dependent).</p>
+
+<p><strong>From semantics:</strong> Conceptual spaces admit multiple valid coordinate systems, worldviews as low-entropy priors create different semantic organizations.</p>
+
+<p><strong>From social dynamics:</strong> Echo chambers demonstrate same information environment subdivides into incompatible constructed realities.</p>
+
+<p><strong>Unified mathematical structure:</strong> All domains implement variants of constrained optimization under information limits. Each instantiates same computational principle: <strong>bounded observers optimize local objective functions, generating different but internally coherent reality constructions</strong>.</p>
+
+<hr>
+
+<p><strong>Key References:</strong></p>
+<ul>
+<li>Ramstead et al. (2023) "Inner Screen Model" - Free Energy & Consciousness</li>
+<li>Wulff et al. (2025) Nature Human Behaviour - Semantic Embeddings</li>
+<li>Albantakis et al. (2023) IIT 4.0 - Integrated Information Theory</li>
+<li>Wolfram (2020-2024) Ruliad & Computational Foundations</li>
+<li>Journal of Computational Social Science (2025) - Echo Chamber Metrics</li>
+<li>Chinese Political Science Review (2025) - Trump Worldview Model (TWGM)</li>
+</ul>
+`;
+
+            document.getElementById('paperContent').innerHTML = paperHTML;
+
+            // Retrigger MathJax rendering
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        // Navigation functions
+        function scrollToViz(vizId) {
+            const element = document.getElementById(vizId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.style.transform = 'scale(1.02)';
+                setTimeout(() => element.style.transform = 'scale(1)', 500);
+            }
+        }
+
+        function scrollToPaperSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                // Remove previous highlights
+                document.querySelectorAll('.paper-section').forEach(s => s.classList.remove('highlighted'));
+
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.classList.add('highlighted');
+
+                setTimeout(() => element.classList.remove('highlighted'), 3000);
+            }
+        }
+
+        // Load paper on page load
+        loadPaper();
+
+        // Utility functions
+        function updateValueDisplay(inputId, displayId) {
+            const input = document.getElementById(inputId);
+            const display = document.getElementById(displayId);
+            display.textContent = parseFloat(input.value).toFixed(1);
+        }
+
+        // 1. SHANNON ENTROPY VISUALIZATION
+        function createEntropyVisualization() {
+            const container = document.getElementById('entropyViz');
+            const width = container.offsetWidth || 800;
+            const height = 400;
+            const margin = {top: 20, right: 20, bottom: 60, left: 60};
+
+            const svg = d3.select('#entropyViz')
+                .html('')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            function updateEntropy() {
+                const n = parseInt(document.getElementById('entropyStates').value);
+                updateValueDisplay('entropyStates', 'entropyStatesValue');
+
+                // Generate or use existing probabilities
+                if (!svg.probabilities || svg.probabilities.length !== n) {
+                    svg.probabilities = Array(n).fill(1/n);
+                }
+
+                const data = svg.probabilities.map((p, i) => ({
+                    index: i,
+                    probability: p
+                }));
+
+                // Calculate entropy
+                const entropy = -data.reduce((sum, d) => {
+                    return d.probability > 0 ? sum + d.probability * Math.log2(d.probability) : sum;
+                }, 0);
+
+                svg.selectAll('*').remove();
+
+                const x = d3.scaleBand()
+                    .domain(data.map(d => d.index))
+                    .range([margin.left, width - margin.right])
+                    .padding(0.1);
+
+                const y = d3.scaleLinear()
+                    .domain([0, 1])
+                    .range([height - margin.bottom, margin.top]);
+
+                // Bars
+                svg.selectAll('rect')
+                    .data(data)
+                    .join('rect')
+                    .attr('x', d => x(d.index))
+                    .attr('y', d => y(d.probability))
+                    .attr('width', x.bandwidth())
+                    .attr('height', d => y(0) - y(d.probability))
+                    .attr('fill', '#667eea')
+                    .attr('opacity', 0.8)
+                    .on('mouseover', function(event, d) {
+                        d3.select(this).attr('opacity', 1);
+                        d3.select('#tooltip')
+                            .style('opacity', 1)
+                            .html(`State ${d.index}<br/>p = ${d.probability.toFixed(3)}`)
+                            .style('left', (event.pageX + 10) + 'px')
+                            .style('top', (event.pageY - 10) + 'px');
+                    })
+                    .on('mouseout', function() {
+                        d3.select(this).attr('opacity', 0.8);
+                        d3.select('#tooltip').style('opacity', 0);
+                    });
+
+                // Axes
+                svg.append('g')
+                    .attr('transform', `translate(0,${height - margin.bottom})`)
+                    .call(d3.axisBottom(x))
+                    .attr('class', 'axis');
+
+                svg.append('g')
+                    .attr('transform', `translate(${margin.left},0)`)
+                    .call(d3.axisLeft(y))
+                    .attr('class', 'axis');
+
+                // Labels
+                svg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', height - 10)
+                    .attr('text-anchor', 'middle')
+                    .text('State')
+                    .style('font-size', '14px');
+
+                svg.append('text')
+                    .attr('transform', 'rotate(-90)')
+                    .attr('x', -height / 2)
+                    .attr('y', 15)
+                    .attr('text-anchor', 'middle')
+                    .text('Probability')
+                    .style('font-size', '14px');
+
+                // Entropy display
+                svg.append('text')
+                    .attr('x', width - margin.right)
+                    .attr('y', margin.top)
+                    .attr('text-anchor', 'end')
+                    .text(`H = ${entropy.toFixed(3)} bits`)
+                    .style('font-size', '18px')
+                    .style('font-weight', 'bold')
+                    .style('fill', '#764ba2');
+            }
+
+            document.getElementById('entropyStates').addEventListener('input', updateEntropy);
+
+            document.getElementById('randomizeEntropy').addEventListener('click', () => {
+                const n = parseInt(document.getElementById('entropyStates').value);
+                const random = Array(n).fill(0).map(() => Math.random());
+                const sum = random.reduce((a, b) => a + b, 0);
+                svg.probabilities = random.map(r => r / sum);
+                updateEntropy();
+            });
+
+            document.getElementById('uniformEntropy').addEventListener('click', () => {
+                const n = parseInt(document.getElementById('entropyStates').value);
+                svg.probabilities = Array(n).fill(1/n);
+                updateEntropy();
+            });
+
+            updateEntropy();
+        }
+
+        // 2. KL DIVERGENCE VISUALIZATION
+        function createKLVisualization() {
+            const container = document.getElementById('klViz');
+            const width = container.offsetWidth || 800;
+            const height = 400;
+            const margin = {top: 20, right: 20, bottom: 60, left: 60};
+
+            const svg = d3.select('#klViz')
+                .html('')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            function normal(x, mu, sigma) {
+                return Math.exp(-0.5 * Math.pow((x - mu) / sigma, 2)) / (sigma * Math.sqrt(2 * Math.PI));
+            }
+
+            function updateKL() {
+                const shift = parseFloat(document.getElementById('klShift').value);
+                const spread = parseFloat(document.getElementById('klSpread').value);
+                updateValueDisplay('klShift', 'klShiftValue');
+                updateValueDisplay('klSpread', 'klSpreadValue');
+
+                svg.selectAll('*').remove();
+
+                const x = d3.scaleLinear()
+                    .domain([-4, 4])
+                    .range([margin.left, width - margin.right]);
+
+                const y = d3.scaleLinear()
+                    .domain([0, 0.5])
+                    .range([height - margin.bottom, margin.top]);
+
+                // Generate data
+                const points = d3.range(-4, 4, 0.1);
+                const pData = points.map(xi => ({x: xi, y: normal(xi, 0, 1)}));
+                const qData = points.map(xi => ({x: xi, y: normal(xi, shift, spread)}));
+
+                // Calculate KL divergence
+                let kl = 0;
+                for (let xi of points) {
+                    const p = normal(xi, 0, 1);
+                    const q = normal(xi, shift, spread);
+                    if (p > 0 && q > 0) {
+                        kl += p * Math.log(p / q) * 0.1;
+                    }
+                }
+
+                // Line generator
+                const line = d3.line()
+                    .x(d => x(d.x))
+                    .y(d => y(d.y));
+
+                // P distribution
+                svg.append('path')
+                    .datum(pData)
+                    .attr('fill', 'none')
+                    .attr('stroke', '#667eea')
+                    .attr('stroke-width', 3)
+                    .attr('d', line);
+
+                // Q distribution
+                svg.append('path')
+                    .datum(qData)
+                    .attr('fill', 'none')
+                    .attr('stroke', '#e74c3c')
+                    .attr('stroke-width', 3)
+                    .attr('d', line);
+
+                // Axes
+                svg.append('g')
+                    .attr('transform', `translate(0,${height - margin.bottom})`)
+                    .call(d3.axisBottom(x))
+                    .attr('class', 'axis');
+
+                svg.append('g')
+                    .attr('transform', `translate(${margin.left},0)`)
+                    .call(d3.axisLeft(y))
+                    .attr('class', 'axis');
+
+                // Legend
+                svg.append('text')
+                    .attr('x', margin.left + 20)
+                    .attr('y', margin.top + 20)
+                    .text('P (blue): N(0, 1)')
+                    .style('fill', '#667eea')
+                    .style('font-weight', 'bold');
+
+                svg.append('text')
+                    .attr('x', margin.left + 20)
+                    .attr('y', margin.top + 40)
+                    .text(`Q (red): N(${shift.toFixed(1)}, ${spread.toFixed(1)})`)
+                    .style('fill', '#e74c3c')
+                    .style('font-weight', 'bold');
+
+                // KL display
+                svg.append('text')
+                    .attr('x', width - margin.right)
+                    .attr('y', margin.top + 20)
+                    .attr('text-anchor', 'end')
+                    .text(`D_KL(P||Q) = ${kl.toFixed(3)}`)
+                    .style('font-size', '18px')
+                    .style('font-weight', 'bold')
+                    .style('fill', '#764ba2');
+            }
+
+            document.getElementById('klShift').addEventListener('input', updateKL);
+            document.getElementById('klSpread').addEventListener('input', updateKL);
+
+            updateKL();
+        }
+
+        // 3. SEMANTIC EMBEDDINGS VISUALIZATION
+        function createEmbeddingVisualization() {
+            const container = document.getElementById('embeddingViz');
+            const width = container.offsetWidth || 800;
+            const height = 600;
+            const margin = {top: 20, right: 20, bottom: 60, left: 60};
+
+            const svg = d3.select('#embeddingViz')
+                .html('')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            let concepts = [];
+            let selectedConcept = null;
+
+            const x = d3.scaleLinear()
+                .domain([-1, 1])
+                .range([margin.left, width - margin.right]);
+
+            const y = d3.scaleLinear()
+                .domain([-1, 1])
+                .range([height - margin.bottom, margin.top]);
+
+            function updateEmbedding() {
+                svg.selectAll('*').remove();
+
+                // Axes
+                svg.append('g')
+                    .attr('transform', `translate(0,${height - margin.bottom})`)
+                    .call(d3.axisBottom(x))
+                    .attr('class', 'axis');
+
+                svg.append('g')
+                    .attr('transform', `translate(${margin.left},0)`)
+                    .call(d3.axisLeft(y))
+                    .attr('class', 'axis');
+
+                // Grid
+                svg.append('g')
+                    .attr('class', 'grid')
+                    .attr('transform', `translate(0,${height - margin.bottom})`)
+                    .call(d3.axisBottom(x).tickSize(-(height - margin.top - margin.bottom)).tickFormat(''));
+
+                svg.append('g')
+                    .attr('class', 'grid')
+                    .attr('transform', `translate(${margin.left},0)`)
+                    .call(d3.axisLeft(y).tickSize(-(width - margin.left - margin.right)).tickFormat(''));
+
+                // Draw similarity lines for selected concept
+                if (selectedConcept) {
+                    concepts.forEach(c => {
+                        if (c !== selectedConcept) {
+                            const similarity = (selectedConcept.x * c.x + selectedConcept.y * c.y) /
+                                (Math.sqrt(selectedConcept.x**2 + selectedConcept.y**2) *
+                                 Math.sqrt(c.x**2 + c.y**2));
+
+                            svg.append('line')
+                                .attr('x1', x(selectedConcept.x))
+                                .attr('y1', y(selectedConcept.y))
+                                .attr('x2', x(c.x))
+                                .attr('y2', y(c.y))
+                                .attr('stroke', similarity > 0.5 ? '#2ecc71' : '#e74c3c')
+                                .attr('stroke-width', 1)
+                                .attr('stroke-dasharray', '5,5')
+                                .attr('opacity', 0.3);
+                        }
+                    });
+                }
+
+                // Concepts
+                const circles = svg.selectAll('circle')
+                    .data(concepts)
+                    .join('circle')
+                    .attr('cx', d => x(d.x))
+                    .attr('cy', d => y(d.y))
+                    .attr('r', d => d === selectedConcept ? 10 : 8)
+                    .attr('fill', d => d.color)
+                    .attr('stroke', d => d === selectedConcept ? '#000' : 'none')
+                    .attr('stroke-width', 2)
+                    .attr('opacity', 0.8)
+                    .style('cursor', 'pointer')
+                    .on('click', function(event, d) {
+                        selectedConcept = d === selectedConcept ? null : d;
+                        updateEmbedding();
+                    })
+                    .on('mouseover', function(event, d) {
+                        d3.select(this).attr('r', 12);
+
+                        let tooltipText = `Concept ${d.id}<br/>[${d.x.toFixed(2)}, ${d.y.toFixed(2)}]`;
+
+                        if (selectedConcept && selectedConcept !== d) {
+                            const cosSim = (selectedConcept.x * d.x + selectedConcept.y * d.y) /
+                                (Math.sqrt(selectedConcept.x**2 + selectedConcept.y**2) *
+                                 Math.sqrt(d.x**2 + d.y**2));
+                            const eucDist = Math.sqrt((selectedConcept.x - d.x)**2 + (selectedConcept.y - d.y)**2);
+                            tooltipText += `<br/>Cosine Sim: ${cosSim.toFixed(3)}<br/>Euclidean Dist: ${eucDist.toFixed(3)}`;
+                        }
+
+                        d3.select('#tooltip')
+                            .style('opacity', 1)
+                            .html(tooltipText)
+                            .style('left', (event.pageX + 10) + 'px')
+                            .style('top', (event.pageY - 10) + 'px');
+                    })
+                    .on('mouseout', function(event, d) {
+                        d3.select(this).attr('r', d === selectedConcept ? 10 : 8);
+                        d3.select('#tooltip').style('opacity', 0);
+                    });
+
+                // Labels
+                svg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', height - 10)
+                    .attr('text-anchor', 'middle')
+                    .text('Embedding Dimension 1')
+                    .style('font-size', '14px');
+
+                svg.append('text')
+                    .attr('transform', 'rotate(-90)')
+                    .attr('x', -height / 2)
+                    .attr('y', 15)
+                    .attr('text-anchor', 'middle')
+                    .text('Embedding Dimension 2')
+                    .style('font-size', '14px');
+            }
+
+            document.getElementById('addConcept').addEventListener('click', () => {
+                const angle = Math.random() * 2 * Math.PI;
+                const radius = Math.random() * 0.8;
+                concepts.push({
+                    id: concepts.length,
+                    x: radius * Math.cos(angle),
+                    y: radius * Math.sin(angle),
+                    color: d3.interpolateRainbow(Math.random())
+                });
+                updateEmbedding();
+            });
+
+            document.getElementById('clearConcepts').addEventListener('click', () => {
+                concepts = [];
+                selectedConcept = null;
+                updateEmbedding();
+            });
+
+            document.getElementById('clusterConcepts').addEventListener('click', () => {
+                concepts = [];
+                const numClusters = 3;
+                const colors = ['#667eea', '#e74c3c', '#2ecc71'];
+
+                for (let c = 0; c < numClusters; c++) {
+                    const centerAngle = (c / numClusters) * 2 * Math.PI;
+                    const centerRadius = 0.5;
+                    const centerX = centerRadius * Math.cos(centerAngle);
+                    const centerY = centerRadius * Math.sin(centerAngle);
+
+                    for (let i = 0; i < 8; i++) {
+                        const angle = Math.random() * 2 * Math.PI;
+                        const radius = Math.random() * 0.2;
+                        concepts.push({
+                            id: concepts.length,
+                            x: centerX + radius * Math.cos(angle),
+                            y: centerY + radius * Math.sin(angle),
+                            color: colors[c]
+                        });
+                    }
+                }
+                updateEmbedding();
+            });
+
+            // Start with some initial concepts
+            document.getElementById('clusterConcepts').click();
+        }
+
+        // 4. ECHO CHAMBER NETWORK VISUALIZATION
+        function createNetworkVisualization() {
+            const container = document.getElementById('networkViz');
+            const width = container.offsetWidth || 800;
+            const height = 600;
+
+            const svg = d3.select('#networkViz')
+                .html('')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            function updateNetwork() {
+                const homophily = parseFloat(document.getElementById('homophily').value);
+                updateValueDisplay('homophily', 'homophilyValue');
+
+                svg.selectAll('*').remove();
+
+                // Generate network
+                const numNodes = 50;
+                const numGroups = 3;
+                const nodes = [];
+
+                for (let i = 0; i < numNodes; i++) {
+                    const group = Math.floor(i / (numNodes / numGroups));
+                    nodes.push({
+                        id: i,
+                        group: group,
+                        x: Math.random() * width,
+                        y: Math.random() * height
+                    });
+                }
+
+                const links = [];
+                for (let i = 0; i < numNodes; i++) {
+                    for (let j = i + 1; j < numNodes; j++) {
+                        const sameGroup = nodes[i].group === nodes[j].group;
+                        const prob = sameGroup ? homophily : (1 - homophily) * 0.1;
+
+                        if (Math.random() < prob) {
+                            links.push({
+                                source: nodes[i],
+                                target: nodes[j]
+                            });
+                        }
+                    }
+                }
+
+                // Calculate clustering coefficient
+                const triangles = new Array(numNodes).fill(0);
+                const possibleTriangles = new Array(numNodes).fill(0);
+
+                const adjacency = new Array(numNodes).fill(0).map(() => new Array(numNodes).fill(false));
+                links.forEach(l => {
+                    adjacency[l.source.id][l.target.id] = true;
+                    adjacency[l.target.id][l.source.id] = true;
+                });
+
+                for (let i = 0; i < numNodes; i++) {
+                    const neighbors = adjacency[i].map((val, idx) => val ? idx : -1).filter(idx => idx !== -1);
+                    const degree = neighbors.length;
+                    possibleTriangles[i] = degree * (degree - 1) / 2;
+
+                    for (let j = 0; j < neighbors.length; j++) {
+                        for (let k = j + 1; k < neighbors.length; k++) {
+                            if (adjacency[neighbors[j]][neighbors[k]]) {
+                                triangles[i]++;
+                            }
+                        }
+                    }
+                }
+
+                const avgClustering = triangles.reduce((sum, t, i) =>
+                    possibleTriangles[i] > 0 ? sum + t / possibleTriangles[i] : sum, 0
+                ) / numNodes;
+
+                // Force simulation
+                const simulation = d3.forceSimulation(nodes)
+                    .force('link', d3.forceLink(links).distance(50))
+                    .force('charge', d3.forceManyBody().strength(-100))
+                    .force('center', d3.forceCenter(width / 2, height / 2))
+                    .force('collision', d3.forceCollide().radius(10));
+
+                const link = svg.selectAll('line')
+                    .data(links)
+                    .join('line')
+                    .attr('stroke', '#999')
+                    .attr('stroke-opacity', 0.3)
+                    .attr('stroke-width', 1);
+
+                const colorScale = d3.scaleOrdinal()
+                    .domain([0, 1, 2])
+                    .range(['#667eea', '#e74c3c', '#2ecc71']);
+
+                const node = svg.selectAll('circle')
+                    .data(nodes)
+                    .join('circle')
+                    .attr('r', 6)
+                    .attr('fill', d => colorScale(d.group))
+                    .attr('stroke', '#fff')
+                    .attr('stroke-width', 2)
+                    .on('mouseover', function(event, d) {
+                        d3.select(this).attr('r', 10);
+                        const clust = possibleTriangles[d.id] > 0 ?
+                            (triangles[d.id] / possibleTriangles[d.id]).toFixed(3) : 0;
+                        d3.select('#tooltip')
+                            .style('opacity', 1)
+                            .html(`Node ${d.id}<br/>Group ${d.group}<br/>Clustering: ${clust}`)
+                            .style('left', (event.pageX + 10) + 'px')
+                            .style('top', (event.pageY - 10) + 'px');
+                    })
+                    .on('mouseout', function() {
+                        d3.select(this).attr('r', 6);
+                        d3.select('#tooltip').style('opacity', 0);
+                    });
+
+                simulation.on('tick', () => {
+                    link
+                        .attr('x1', d => d.source.x)
+                        .attr('y1', d => d.source.y)
+                        .attr('x2', d => d.target.x)
+                        .attr('y2', d => d.target.y);
+
+                    node
+                        .attr('cx', d => d.x)
+                        .attr('cy', d => d.y);
+                });
+
+                // Display metrics
+                svg.append('text')
+                    .attr('x', 10)
+                    .attr('y', 20)
+                    .text(`Avg Clustering: ${avgClustering.toFixed(3)}`)
+                    .style('font-size', '16px')
+                    .style('font-weight', 'bold')
+                    .style('fill', '#764ba2');
+            }
+
+            document.getElementById('homophily').addEventListener('input', updateNetwork);
+            document.getElementById('regenerateNetwork').addEventListener('click', updateNetwork);
+
+            updateNetwork();
+        }
+
+        // 5. FREE ENERGY PRINCIPLE VISUALIZATION
+        function createFEPVisualization() {
+            const container = document.getElementById('fepViz');
+            const width = container.offsetWidth || 800;
+            const height = 400;
+            const margin = {top: 20, right: 20, bottom: 60, left: 60};
+
+            const svg = d3.select('#fepViz')
+                .html('')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            function updateFEP() {
+                const complexity = parseFloat(document.getElementById('complexity').value);
+                updateValueDisplay('complexity', 'complexityValue');
+
+                svg.selectAll('*').remove();
+
+                const x = d3.scaleLinear()
+                    .domain([0, 10])
+                    .range([margin.left, width - margin.right]);
+
+                const y = d3.scaleLinear()
+                    .domain([0, 15])
+                    .range([height - margin.bottom, margin.top]);
+
+                // Generate curves
+                const points = d3.range(0.1, 10, 0.1);
+
+                // Accuracy improves with complexity but with diminishing returns
+                const accuracyData = points.map(c => ({
+                    x: c,
+                    y: 10 * (1 - Math.exp(-c / 3))
+                }));
+
+                // Complexity cost is linear or slightly super-linear
+                const complexityData = points.map(c => ({
+                    x: c,
+                    y: c * 0.8
+                }));
+
+                // Free energy is the sum (total cost)
+                const freeEnergyData = points.map(c => ({
+                    x: c,
+                    y: c * 0.8 + (10 - 10 * (1 - Math.exp(-c / 3)))
+                }));
+
+                // Find minimum free energy
+                const minFE = freeEnergyData.reduce((min, d) => d.y < min.y ? d : min);
+
+                const line = d3.line()
+                    .x(d => x(d.x))
+                    .y(d => y(d.y));
+
+                // Draw curves
+                svg.append('path')
+                    .datum(accuracyData)
+                    .attr('fill', 'none')
+                    .attr('stroke', '#2ecc71')
+                    .attr('stroke-width', 2)
+                    .attr('d', line);
+
+                svg.append('path')
+                    .datum(complexityData)
+                    .attr('fill', 'none')
+                    .attr('stroke', '#e74c3c')
+                    .attr('stroke-width', 2)
+                    .attr('d', line);
+
+                svg.append('path')
+                    .datum(freeEnergyData)
+                    .attr('fill', 'none')
+                    .attr('stroke', '#667eea')
+                    .attr('stroke-width', 3)
+                    .attr('d', line);
+
+                // Current complexity marker
+                const currentAccuracy = 10 * (1 - Math.exp(-complexity / 3));
+                const currentComplexityCost = complexity * 0.8;
+                const currentFE = currentComplexityCost + (10 - currentAccuracy);
+
+                svg.append('circle')
+                    .attr('cx', x(complexity))
+                    .attr('cy', y(currentFE))
+                    .attr('r', 8)
+                    .attr('fill', '#764ba2')
+                    .attr('stroke', '#fff')
+                    .attr('stroke-width', 2);
+
+                // Optimal point
+                svg.append('circle')
+                    .attr('cx', x(minFE.x))
+                    .attr('cy', y(minFE.y))
+                    .attr('r', 6)
+                    .attr('fill', 'gold')
+                    .attr('stroke', '#000')
+                    .attr('stroke-width', 2);
+
+                // Axes
+                svg.append('g')
+                    .attr('transform', `translate(0,${height - margin.bottom})`)
+                    .call(d3.axisBottom(x))
+                    .attr('class', 'axis');
+
+                svg.append('g')
+                    .attr('transform', `translate(${margin.left},0)`)
+                    .call(d3.axisLeft(y))
+                    .attr('class', 'axis');
+
+                // Labels
+                svg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', height - 10)
+                    .attr('text-anchor', 'middle')
+                    .text('Model Complexity')
+                    .style('font-size', '14px');
+
+                svg.append('text')
+                    .attr('transform', 'rotate(-90)')
+                    .attr('x', -height / 2)
+                    .attr('y', 15)
+                    .attr('text-anchor', 'middle')
+                    .text('Cost')
+                    .style('font-size', '14px');
+
+                // Legend
+                const legend = [
+                    {label: 'Accuracy (benefit)', color: '#2ecc71'},
+                    {label: 'Complexity (cost)', color: '#e74c3c'},
+                    {label: 'Free Energy (total)', color: '#667eea'}
+                ];
+
+                legend.forEach((item, i) => {
+                    svg.append('line')
+                        .attr('x1', margin.left + 20)
+                        .attr('y1', margin.top + 20 + i * 20)
+                        .attr('x2', margin.left + 50)
+                        .attr('y2', margin.top + 20 + i * 20)
+                        .attr('stroke', item.color)
+                        .attr('stroke-width', 2);
+
+                    svg.append('text')
+                        .attr('x', margin.left + 60)
+                        .attr('y', margin.top + 24 + i * 20)
+                        .text(item.label)
+                        .style('font-size', '12px');
+                });
+
+                // Current F value
+                svg.append('text')
+                    .attr('x', width - margin.right)
+                    .attr('y', margin.top + 20)
+                    .attr('text-anchor', 'end')
+                    .text(`F = ${currentFE.toFixed(2)}`)
+                    .style('font-size', '18px')
+                    .style('font-weight', 'bold')
+                    .style('fill', '#764ba2');
+            }
+
+            document.getElementById('complexity').addEventListener('input', updateFEP);
+            updateFEP();
+        }
+
+        // 6. UNCERTAINTY PRINCIPLE VISUALIZATION
+        function createUncertaintyVisualization() {
+            const container = document.getElementById('uncertaintyViz');
+            const width = container.offsetWidth || 800;
+            const height = 400;
+            const margin = {top: 20, right: 20, bottom: 60, left: 60};
+
+            const svg = d3.select('#uncertaintyViz')
+                .html('')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            function gaussian(x, mu, sigma) {
+                return Math.exp(-0.5 * Math.pow((x - mu) / sigma, 2)) / (sigma * Math.sqrt(2 * Math.PI));
+            }
+
+            function updateUncertainty() {
+                const deltaX = parseFloat(document.getElementById('deltaX').value);
+                updateValueDisplay('deltaX', 'deltaXValue');
+
+                const hbar = 1; // Normalized units
+                const deltaP = hbar / (2 * deltaX);
+
+                svg.selectAll('*').remove();
+
+                // Position space
+                const x1 = d3.scaleLinear()
+                    .domain([-10, 10])
+                    .range([margin.left, width / 2 - 10]);
+
+                const y1 = d3.scaleLinear()
+                    .domain([0, 1])
+                    .range([height - margin.bottom, margin.top]);
+
+                // Momentum space
+                const x2 = d3.scaleLinear()
+                    .domain([-10, 10])
+                    .range([width / 2 + 10, width - margin.right]);
+
+                const y2 = d3.scaleLinear()
+                    .domain([0, 1])
+                    .range([height - margin.bottom, margin.top]);
+
+                // Generate data
+                const points = d3.range(-10, 10, 0.1);
+                const posData = points.map(xi => ({x: xi, y: gaussian(xi, 0, deltaX)}));
+                const momData = points.map(xi => ({x: xi, y: gaussian(xi, 0, deltaP)}));
+
+                // Normalize
+                const posMax = Math.max(...posData.map(d => d.y));
+                const momMax = Math.max(...momData.map(d => d.y));
+                posData.forEach(d => d.y /= posMax);
+                momData.forEach(d => d.y /= momMax);
+
+                // Line generators
+                const line1 = d3.line()
+                    .x(d => x1(d.x))
+                    .y(d => y1(d.y));
+
+                const line2 = d3.line()
+                    .x(d => x2(d.x))
+                    .y(d => y2(d.y));
+
+                // Position distribution
+                svg.append('path')
+                    .datum(posData)
+                    .attr('fill', 'rgba(102, 126, 234, 0.3)')
+                    .attr('stroke', '#667eea')
+                    .attr('stroke-width', 2)
+                    .attr('d', line1);
+
+                // Momentum distribution
+                svg.append('path')
+                    .datum(momData)
+                    .attr('fill', 'rgba(231, 76, 60, 0.3)')
+                    .attr('stroke', '#e74c3c')
+                    .attr('stroke-width', 2)
+                    .attr('d', line2);
+
+                // Axes
+                svg.append('g')
+                    .attr('transform', `translate(0,${height - margin.bottom})`)
+                    .call(d3.axisBottom(x1))
+                    .attr('class', 'axis');
+
+                svg.append('g')
+                    .attr('transform', `translate(0,${height - margin.bottom})`)
+                    .call(d3.axisBottom(x2))
+                    .attr('class', 'axis');
+
+                svg.append('g')
+                    .attr('transform', `translate(${margin.left},0)`)
+                    .call(d3.axisLeft(y1).ticks(5))
+                    .attr('class', 'axis');
+
+                // Labels
+                svg.append('text')
+                    .attr('x', (margin.left + width / 2 - 10) / 2)
+                    .attr('y', height - 10)
+                    .attr('text-anchor', 'middle')
+                    .text('Position (x)')
+                    .style('font-size', '14px')
+                    .style('fill', '#667eea')
+                    .style('font-weight', 'bold');
+
+                svg.append('text')
+                    .attr('x', (width / 2 + 10 + width - margin.right) / 2)
+                    .attr('y', height - 10)
+                    .attr('text-anchor', 'middle')
+                    .text('Momentum (p)')
+                    .style('font-size', '14px')
+                    .style('fill', '#e74c3c')
+                    .style('font-weight', 'bold');
+
+                // Uncertainty display
+                svg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', margin.top)
+                    .attr('text-anchor', 'middle')
+                    .text(`Δx = ${deltaX.toFixed(2)}    Δp = ${deltaP.toFixed(2)}    Δx·Δp = ${(deltaX * deltaP).toFixed(2)} ≥ 0.5`)
+                    .style('font-size', '16px')
+                    .style('font-weight', 'bold')
+                    .style('fill', '#764ba2');
+
+                // Divider
+                svg.append('line')
+                    .attr('x1', width / 2)
+                    .attr('y1', margin.top)
+                    .attr('x2', width / 2)
+                    .attr('y2', height - margin.bottom)
+                    .attr('stroke', '#ccc')
+                    .attr('stroke-width', 2)
+                    .attr('stroke-dasharray', '5,5');
+            }
+
+            document.getElementById('deltaX').addEventListener('input', updateUncertainty);
+            updateUncertainty();
+        }
+
+        // 7. RULIAD COMPUTATIONAL PATHS VISUALIZATION
+        function createRuliadVisualization() {
+            const container = document.getElementById('ruliadViz');
+            const width = container.offsetWidth || 800;
+            const height = 650;
+
+            const svg = d3.select('#ruliadViz')
+                .html('')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            let selectedPath = null;
+
+            function generateRuliad() {
+                const branchingFactor = parseInt(document.getElementById('branchingFactor').value);
+                const depth = parseInt(document.getElementById('ruliadDepth').value);
+                updateValueDisplay('branchingFactor', 'branchingFactorValue');
+                updateValueDisplay('ruliadDepth', 'ruliadDepthValue');
+
+                const nodes = [{id: 0, depth: 0, branch: 0}];
+                const links = [];
+                let nodeId = 1;
+
+                // Generate tree structure
+                for (let d = 0; d < depth; d++) {
+                    const nodesAtDepth = nodes.filter(n => n.depth === d);
+                    nodesAtDepth.forEach(parent => {
+                        for (let b = 0; b < branchingFactor; b++) {
+                            const child = {id: nodeId++, depth: d + 1, branch: b};
+                            nodes.push(child);
+                            links.push({source: parent.id, target: child.id});
+                        }
+                    });
+                }
+
+                return {nodes, links};
+            }
+
+            function updateRuliad() {
+                const data = generateRuliad();
+                svg.selectAll('*').remove();
+
+                // Calculate positions
+                const depthSpacing = width / (data.nodes[data.nodes.length - 1].depth + 2);
+                const maxAtDepth = {};
+
+                data.nodes.forEach(n => {
+                    maxAtDepth[n.depth] = (maxAtDepth[n.depth] || 0) + 1;
+                });
+
+                const positions = {};
+                const counters = {};
+
+                data.nodes.forEach(n => {
+                    if (!counters[n.depth]) counters[n.depth] = 0;
+                    const totalAtDepth = maxAtDepth[n.depth];
+                    const spacing = height / (totalAtDepth + 1);
+                    positions[n.id] = {
+                        x: depthSpacing * (n.depth + 1),
+                        y: spacing * (counters[n.depth] + 1)
+                    };
+                    counters[n.depth]++;
+                });
+
+                // Draw links
+                svg.selectAll('line')
+                    .data(data.links.map(l => ({
+                        ...l,
+                        x1: positions[l.source].x,
+                        y1: positions[l.source].y,
+                        x2: positions[l.target].x,
+                        y2: positions[l.target].y
+                    })))
+                    .join('line')
+                    .attr('x1', d => d.x1)
+                    .attr('y1', d => d.y1)
+                    .attr('x2', d => d.x2)
+                    .attr('y2', d => d.y2)
+                    .attr('stroke', d => {
+                        if (selectedPath && selectedPath.includes(d.source) && selectedPath.includes(d.target)) {
+                            return '#f39c12';
+                        }
+                        return '#ccc';
+                    })
+                    .attr('stroke-width', d => {
+                        if (selectedPath && selectedPath.includes(d.source) && selectedPath.includes(d.target)) {
+                            return 3;
+                        }
+                        return 1;
+                    })
+                    .attr('opacity', 0.6);
+
+                // Draw nodes
+                svg.selectAll('circle')
+                    .data(data.nodes)
+                    .join('circle')
+                    .attr('cx', d => positions[d.id].x)
+                    .attr('cy', d => positions[d.id].y)
+                    .attr('r', d => {
+                        if (selectedPath && selectedPath.includes(d.id)) return 8;
+                        return 5;
+                    })
+                    .attr('fill', d => {
+                        if (selectedPath && selectedPath.includes(d.id)) return '#f39c12';
+                        return d3.interpolateCool(d.depth / data.nodes[data.nodes.length - 1].depth);
+                    })
+                    .attr('stroke', '#fff')
+                    .attr('stroke-width', 1.5)
+                    .on('mouseover', function(event, d) {
+                        d3.select(this).attr('r', 8);
+                        d3.select('#tooltip')
+                            .style('opacity', 1)
+                            .html(`State ${d.id}<br/>Depth: ${d.depth}<br/>Branch: ${d.branch}`)
+                            .style('left', (event.pageX + 10) + 'px')
+                            .style('top', (event.pageY - 10) + 'px');
+                    })
+                    .on('mouseout', function(event, d) {
+                        const r = (selectedPath && selectedPath.includes(d.id)) ? 8 : 5;
+                        d3.select(this).attr('r', r);
+                        d3.select('#tooltip').style('opacity', 0);
+                    });
+
+                // Add title
+                svg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', 20)
+                    .attr('text-anchor', 'middle')
+                    .text('Multiway Computational Graph')
+                    .style('font-size', '16px')
+                    .style('font-weight', 'bold')
+                    .style('fill', '#667eea');
+
+                svg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', 40)
+                    .attr('text-anchor', 'middle')
+                    .text(`Total possible paths: ${Math.pow(parseInt(document.getElementById('branchingFactor').value), parseInt(document.getElementById('ruliadDepth').value))}`)
+                    .style('font-size', '14px')
+                    .style('fill', '#666');
+
+                if (selectedPath) {
+                    svg.append('text')
+                        .attr('x', width / 2)
+                        .attr('y', height - 10)
+                        .attr('text-anchor', 'middle')
+                        .text('Observer\'s selected path highlighted in orange')
+                        .style('font-size', '14px')
+                        .style('fill', '#f39c12')
+                        .style('font-weight', 'bold');
+                }
+            }
+
+            document.getElementById('branchingFactor').addEventListener('input', () => {
+                selectedPath = null;
+                updateRuliad();
+            });
+            document.getElementById('ruliadDepth').addEventListener('input', () => {
+                selectedPath = null;
+                updateRuliad();
+            });
+            document.getElementById('regenerateRuliad').addEventListener('click', () => {
+                selectedPath = null;
+                updateRuliad();
+            });
+            document.getElementById('highlightPath').addEventListener('click', () => {
+                const branchingFactor = parseInt(document.getElementById('branchingFactor').value);
+                const depth = parseInt(document.getElementById('ruliadDepth').value);
+
+                // Generate a random path
+                selectedPath = [0];
+                let currentId = 0;
+                let nodesBeforeDepth = 0;
+
+                for (let d = 0; d < depth; d++) {
+                    const nodesAtDepth = Math.pow(branchingFactor, d);
+                    nodesBeforeDepth += (d === 0) ? 0 : Math.pow(branchingFactor, d);
+                    const branch = Math.floor(Math.random() * branchingFactor);
+                    const childrenStartId = nodesBeforeDepth + 1 + (currentId - (nodesBeforeDepth - nodesAtDepth + 1)) * branchingFactor;
+                    currentId = childrenStartId + branch;
+                    selectedPath.push(currentId);
+                }
+
+                updateRuliad();
+            });
+
+            updateRuliad();
+        }
+
+        // 8. INTEGRATED INFORMATION (PHI) VISUALIZATION
+        function createPhiVisualization() {
+            const container = document.getElementById('phiViz');
+            const width = container.offsetWidth || 800;
+            const height = 600;
+
+            const svg = d3.select('#phiViz')
+                .html('')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            function updatePhi() {
+                const density = parseFloat(document.getElementById('connectionDensity').value);
+                const size = parseInt(document.getElementById('systemSize').value);
+                updateValueDisplay('connectionDensity', 'connectionDensityValue');
+                updateValueDisplay('systemSize', 'systemSizeValue');
+
+                svg.selectAll('*').remove();
+
+                // Generate nodes in a circle
+                const nodes = [];
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const radius = 150;
+
+                for (let i = 0; i < size; i++) {
+                    const angle = (i / size) * 2 * Math.PI - Math.PI / 2;
+                    nodes.push({
+                        id: i,
+                        x: centerX + radius * Math.cos(angle),
+                        y: centerY + radius * Math.sin(angle)
+                    });
+                }
+
+                // Generate connections based on density
+                const links = [];
+                for (let i = 0; i < size; i++) {
+                    for (let j = i + 1; j < size; j++) {
+                        if (Math.random() < density) {
+                            links.push({source: i, target: j});
+                        }
+                    }
+                }
+
+                // Calculate approximate phi (simplified)
+                const avgConnections = (links.length * 2) / size;
+                const maxConnections = size - 1;
+                const connectivity = avgConnections / maxConnections;
+
+                // Phi is roughly connectivity * (1 - |0.5 - connectivity|) to peak at medium integration
+                const phi = connectivity * size * (1 - Math.abs(0.5 - connectivity) * 2);
+
+                // Draw links
+                svg.selectAll('line')
+                    .data(links)
+                    .join('line')
+                    .attr('x1', d => nodes[d.source].x)
+                    .attr('y1', d => nodes[d.source].y)
+                    .attr('x2', d => nodes[d.target].x)
+                    .attr('y2', d => nodes[d.target].y)
+                    .attr('stroke', '#667eea')
+                    .attr('stroke-width', 2)
+                    .attr('opacity', 0.4);
+
+                // Draw nodes
+                svg.selectAll('circle')
+                    .data(nodes)
+                    .join('circle')
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y)
+                    .attr('r', 15)
+                    .attr('fill', '#764ba2')
+                    .attr('stroke', '#fff')
+                    .attr('stroke-width', 3)
+                    .on('mouseover', function(event, d) {
+                        d3.select(this).attr('r', 20);
+                        const connections = links.filter(l => l.source === d.id || l.target === d.id).length;
+                        d3.select('#tooltip')
+                            .style('opacity', 1)
+                            .html(`Element ${d.id}<br/>Connections: ${connections}`)
+                            .style('left', (event.pageX + 10) + 'px')
+                            .style('top', (event.pageY - 10) + 'px');
+                    })
+                    .on('mouseout', function() {
+                        d3.select(this).attr('r', 15);
+                        d3.select('#tooltip').style('opacity', 0);
+                    });
+
+                // Add labels to nodes
+                svg.selectAll('text.node-label')
+                    .data(nodes)
+                    .join('text')
+                    .attr('class', 'node-label')
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y + 5)
+                    .attr('text-anchor', 'middle')
+                    .text(d => d.id)
+                    .style('fill', 'white')
+                    .style('font-weight', 'bold')
+                    .style('font-size', '14px')
+                    .style('pointer-events', 'none');
+
+                // Display Phi value
+                svg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', 40)
+                    .attr('text-anchor', 'middle')
+                    .text(`Φ ≈ ${phi.toFixed(2)} bits`)
+                    .style('font-size', '24px')
+                    .style('font-weight', 'bold')
+                    .style('fill', '#667eea');
+
+                svg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', 65)
+                    .attr('text-anchor', 'middle')
+                    .text(`Connections: ${links.length} / ${(size * (size - 1)) / 2} possible`)
+                    .style('font-size', '14px')
+                    .style('fill', '#666');
+
+                // Interpretation
+                let interpretation = '';
+                if (phi < size * 0.3) {
+                    interpretation = 'Low integration - system parts are relatively independent';
+                } else if (phi < size * 0.7) {
+                    interpretation = 'Moderate integration - balanced information flow';
+                } else {
+                    interpretation = 'High integration - system highly interdependent';
+                }
+
+                svg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', height - 20)
+                    .attr('text-anchor', 'middle')
+                    .text(interpretation)
+                    .style('font-size', '14px')
+                    .style('fill', '#764ba2')
+                    .style('font-style', 'italic');
+            }
+
+            document.getElementById('connectionDensity').addEventListener('input', updatePhi);
+            document.getElementById('systemSize').addEventListener('input', updatePhi);
+            document.getElementById('randomizeConnections').addEventListener('click', updatePhi);
+
+            updatePhi();
+        }
+
+        // 9. QUANTUM STATE COLLAPSE VISUALIZATION
+        function createQuantumVisualization() {
+            const container = document.getElementById('quantumViz');
+            const width = container.offsetWidth || 800;
+            const height = 400;
+            const margin = {top: 60, right: 20, bottom: 60, left: 60};
+
+            const svg = d3.select('#quantumViz')
+                .html('')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            let collapsed = false;
+            let collapsedState = null;
+            let animating = false;
+
+            function updateQuantum() {
+                const alpha = parseFloat(document.getElementById('alphaAmplitude').value);
+                const beta = Math.sqrt(1 - alpha * alpha);
+                updateValueDisplay('alphaAmplitude', 'alphaAmplitudeValue');
+
+                svg.selectAll('*').remove();
+
+                const barWidth = 150;
+                const barSpacing = 100;
+                const centerX = width / 2;
+                const baseY = height - margin.bottom;
+
+                const y = d3.scaleLinear()
+                    .domain([0, 1])
+                    .range([baseY, margin.top]);
+
+                if (!collapsed) {
+                    // Superposition state - show both amplitudes
+                    // State |0⟩
+                    svg.append('rect')
+                        .attr('x', centerX - barSpacing - barWidth)
+                        .attr('y', y(alpha * alpha))
+                        .attr('width', barWidth)
+                        .attr('height', baseY - y(alpha * alpha))
+                        .attr('fill', '#667eea')
+                        .attr('opacity', 0.7)
+                        .attr('stroke', '#667eea')
+                        .attr('stroke-width', 2);
+
+                    // State |1⟩
+                    svg.append('rect')
+                        .attr('x', centerX + barSpacing)
+                        .attr('y', y(beta * beta))
+                        .attr('width', barWidth)
+                        .attr('height', baseY - y(beta * beta))
+                        .attr('fill', '#e74c3c')
+                        .attr('opacity', 0.7)
+                        .attr('stroke', '#e74c3c')
+                        .attr('stroke-width', 2);
+
+                    // Probability labels
+                    svg.append('text')
+                        .attr('x', centerX - barSpacing - barWidth / 2)
+                        .attr('y', y(alpha * alpha) - 10)
+                        .attr('text-anchor', 'middle')
+                        .text(`P(|0⟩) = ${(alpha * alpha).toFixed(3)}`)
+                        .style('font-size', '14px')
+                        .style('font-weight', 'bold')
+                        .style('fill', '#667eea');
+
+                    svg.append('text')
+                        .attr('x', centerX + barSpacing + barWidth / 2)
+                        .attr('y', y(beta * beta) - 10)
+                        .attr('text-anchor', 'middle')
+                        .text(`P(|1⟩) = ${(beta * beta).toFixed(3)}`)
+                        .style('font-size', '14px')
+                        .style('font-weight', 'bold')
+                        .style('fill', '#e74c3c');
+
+                    // Superposition waves
+                    const wavePoints = d3.range(0, 2 * Math.PI, 0.1);
+                    const wave0 = d3.line()
+                        .x(d => centerX - barSpacing - barWidth / 2 + Math.cos(d) * 30)
+                        .y(d => margin.top - 20 + Math.sin(d) * alpha * 20);
+
+                    const wave1 = d3.line()
+                        .x(d => centerX + barSpacing + barWidth / 2 + Math.cos(d) * 30)
+                        .y(d => margin.top - 20 + Math.sin(d) * beta * 20);
+
+                    svg.append('path')
+                        .datum(wavePoints)
+                        .attr('d', wave0)
+                        .attr('stroke', '#667eea')
+                        .attr('stroke-width', 2)
+                        .attr('fill', 'none')
+                        .attr('opacity', 0.7);
+
+                    svg.append('path')
+                        .datum(wavePoints)
+                        .attr('d', wave1)
+                        .attr('stroke', '#e74c3c')
+                        .attr('stroke-width', 2)
+                        .attr('fill', 'none')
+                        .attr('opacity', 0.7);
+
+                    // State label
+                    svg.append('text')
+                        .attr('x', centerX)
+                        .attr('y', 30)
+                        .attr('text-anchor', 'middle')
+                        .text(`|ψ⟩ = ${alpha.toFixed(2)}|0⟩ + ${beta.toFixed(2)}|1⟩`)
+                        .style('font-size', '20px')
+                        .style('font-weight', 'bold')
+                        .style('fill', '#764ba2');
+
+                    svg.append('text')
+                        .attr('x', centerX)
+                        .attr('y', 50)
+                        .attr('text-anchor', 'middle')
+                        .text('SUPERPOSITION STATE')
+                        .style('font-size', '14px')
+                        .style('fill', '#666');
+
+                } else {
+                    // Collapsed state
+                    const xPos = collapsedState === 0 ?
+                        centerX - barSpacing - barWidth :
+                        centerX + barSpacing;
+                    const color = collapsedState === 0 ? '#667eea' : '#e74c3c';
+                    const label = collapsedState === 0 ? '|0⟩' : '|1⟩';
+
+                    svg.append('rect')
+                        .attr('x', xPos)
+                        .attr('y', y(1))
+                        .attr('width', barWidth)
+                        .attr('height', baseY - y(1))
+                        .attr('fill', color)
+                        .attr('opacity', 0.9)
+                        .attr('stroke', color)
+                        .attr('stroke-width', 3);
+
+                    svg.append('text')
+                        .attr('x', xPos + barWidth / 2)
+                        .attr('y', y(1) - 10)
+                        .attr('text-anchor', 'middle')
+                        .text('P = 1.000')
+                        .style('font-size', '16px')
+                        .style('font-weight', 'bold')
+                        .style('fill', color);
+
+                    svg.append('text')
+                        .attr('x', centerX)
+                        .attr('y', 30)
+                        .attr('text-anchor', 'middle')
+                        .text(`COLLAPSED to ${label}`)
+                        .style('font-size', '20px')
+                        .style('font-weight', 'bold')
+                        .style('fill', color);
+
+                    svg.append('text')
+                        .attr('x', centerX)
+                        .attr('y', 50)
+                        .attr('text-anchor', 'middle')
+                        .text('Observer-dependent outcome')
+                        .style('font-size', '14px')
+                        .style('fill', '#666')
+                        .style('font-style', 'italic');
+                }
+
+                // Axes labels
+                svg.append('text')
+                    .attr('x', centerX - barSpacing - barWidth / 2)
+                    .attr('y', baseY + 30)
+                    .attr('text-anchor', 'middle')
+                    .text('State |0⟩')
+                    .style('font-size', '16px')
+                    .style('fill', '#667eea')
+                    .style('font-weight', 'bold');
+
+                svg.append('text')
+                    .attr('x', centerX + barSpacing + barWidth / 2)
+                    .attr('y', baseY + 30)
+                    .attr('text-anchor', 'middle')
+                    .text('State |1⟩')
+                    .style('font-size', '16px')
+                    .style('fill', '#e74c3c')
+                    .style('font-weight', 'bold');
+
+                // Y axis
+                svg.append('g')
+                    .attr('transform', `translate(${margin.left}, 0)`)
+                    .call(d3.axisLeft(y).ticks(5))
+                    .attr('class', 'axis');
+
+                svg.append('text')
+                    .attr('transform', 'rotate(-90)')
+                    .attr('x', -height / 2)
+                    .attr('y', 15)
+                    .attr('text-anchor', 'middle')
+                    .text('Probability')
+                    .style('font-size', '14px');
+            }
+
+            document.getElementById('alphaAmplitude').addEventListener('input', () => {
+                if (!collapsed) updateQuantum();
+            });
+
+            document.getElementById('measureQuantum').addEventListener('click', () => {
+                if (!animating && !collapsed) {
+                    animating = true;
+                    const alpha = parseFloat(document.getElementById('alphaAmplitude').value);
+                    const prob0 = alpha * alpha;
+
+                    // Simulate quantum measurement
+                    collapsedState = Math.random() < prob0 ? 0 : 1;
+                    collapsed = true;
+
+                    // Animate collapse
+                    setTimeout(() => {
+                        updateQuantum();
+                        animating = false;
+                    }, 100);
+                }
+            });
+
+            document.getElementById('resetQuantum').addEventListener('click', () => {
+                collapsed = false;
+                collapsedState = null;
+                updateQuantum();
+            });
+
+            updateQuantum();
+        }
+
+        // 10. WORLDVIEW EMBEDDINGS VISUALIZATION
+        function createWorldviewVisualization() {
+            const container = document.getElementById('worldviewViz');
+            const width = container.offsetWidth || 800;
+            const height = 700;
+            const margin = {top: 20, right: 20, bottom: 60, left: 60};
+
+            const svg = d3.select('#worldviewViz')
+                .html('')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            // Define concept clusters from the document
+            const concepts = {
+                physics: [
+                    {name: 'Quantum Mechanics', x: -0.6, y: 0.5},
+                    {name: 'Relativity', x: -0.5, y: 0.6},
+                    {name: 'Entropy', x: -0.7, y: 0.4},
+                    {name: 'Free Energy', x: -0.55, y: 0.45},
+                    {name: 'Markov Blankets', x: -0.65, y: 0.55},
+                    {name: 'QBism', x: -0.6, y: 0.35}
+                ],
+                consciousness: [
+                    {name: 'IIT (Φ)', x: 0.3, y: 0.6},
+                    {name: 'Global Workspace', x: 0.4, y: 0.5},
+                    {name: 'Multiple Drafts', x: 0.35, y: 0.65},
+                    {name: 'Phenomenology', x: 0.5, y: 0.55},
+                    {name: 'Qualia', x: 0.25, y: 0.5},
+                    {name: 'Integration', x: 0.45, y: 0.6}
+                ],
+                social: [
+                    {name: 'Echo Chambers', x: 0.1, y: -0.5},
+                    {name: 'Homophily', x: 0.2, y: -0.6},
+                    {name: 'Worldviews', x: 0.0, y: -0.55},
+                    {name: 'Clustering', x: 0.15, y: -0.45},
+                    {name: 'Modularity', x: -0.05, y: -0.6},
+                    {name: 'Information Cascades', x: 0.25, y: -0.5}
+                ]
+            };
+
+            let activeFilter = 'all';
+
+            function updateWorldview() {
+                svg.selectAll('*').remove();
+
+                const x = d3.scaleLinear()
+                    .domain([-1, 1])
+                    .range([margin.left, width - margin.right]);
+
+                const y = d3.scaleLinear()
+                    .domain([-1, 1])
+                    .range([height - margin.bottom, margin.top]);
+
+                // Axes
+                svg.append('g')
+                    .attr('transform', `translate(0,${height / 2})`)
+                    .call(d3.axisBottom(x).ticks(0))
+                    .attr('class', 'axis');
+
+                svg.append('g')
+                    .attr('transform', `translate(${width / 2},0)`)
+                    .call(d3.axisLeft(y).ticks(0))
+                    .attr('class', 'axis');
+
+                // Grid
+                svg.append('g')
+                    .attr('class', 'grid')
+                    .attr('transform', `translate(0,${height - margin.bottom})`)
+                    .call(d3.axisBottom(x).tickSize(-(height - margin.top - margin.bottom)).tickFormat(''));
+
+                svg.append('g')
+                    .attr('class', 'grid')
+                    .attr('transform', `translate(${margin.left},0)`)
+                    .call(d3.axisLeft(y).tickSize(-(width - margin.left - margin.right)).tickFormat(''));
+
+                // Determine which concepts to show
+                let visibleConcepts = [];
+                const colors = {physics: '#667eea', consciousness: '#e74c3c', social: '#2ecc71'};
+
+                if (activeFilter === 'all') {
+                    Object.keys(concepts).forEach(domain => {
+                        concepts[domain].forEach(c => {
+                            visibleConcepts.push({...c, domain, color: colors[domain]});
+                        });
+                    });
+                } else {
+                    concepts[activeFilter].forEach(c => {
+                        visibleConcepts.push({...c, domain: activeFilter, color: colors[activeFilter]});
+                    });
+                }
+
+                // Draw domain clusters (hulls)
+                if (activeFilter === 'all') {
+                    Object.keys(concepts).forEach(domain => {
+                        const domainConcepts = concepts[domain];
+                        const center = {
+                            x: d3.mean(domainConcepts, d => d.x),
+                            y: d3.mean(domainConcepts, d => d.y)
+                        };
+
+                        svg.append('circle')
+                            .attr('cx', x(center.x))
+                            .attr('cy', y(center.y))
+                            .attr('r', 80)
+                            .attr('fill', colors[domain])
+                            .attr('opacity', 0.1)
+                            .attr('stroke', colors[domain])
+                            .attr('stroke-width', 2)
+                            .attr('stroke-dasharray', '5,5');
+
+                        svg.append('text')
+                            .attr('x', x(center.x))
+                            .attr('y', y(center.y) - 90)
+                            .attr('text-anchor', 'middle')
+                            .text(domain.toUpperCase())
+                            .style('font-size', '14px')
+                            .style('font-weight', 'bold')
+                            .style('fill', colors[domain]);
+                    });
+                }
+
+                // Draw connections between nearby concepts
+                visibleConcepts.forEach((c1, i) => {
+                    visibleConcepts.slice(i + 1).forEach(c2 => {
+                        const dist = Math.sqrt((c1.x - c2.x) ** 2 + (c1.y - c2.y) ** 2);
+                        if (dist < 0.3) {
+                            const similarity = 1 - (dist / 0.3);
+                            svg.append('line')
+                                .attr('x1', x(c1.x))
+                                .attr('y1', y(c1.y))
+                                .attr('x2', x(c2.x))
+                                .attr('y2', y(c2.y))
+                                .attr('stroke', '#999')
+                                .attr('stroke-width', similarity * 2)
+                                .attr('opacity', 0.3);
+                        }
+                    });
+                });
+
+                // Draw concepts
+                svg.selectAll('circle.concept')
+                    .data(visibleConcepts)
+                    .join('circle')
+                    .attr('class', 'concept')
+                    .attr('cx', d => x(d.x))
+                    .attr('cy', d => y(d.y))
+                    .attr('r', 8)
+                    .attr('fill', d => d.color)
+                    .attr('stroke', '#fff')
+                    .attr('stroke-width', 2)
+                    .attr('opacity', 0.9)
+                    .on('mouseover', function(event, d) {
+                        d3.select(this).attr('r', 12);
+
+                        // Calculate distances to other concepts
+                        let nearbyText = '';
+                        visibleConcepts.forEach(c => {
+                            if (c !== d) {
+                                const dist = Math.sqrt((d.x - c.x) ** 2 + (d.y - c.y) ** 2);
+                                if (dist < 0.4) {
+                                    nearbyText += `<br/>${c.name}: ${dist.toFixed(2)}`;
+                                }
+                            }
+                        });
+
+                        d3.select('#tooltip')
+                            .style('opacity', 1)
+                            .html(`<strong>${d.name}</strong><br/>Domain: ${d.domain}${nearbyText}`)
+                            .style('left', (event.pageX + 10) + 'px')
+                            .style('top', (event.pageY - 10) + 'px');
+                    })
+                    .on('mouseout', function() {
+                        d3.select(this).attr('r', 8);
+                        d3.select('#tooltip').style('opacity', 0);
+                    });
+
+                // Draw labels
+                svg.selectAll('text.label')
+                    .data(visibleConcepts)
+                    .join('text')
+                    .attr('class', 'label')
+                    .attr('x', d => x(d.x))
+                    .attr('y', d => y(d.y) - 15)
+                    .attr('text-anchor', 'middle')
+                    .text(d => d.name)
+                    .style('font-size', '11px')
+                    .style('font-weight', 'bold')
+                    .style('fill', d => d.color)
+                    .style('pointer-events', 'none')
+                    .style('text-shadow', '1px 1px 2px white, -1px -1px 2px white, 1px -1px 2px white, -1px 1px 2px white');
+
+                // Title
+                svg.append('text')
+                    .attr('x', width / 2)
+                    .attr('y', 20)
+                    .attr('text-anchor', 'middle')
+                    .text('Semantic Embedding Space: Observer-Dependent Reality Concepts')
+                    .style('font-size', '16px')
+                    .style('font-weight', 'bold')
+                    .style('fill', '#764ba2');
+
+                // Axis labels
+                svg.append('text')
+                    .attr('x', width - margin.right - 180)
+                    .attr('y', height - margin.bottom + 40)
+                    .text('→ Semantic Dimension 1')
+                    .style('font-size', '12px')
+                    .style('fill', '#666');
+
+                svg.append('text')
+                    .attr('transform', `translate(${margin.left - 40}, ${height / 2 + 100}) rotate(-90)`)
+                    .text('→ Semantic Dimension 2')
+                    .style('font-size', '12px')
+                    .style('fill', '#666');
+            }
+
+            document.getElementById('showPhysics').addEventListener('click', () => {
+                activeFilter = 'physics';
+                updateWorldview();
+            });
+
+            document.getElementById('showConsciousness').addEventListener('click', () => {
+                activeFilter = 'consciousness';
+                updateWorldview();
+            });
+
+            document.getElementById('showSocial').addEventListener('click', () => {
+                activeFilter = 'social';
+                updateWorldview();
+            });
+
+            document.getElementById('showAll').addEventListener('click', () => {
+                activeFilter = 'all';
+                updateWorldview();
+            });
+
+            updateWorldview();
+        }
+
+        // Initialize all visualizations
+        createEntropyVisualization();
+        createKLVisualization();
+        createEmbeddingVisualization();
+        createNetworkVisualization();
+        createFEPVisualization();
+        createUncertaintyVisualization();
+        createRuliadVisualization();
+        createPhiVisualization();
+        createQuantumVisualization();
+        createWorldviewVisualization();
+    </script>
+</body>
+</html>
