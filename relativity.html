@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Special Relativity - Reality Depends on Your Speed</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            font-size: 16px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #444;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            color: #fff;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .header-left p {
+            color: #888;
+            font-size: 1.1em;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: none;
+            color: #888;
+            padding: 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95em;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        .back-btn:hover {
+            color: #2ecc71;
+            transform: translateX(-3px);
+        }
+
+        .velocity-control {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .velocity-control label {
+            color: #bbb;
+            font-size: 1em;
+        }
+
+        .velocity-control input[type="range"] {
+            width: 300px;
+            cursor: pointer;
+        }
+
+        .velocity-value {
+            color: #fff;
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+
+        .lorentz-factor {
+            color: #2ecc71;
+            font-size: 1.1em;
+            margin-top: 5px;
+        }
+
+        .panel {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid #444;
+            border-radius: 10px;
+            padding: 15px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel.scrollable {
+            overflow-y: auto;
+        }
+
+        .panel.scrollable::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .panel.scrollable::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+
+        .panel.scrollable::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+
+        .panel.scrollable::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+
+        .panel h2 {
+            color: #fff;
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+
+        .canvas-wrapper {
+            background: #1a1f3a;
+            border: 2px solid #555;
+            border-radius: 8px;
+            overflow: hidden;
+            flex: 1;
+            min-height: 200px;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid #555;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+
+        .info-box h3 {
+            color: #fff;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+        }
+
+        .info-box p {
+            color: #ccc;
+            font-size: 0.95em;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .info-box code {
+            background: rgba(255,255,255,0.1);
+            padding: 3px 8px;
+            border-radius: 3px;
+            color: #ddd;
+            font-size: 1.05em;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #bbb;
+            font-size: 0.95em;
+        }
+
+        .stat-value {
+            color: #fff;
+            font-weight: bold;
+            font-size: 1em;
+        }
+
+        .clocks-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            justify-content: space-around;
+        }
+
+        .clock {
+            background: rgba(0, 0, 0, 0.5);
+            border: 3px solid;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            flex: 1;
+        }
+
+        .clock.stationary {
+            border-color: #2ecc71;
+        }
+
+        .clock.moving {
+            border-color: #ff6b6b;
+        }
+
+        .clock-label {
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+
+        .clock.stationary .clock-label {
+            color: #2ecc71;
+        }
+
+        .clock.moving .clock-label {
+            color: #ff6b6b;
+        }
+
+        .clock-time {
+            font-size: 2.2em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+
+        .clock.stationary .clock-time {
+            color: #2ecc71;
+        }
+
+        .clock.moving .clock-time {
+            color: #ff6b6b;
+        }
+
+        .clock-detail {
+            font-size: 0.85em;
+            margin-top: 8px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>⚡ Special Relativity</h1>
+                    <p>Reality depends on your velocity - time, space, and simultaneity are observer-dependent!</p>
+                    <a href="index.html" class="back-btn">← Back</a>
+                </div>
+
+                <div class="velocity-control">
+                    <label for="velocitySlider">Spaceship Velocity</label>
+                    <input type="range" id="velocitySlider" min="0" max="0.99" step="0.01" value="0.5">
+                    <div class="velocity-value" id="velocityValue">0.50c (150,000 km/s)</div>
+                    <div class="lorentz-factor" id="lorentzFactor">Lorentz factor: γ = 1.15</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Physics Info -->
+        <div class="panel scrollable">
+            <h2>🧮 The Mathematics of Special Relativity</h2>
+
+            <div class="info-box">
+                <h3>🌟 Lorentz Factor: The Key to Everything</h3>
+                <p><strong>γ = 1/√(1 - v²/c²)</strong></p>
+                <p>This one factor controls ALL relativistic effects!</p>
+                <p>• At v = 0 (rest): γ = 1 (no effects)</p>
+                <p>• At v = 0.5c: γ = 1.15</p>
+                <p>• At v = 0.866c: γ = 2 (time slows by half!)</p>
+                <p>• At v = 0.9c: γ = 2.29</p>
+                <p>• At v = 0.99c: γ = 7.09</p>
+                <p>• At v = 0.999c: γ = 22.4</p>
+                <p>• At v → c: γ → ∞</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 15px;">
+                <div class="info-box" style="margin: 0; background: rgba(255, 107, 107, 0.1); border: 2px solid #ff6b6b;">
+                    <h3 style="color: #ff6b6b;">⚡ Simultaneity</h3>
+                    <p><strong>Events simultaneous in one frame are NOT simultaneous in another!</strong></p>
+                    <p><code>Δt = γvΔx/c²</code></p>
+                    <p>The "time gap" between events depends on their spatial separation (Δx) and relative velocity (v).</p>
+                    <p><strong>Example:</strong> Lightning strikes 100m apart on a train. For the train conductor (moving), they're simultaneous. For platform observer, one happens first!</p>
+                </div>
+
+                <div class="info-box" style="margin: 0; background: rgba(46, 204, 113, 0.1); border: 2px solid #2ecc71;">
+                    <h3 style="color: #2ecc71;">📏 Length Contraction</h3>
+                    <p><strong>Moving objects appear shorter!</strong></p>
+                    <p><code>L = L₀/γ</code></p>
+                    <p>A 100m spaceship moving at 0.866c appears only 50m long to a stationary observer!</p>
+                    <p><strong>But:</strong> From the spaceship's perspective, THEY are stationary and the universe is contracted!</p>
+                </div>
+
+                <div class="info-box" style="margin: 0; background: rgba(100, 150, 255, 0.1); border: 2px solid #4d9fff;">
+                    <h3 style="color: #4d9fff;">⏰ Time Dilation</h3>
+                    <p><strong>Moving clocks run slower!</strong></p>
+                    <p><code>τ = τ₀/γ</code></p>
+                    <p>Twin travels at 0.866c for 10 years (their time), returns to find Earth twin aged 20 years!</p>
+                    <p><strong>Paradox resolved:</strong> The traveling twin accelerates/decelerates (breaks symmetry), so they're the one who ages less.</p>
+                </div>
+            </div>
+
+            <div class="info-box" style="margin-top: 15px; background: rgba(255, 215, 0, 0.1); border: 2px solid #ffd700;">
+                <h3 style="color: #ffd700;">💡 Einstein's Insight: There is No Absolute Time or Space!</h3>
+                <p><strong>Only the speed of light (c) is the same for all observers.</strong></p>
+                <p>Everything else - time intervals, spatial distances, simultaneity - depends on your reference frame!</p>
+                <p><strong>Spacetime interval is invariant:</strong> <code>s² = c²Δt² - Δx²</code></p>
+                <p>All observers agree on this quantity, even though they disagree on Δt and Δx separately!</p>
+                <p style="margin-top: 10px;"><strong>This is why we say "observer-dependent reality"!</strong> Different observers literally experience different realities - different passage of time, different lengths, different simultaneity. Yet they're all equally valid!</p>
+            </div>
+        </div>
+
+        <!-- Visualizations Panel -->
+        <div class="panel scrollable">
+            <h2>🎬 Interactive Visualizations</h2>
+
+            <!-- Simultaneity -->
+            <h3 style="color: #ff6b6b; font-size: 1.3em; margin-top: 10px; flex-shrink: 0;">⚡ Relativity of Simultaneity</h3>
+            <div class="canvas-wrapper" style="margin-top: 10px; min-height: 350px; flex-shrink: 0;">
+                <canvas id="simultaneityCanvas"></canvas>
+            </div>
+            <div class="info-box" style="flex-shrink: 0;">
+                <p id="simultaneityExplain" style="font-size: 0.9em;">--</p>
+            </div>
+
+            <!-- Length Contraction -->
+            <h3 style="color: #2ecc71; font-size: 1.3em; margin-top: 20px; flex-shrink: 0;">📏 Length Contraction</h3>
+            <div class="canvas-wrapper" style="margin-top: 10px; min-height: 300px; flex-shrink: 0;">
+                <canvas id="lengthCanvas"></canvas>
+            </div>
+            <div class="info-box" style="flex-shrink: 0;">
+                <div class="stat-row">
+                    <span class="stat-label">Rest Length:</span>
+                    <span class="stat-value">100.0 m</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Contracted:</span>
+                    <span class="stat-value" id="contractedLength">--</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Shrinkage:</span>
+                    <span class="stat-value" id="contractionFactor">--</span>
+                </div>
+            </div>
+
+            <!-- Twin Paradox -->
+            <h3 style="color: #4d9fff; font-size: 1.3em; margin-top: 20px; flex-shrink: 0;">👯 Twin Paradox</h3>
+            <div class="canvas-wrapper" style="margin-top: 10px; min-height: 280px; flex-shrink: 0;">
+                <canvas id="twinCanvas"></canvas>
+            </div>
+            <div class="info-box" style="flex-shrink: 0; margin-bottom: 20px;">
+                <div class="clocks-container">
+                    <div class="clock stationary">
+                        <div class="clock-label">🌍 Earth</div>
+                        <div class="clock-time" id="earthClock">00:00.0</div>
+                        <div class="clock-detail">Stationary</div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-width: 80px;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: #ffd43b;">🔄</div>
+                        <div style="font-size: 1.3em; font-weight: bold; color: #ffd43b; margin-top: 5px;" id="ageDelta">0.0 yr</div>
+                        <div style="font-size: 0.8em; color: #888; text-align: center;">Δ Age</div>
+                    </div>
+                    <div class="clock moving">
+                        <div class="clock-label">🚀 Space</div>
+                        <div class="clock-time" id="spaceClock">00:00.0</div>
+                        <div class="clock-detail" id="twinSpeed">At 0.5c</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const c = 299792.458; // Speed of light in km/s
+        let velocity = 0.5; // Fraction of c
+        let gamma = 1;
+        let frameCount = 0;
+
+        // Clocks
+        let earthTime = 0; // Years
+        let spaceTime = 0; // Years (dilated)
+        let tripProgress = 0; // 0-1 for outbound, 1-2 for return
+
+        // Canvases
+        const simultaneityCanvas = document.getElementById('simultaneityCanvas');
+        const lengthCanvas = document.getElementById('lengthCanvas');
+        const twinCanvas = document.getElementById('twinCanvas');
+
+        const simCtx = simultaneityCanvas.getContext('2d');
+        const lenCtx = lengthCanvas.getContext('2d');
+        const twinCtx = twinCanvas.getContext('2d');
+
+        function resizeCanvas(canvas) {
+            const container = canvas.parentElement;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            const dpr = window.devicePixelRatio || 1;
+
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+
+            return { width, height, ctx };
+        }
+
+        let simDims = resizeCanvas(simultaneityCanvas);
+        let lenDims = resizeCanvas(lengthCanvas);
+        let twinDims = resizeCanvas(twinCanvas);
+
+        window.addEventListener('resize', () => {
+            simDims = resizeCanvas(simultaneityCanvas);
+            lenDims = resizeCanvas(lengthCanvas);
+            twinDims = resizeCanvas(twinCanvas);
+        });
+
+        // Calculate Lorentz factor
+        function updateGamma() {
+            gamma = 1 / Math.sqrt(1 - velocity * velocity);
+        }
+
+        // Velocity slider
+        const velocitySlider = document.getElementById('velocitySlider');
+        const velocityValue = document.getElementById('velocityValue');
+        const lorentzFactor = document.getElementById('lorentzFactor');
+
+        velocitySlider.addEventListener('input', (e) => {
+            velocity = parseFloat(e.target.value);
+            updateGamma();
+
+            const vKms = velocity * c;
+            velocityValue.textContent = `${velocity.toFixed(3)}c (${vKms.toFixed(0)} km/s)`;
+            lorentzFactor.textContent = `Lorentz factor: γ = ${gamma.toFixed(3)}`;
+
+            // Reset twin clocks when velocity changes
+            earthTime = 0;
+            spaceTime = 0;
+            tripProgress = 0;
+        });
+
+        // Draw simultaneity visualization
+        function drawSimultaneity() {
+            const ctx = simCtx;
+            const w = simDims.width;
+            const h = simDims.height;
+
+            ctx.fillStyle = '#1a1f3a';
+            ctx.fillRect(0, 0, w, h);
+
+            const trainY = h / 2;
+            const trainLength = w * 0.6;
+            const trainX = w * 0.2;
+
+            // Platform observer view (top half)
+            ctx.fillStyle = 'rgba(46, 204, 113, 0.2)';
+            ctx.fillRect(0, 0, w, h / 2 - 40);
+
+            ctx.fillStyle = '#2ecc71';
+            ctx.font = 'bold 16px Monaco';
+            ctx.textAlign = 'left';
+            ctx.fillText('🧍 Platform Observer (Stationary)', 20, 35);
+
+            // Train (stationary view)
+            ctx.fillStyle = '#666';
+            ctx.fillRect(trainX, trainY - 100, trainLength, 50);
+
+            // Lightning bolts (simultaneous for platform observer)
+            const cycleLength = 400; // Match train movement cycle
+            const time = (frameCount % cycleLength) / cycleLength;
+            if (time > 0.2 && time < 0.3) { // Flash once in middle of cycle
+                const flash = 1 - (time - 0.2) / 0.1;
+                ctx.fillStyle = `rgba(255, 255, 100, ${flash})`;
+                ctx.beginPath();
+                ctx.moveTo(trainX, trainY - 100);
+                ctx.lineTo(trainX - 20, trainY - 180);
+                ctx.lineTo(trainX + 20, trainY - 180);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(trainX + trainLength, trainY - 100);
+                ctx.lineTo(trainX + trainLength - 20, trainY - 180);
+                ctx.lineTo(trainX + trainLength + 20, trainY - 180);
+                ctx.closePath();
+                ctx.fill();
+
+                // "FLASH!" labels
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 14px Monaco';
+                ctx.textAlign = 'center';
+                ctx.fillText('⚡ FLASH!', trainX, trainY - 190);
+                ctx.fillText('⚡ FLASH!', trainX + trainLength, trainY - 190);
+            }
+
+            ctx.fillStyle = '#2ecc71';
+            ctx.font = 'bold 15px Monaco';
+            ctx.textAlign = 'center';
+            ctx.fillText('Both strikes SIMULTANEOUS', w / 2, trainY - 130);
+
+            // Moving observer view (bottom half)
+            ctx.fillStyle = 'rgba(255, 107, 107, 0.2)';
+            ctx.fillRect(0, h / 2 + 40, w, h / 2 - 40);
+
+            ctx.fillStyle = '#ff6b6b';
+            ctx.font = 'bold 16px Monaco';
+            ctx.textAlign = 'left';
+            ctx.fillText('🚂 Train Observer (Moving at velocity)', 20, h / 2 + 70);
+
+            // Train (moving view) - moving right
+            const moveOffset = (frameCount % 400) * 1; // Slowed down from *2 to *1 and 200 to 400
+            const trainX2 = (trainX + moveOffset) % (w + trainLength) - trainLength / 2;
+
+            ctx.fillStyle = '#666';
+            ctx.fillRect(trainX2, trainY + 120, trainLength, 50);
+
+            // Lightning bolts (NOT simultaneous for moving observer!)
+            // Relativity of simultaneity: Δt' = γvΔx/c²
+            // For visual purposes, exaggerate the effect to make it SUPER obvious
+            const trainLengthMeters = 300; // meters
+            const deltaT = gamma * velocity * trainLengthMeters / (c * 1000); // Time difference in seconds (c is in km/s, convert)
+            const timeOffset = 80; // FIXED offset to make it super obvious visually (about 1/5 cycle)
+
+            // First lightning (REAR) - RED - happens first for moving observer
+            if (time > 0.2 && time < 0.3) {
+                const flash1 = 1 - (time - 0.2) / 0.1;
+                ctx.fillStyle = `rgba(255, 100, 100, ${flash1 * 0.9})`;
+                ctx.beginPath();
+                ctx.moveTo(trainX2, trainY + 120);
+                ctx.lineTo(trainX2 - 25, trainY + 40);
+                ctx.lineTo(trainX2 + 25, trainY + 40);
+                ctx.closePath();
+                ctx.fill();
+
+                // Label
+                ctx.fillStyle = `rgba(255, 100, 100, ${flash1})`;
+                ctx.font = 'bold 18px Monaco';
+                ctx.textAlign = 'center';
+                ctx.fillText('⚡ FIRST!', trainX2, trainY + 20);
+                ctx.font = '12px Monaco';
+                ctx.fillText('(Rear)', trainX2, trainY + 36);
+            }
+
+            // Second lightning (FRONT) - BLUE (delayed) - happens LATER for moving observer
+            if (time > 0.4 && time < 0.5) {
+                const flash2 = 1 - (time - 0.4) / 0.1;
+                ctx.fillStyle = `rgba(100, 150, 255, ${flash2 * 0.9})`;
+                ctx.beginPath();
+                ctx.moveTo(trainX2 + trainLength, trainY + 120);
+                ctx.lineTo(trainX2 + trainLength - 25, trainY + 40);
+                ctx.lineTo(trainX2 + trainLength + 25, trainY + 40);
+                ctx.closePath();
+                ctx.fill();
+
+                // Label
+                ctx.fillStyle = `rgba(100, 150, 255, ${flash2})`;
+                ctx.font = 'bold 18px Monaco';
+                ctx.textAlign = 'center';
+                ctx.fillText('⚡ LATER!', trainX2 + trainLength, trainY + 20);
+                ctx.font = '12px Monaco';
+                ctx.fillText('(Front)', trainX2 + trainLength, trainY + 36);
+            }
+
+            ctx.fillStyle = '#ff6b6b';
+            ctx.font = 'bold 15px Monaco';
+            ctx.textAlign = 'center';
+            ctx.fillText('Rear strike FIRST, then front strike LATER!', w / 2, trainY + 200);
+
+            // Update explanation
+            const deltaTimeDisplay = (gamma * velocity * trainLengthMeters / (c * 1000)).toFixed(9);
+            document.getElementById('simultaneityExplain').innerHTML = `
+                <strong>Platform observer (green):</strong> Both lightning bolts strike at the same time.<br><br>
+                <strong>Train observer (red, moving at ${velocity.toFixed(3)}c):</strong> The rear bolt strikes FIRST, then the front bolt strikes ${deltaTimeDisplay} seconds later!<br><br>
+                <strong>Formula: Δt' = γvΔx/c² ≈ ${deltaTimeDisplay}s</strong><br><br>
+                Events that are simultaneous in one frame are NOT simultaneous in another. There is no absolute "now" across space!
+            `;
+        }
+
+        // Draw length contraction
+        function drawLengthContraction() {
+            const ctx = lenCtx;
+            const w = lenDims.width;
+            const h = lenDims.height;
+
+            ctx.fillStyle = '#1a1f3a';
+            ctx.fillRect(0, 0, w, h);
+
+            const shipLength0 = 300; // Rest length in pixels
+            const shipLengthContracted = shipLength0 / gamma;
+
+            // Rest frame (top)
+            ctx.fillStyle = 'rgba(46, 204, 113, 0.2)';
+            ctx.fillRect(0, 0, w, h / 2 - 40);
+
+            ctx.fillStyle = '#2ecc71';
+            ctx.font = 'bold 16px Monaco';
+            ctx.textAlign = 'left';
+            ctx.fillText('🛸 Spaceship Rest Frame (v = 0)', 20, 35);
+
+            // Draw spaceship at rest
+            const shipY1 = h / 3;
+            ctx.fillStyle = '#4d9fff';
+            ctx.fillRect(w / 2 - shipLength0 / 2, shipY1 - 20, shipLength0, 40);
+
+            // Nose
+            ctx.beginPath();
+            ctx.moveTo(w / 2 + shipLength0 / 2, shipY1 - 20);
+            ctx.lineTo(w / 2 + shipLength0 / 2 + 30, shipY1);
+            ctx.lineTo(w / 2 + shipLength0 / 2, shipY1 + 20);
+            ctx.closePath();
+            ctx.fill();
+
+            // Length label
+            ctx.strokeStyle = '#2ecc71';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(w / 2 - shipLength0 / 2, shipY1 + 40);
+            ctx.lineTo(w / 2 + shipLength0 / 2, shipY1 + 40);
+            ctx.stroke();
+
+            ctx.fillStyle = '#2ecc71';
+            ctx.font = 'bold 14px Monaco';
+            ctx.textAlign = 'center';
+            ctx.fillText(`L₀ = 100.0 m`, w / 2, shipY1 + 60);
+
+            // Moving frame (bottom)
+            ctx.fillStyle = 'rgba(255, 107, 107, 0.2)';
+            ctx.fillRect(0, h / 2 + 20, w, h / 2 - 20);
+
+            ctx.fillStyle = '#ff6b6b';
+            ctx.font = 'bold 16px Monaco';
+            ctx.textAlign = 'left';
+            ctx.fillText(`🏃 Observed While Moving at ${velocity.toFixed(3)}c`, 20, h / 2 + 50);
+
+            // Draw contracted spaceship (moving)
+            const shipY2 = h * 3 / 4;
+            const moveX = ((frameCount * 1.5) % (w + shipLengthContracted + 100)) - shipLengthContracted - 50; // Slowed from *3 to *1.5
+
+            ctx.fillStyle = '#ff6b6b';
+            ctx.fillRect(moveX, shipY2 - 15, shipLengthContracted, 30);
+
+            // Nose
+            ctx.beginPath();
+            ctx.moveTo(moveX + shipLengthContracted, shipY2 - 15);
+            ctx.lineTo(moveX + shipLengthContracted + 25, shipY2);
+            ctx.lineTo(moveX + shipLengthContracted, shipY2 + 15);
+            ctx.closePath();
+            ctx.fill();
+
+            // Speed lines
+            for (let i = 0; i < 5; i++) {
+                const lineX = moveX - i * 40;
+                ctx.strokeStyle = `rgba(255, 107, 107, ${0.5 - i * 0.1})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(lineX, shipY2 - 10);
+                ctx.lineTo(lineX - 30, shipY2 - 10);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(lineX, shipY2 + 10);
+                ctx.lineTo(lineX - 30, shipY2 + 10);
+                ctx.stroke();
+            }
+
+            // Length label (if ship is visible)
+            if (moveX > 50 && moveX < w - 100) {
+                ctx.strokeStyle = '#ff6b6b';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(moveX, shipY2 + 35);
+                ctx.lineTo(moveX + shipLengthContracted, shipY2 + 35);
+                ctx.stroke();
+
+                ctx.fillStyle = '#ff6b6b';
+                ctx.font = 'bold 14px Monaco';
+                ctx.textAlign = 'center';
+                const contractedMeters = 100 / gamma;
+                ctx.fillText(`L = ${contractedMeters.toFixed(1)} m`, moveX + shipLengthContracted / 2, shipY2 + 55);
+            }
+
+            // Update stats
+            document.getElementById('contractedLength').textContent = (100 / gamma).toFixed(2) + ' m';
+            document.getElementById('contractionFactor').textContent = (100 - 100 / gamma).toFixed(1) + '% shorter';
+        }
+
+        // Draw twin paradox
+        function drawTwinParadox() {
+            const ctx = twinCtx;
+            const w = twinDims.width;
+            const h = twinDims.height;
+
+            ctx.fillStyle = '#1a1f3a';
+            ctx.fillRect(0, 0, w, h);
+
+            // Earth
+            const earthX = 100;
+            const earthY = h / 2;
+
+            ctx.fillStyle = '#2ecc71';
+            ctx.beginPath();
+            ctx.arc(earthX, earthY, 40, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 20px Monaco';
+            ctx.textAlign = 'center';
+            ctx.fillText('🌍', earthX, earthY + 8);
+
+            // Earth twin
+            ctx.fillStyle = '#2ecc71';
+            ctx.font = '16px Monaco';
+            ctx.fillText('👤', earthX, earthY - 60);
+            ctx.font = '12px Monaco';
+            ctx.fillText('Earth Twin', earthX, earthY - 80);
+
+            // Spaceship position
+            const maxDistance = w - 200;
+            let shipX, shipDirection;
+
+            if (tripProgress < 1) {
+                // Outbound
+                shipX = earthX + maxDistance * tripProgress;
+                shipDirection = 1;
+            } else {
+                // Return
+                shipX = earthX + maxDistance * (2 - tripProgress);
+                shipDirection = -1;
+            }
+
+            const shipY = earthY;
+
+            // Spaceship
+            ctx.fillStyle = '#ff6b6b';
+            if (shipDirection > 0) {
+                // Going right
+                ctx.fillRect(shipX - 20, shipY - 15, 40, 30);
+                ctx.beginPath();
+                ctx.moveTo(shipX + 20, shipY - 15);
+                ctx.lineTo(shipX + 40, shipY);
+                ctx.lineTo(shipX + 20, shipY + 15);
+                ctx.closePath();
+                ctx.fill();
+            } else {
+                // Coming back left
+                ctx.fillRect(shipX - 20, shipY - 15, 40, 30);
+                ctx.beginPath();
+                ctx.moveTo(shipX - 20, shipY - 15);
+                ctx.lineTo(shipX - 40, shipY);
+                ctx.lineTo(shipX - 20, shipY + 15);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // Space twin
+            ctx.fillStyle = '#ff6b6b';
+            ctx.font = '16px Monaco';
+            ctx.fillText('👤', shipX, shipY - 40);
+
+            // Trajectory line
+            ctx.strokeStyle = 'rgba(255, 107, 107, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(earthX, earthY);
+            ctx.lineTo(earthX + maxDistance, earthY);
+            ctx.lineTo(earthX, earthY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Turnaround point
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.5)';
+            ctx.beginPath();
+            ctx.arc(earthX + maxDistance, earthY, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Labels
+            ctx.fillStyle = '#888';
+            ctx.font = '12px Monaco';
+            ctx.textAlign = 'center';
+            ctx.fillText('Turnaround', earthX + maxDistance, earthY + 30);
+
+            // Progress indicator
+            ctx.fillStyle = '#ffd700';
+            ctx.font = '14px Monaco';
+            ctx.textAlign = 'left';
+            if (tripProgress < 1) {
+                ctx.fillText(`🚀 Outbound journey: ${(tripProgress * 100).toFixed(0)}%`, 20, h - 20);
+            } else {
+                ctx.fillText(`🏠 Return journey: ${((tripProgress - 1) * 100).toFixed(0)}%`, 20, h - 20);
+            }
+
+            // Update twin clocks
+            const dt = 1 / 60 / 20; // Years per frame (slowed down from /10 to /20)
+            earthTime += dt;
+            spaceTime += dt / gamma; // Time dilated
+
+            tripProgress += dt * 0.3; // Trip progress (slowed from 0.5 to 0.3)
+            if (tripProgress > 2) {
+                tripProgress = 0;
+                earthTime = 0;
+                spaceTime = 0;
+            }
+
+            function formatYears(years) {
+                return years.toFixed(1);
+            }
+
+            document.getElementById('earthClock').textContent = formatYears(earthTime) + ' yr';
+            document.getElementById('spaceClock').textContent = formatYears(spaceTime) + ' yr';
+            document.getElementById('twinSpeed').textContent = `Traveling at ${velocity.toFixed(3)}c`;
+            document.getElementById('ageDelta').textContent = (earthTime - spaceTime).toFixed(1) + ' yr';
+        }
+
+        // Animation loop
+        function animate() {
+            updateGamma();
+            drawSimultaneity();
+            drawLengthContraction();
+            drawTwinParadox();
+
+            frameCount++;
+            requestAnimationFrame(animate);
+        }
+
+        // Initialize
+        updateGamma();
+        velocityValue.textContent = `${velocity.toFixed(3)}c (${(velocity * c).toFixed(0)} km/s)`;
+        lorentzFactor.textContent = `Lorentz factor: γ = ${gamma.toFixed(3)}`;
+
+        animate();
+    </script>
+</body>
+</html>
