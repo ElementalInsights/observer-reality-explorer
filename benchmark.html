@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Framework Benchmark - ObserverPhysicsEngine Test</title>
+    <script src="observer-physics-engine.js"></script>
+    <script src="telemetry-display.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            background: #0a0e27;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background: rgba(46, 204, 113, 0.1);
+            border: 2px solid #2ecc71;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .header h1 {
+            color: #2ecc71;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #95a5a6;
+            font-size: 0.9em;
+        }
+
+        .controls {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            color: #3498db;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .control-group select,
+        .control-group input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #3498db;
+            border-radius: 5px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.9em;
+        }
+
+        .control-group button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            background: #2ecc71;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+
+        .control-group button:hover {
+            background: #27ae60;
+        }
+
+        .control-group button.danger {
+            background: #e74c3c;
+        }
+
+        .control-group button.danger:hover {
+            background: #c0392b;
+        }
+
+        .value-display {
+            display: inline-block;
+            background: rgba(46, 204, 113, 0.2);
+            padding: 2px 8px;
+            border-radius: 3px;
+            color: #2ecc71;
+            font-weight: bold;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            background: #0a0e27;
+            border: 2px solid #9b59b6;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .observer-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 15px;
+            border-radius: 5px;
+            border-left: 4px solid #9b59b6;
+        }
+
+        .observer-info h3 {
+            color: #9b59b6;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .observer-info p {
+            color: #bdc3c7;
+            font-size: 0.8em;
+            line-height: 1.4;
+        }
+
+        .telemetry {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid #e67e22;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .benchmark-stats {
+            background: rgba(230, 126, 34, 0.1);
+            border: 2px solid #e67e22;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .benchmark-stats h3 {
+            color: #e67e22;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #95a5a6;
+            font-size: 0.85em;
+        }
+
+        .stat-value {
+            color: #2ecc71;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🔬 Framework Benchmark</h1>
+            <p>Testing ObserverPhysicsEngine performance across different observer types and particle counts</p>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="control-group">
+                <label>Observer Type</label>
+                <select id="observerType" onchange="changeObserver(this.value)">
+                    <option value="quantum">🌀 Quantum</option>
+                    <option value="classical">🎯 Classical</option>
+                    <option value="social">🌐 Social</option>
+                    <option value="conscious">🧠 Conscious</option>
+                    <option value="ai">🤖 AI</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Particle Count: <span class="value-display" id="particleValue">100</span></label>
+                <input type="range" id="particleSlider" min="10" max="500" value="100" step="10"
+                       oninput="updateParticleCount(this.value)">
+            </div>
+
+            <div class="control-group">
+                <label>Evolution Speed: <span class="value-display" id="speedValue">1x</span></label>
+                <input type="range" id="speedSlider" min="1" max="10" value="1"
+                       oninput="updateSpeed(this.value)">
+            </div>
+
+            <div class="control-group">
+                <button id="playBtn" onclick="togglePlay()">▶️ Play</button>
+                <button onclick="resetSimulation()">🔄 Reset</button>
+            </div>
+
+            <div class="control-group">
+                <button class="danger" onclick="stressTest()">⚡ Stress Test (1000 particles)</button>
+            </div>
+        </div>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="canvas"></canvas>
+            <div class="observer-info">
+                <h3 id="observerName">🌀 Quantum Observer</h3>
+                <p id="observerDesc">Seeing reality in superposition...</p>
+            </div>
+        </div>
+
+        <!-- Telemetry & Benchmarks -->
+        <div class="telemetry">
+            <div class="benchmark-stats">
+                <h3>⚡ Performance Metrics</h3>
+                <div class="stat-row">
+                    <span class="stat-label">FPS</span>
+                    <span class="stat-value" id="fps">--</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Update Time</span>
+                    <span class="stat-value" id="updateTime">--</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Render Time</span>
+                    <span class="stat-value" id="renderTime">--</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Frame Time</span>
+                    <span class="stat-value" id="frameTime">--</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Particles</span>
+                    <span class="stat-value" id="particleCount">--</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Memory (approx)</span>
+                    <span class="stat-value" id="memoryUsage">--</span>
+                </div>
+            </div>
+
+            <div id="telemetryDisplay"></div>
+        </div>
+    </div>
+
+    <script>
+        // Observer configurations
+        const observerConfigs = {
+            quantum: {
+                name: '🌀 Quantum Observer',
+                description: 'Particles in superposition - seeing multiple states simultaneously'
+            },
+            classical: {
+                name: '🎯 Classical Observer',
+                description: 'Deterministic trajectories with precise position and velocity'
+            },
+            social: {
+                name: '🌐 Social Observer',
+                description: 'Cluster-based reality - entities defined by group membership'
+            },
+            conscious: {
+                name: '🧠 Conscious Observer',
+                description: 'Free energy minimization - particles predict and adapt to minimize surprise'
+            },
+            ai: {
+                name: '🤖 AI Observer',
+                description: 'Semantic embeddings - reality as high-dimensional vector relationships'
+            }
+        };
+
+        // Initialize canvas
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Initialize engine
+        let engine = new ObserverPhysicsEngine('quantum', canvas);
+
+        // Initialize telemetry
+        const telemetry = new TelemetryDisplay('telemetryDisplay', {
+            title: '📊 Physics Telemetry'
+        });
+
+        // Performance tracking
+        let lastFrameTime = performance.now();
+        let updateTime = 0;
+        let renderTime = 0;
+
+        // Animation loop with benchmarking
+        function animate() {
+            const frameStart = performance.now();
+
+            // Update
+            const updateStart = performance.now();
+            engine.update();
+            updateTime = performance.now() - updateStart;
+
+            // Render
+            const renderStart = performance.now();
+            engine.render(ctx);
+            renderTime = performance.now() - renderStart;
+
+            // Calculate FPS
+            const frameTime = performance.now() - frameStart;
+            const fps = Math.round(1000 / frameTime);
+
+            // Update benchmark display
+            document.getElementById('fps').textContent = fps;
+            document.getElementById('updateTime').textContent = updateTime.toFixed(2) + 'ms';
+            document.getElementById('renderTime').textContent = renderTime.toFixed(2) + 'ms';
+            document.getElementById('frameTime').textContent = frameTime.toFixed(2) + 'ms';
+            document.getElementById('particleCount').textContent = engine.particles.length;
+
+            // Approximate memory (rough estimate)
+            const memoryPerParticle = 200; // bytes (rough estimate)
+            const memoryKB = (engine.particles.length * memoryPerParticle) / 1024;
+            document.getElementById('memoryUsage').textContent = memoryKB.toFixed(1) + ' KB';
+
+            requestAnimationFrame(animate);
+        }
+
+        // Update telemetry every 100ms
+        setInterval(() => {
+            const metrics = engine.calculateTelemetry();
+            telemetry.update(metrics);
+        }, 100);
+
+        // Controls
+        function changeObserver(type) {
+            engine.setObserverType(type);
+            const config = observerConfigs[type];
+            document.getElementById('observerName').textContent = config.name;
+            document.getElementById('observerDesc').textContent = config.description;
+        }
+
+        function updateParticleCount(value) {
+            document.getElementById('particleValue').textContent = value;
+            engine.setParticleCount(parseInt(value));
+        }
+
+        function updateSpeed(value) {
+            document.getElementById('speedValue').textContent = value + 'x';
+            engine.evolutionSpeed = parseInt(value);
+        }
+
+        function togglePlay() {
+            engine.isPlaying = !engine.isPlaying;
+            const btn = document.getElementById('playBtn');
+            btn.textContent = engine.isPlaying ? '⏸️ Pause' : '▶️ Play';
+        }
+
+        function resetSimulation() {
+            engine.reset();
+        }
+
+        function stressTest() {
+            if (confirm('This will create 1000 particles. Performance may degrade. Continue?')) {
+                document.getElementById('particleSlider').value = 1000;
+                document.getElementById('particleValue').textContent = '1000';
+                engine.setParticleCount(1000);
+            }
+        }
+
+        // Start
+        animate();
+    </script>
+</body>
+</html>
