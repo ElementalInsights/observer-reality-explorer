@@ -1478,7 +1478,13 @@
 
             // Update cluster assignments if switching to/from social
             if (currentObserver === 'social' && config.clusterCount) {
-                const clusterColors = ['#27ae60', '#2ecc71', '#16a085', '#1abc9c', '#229954'];
+                const clusterColors = [
+                    '#e74c3c',  // RED tribe
+                    '#3498db',  // BLUE tribe
+                    '#27ae60',  // GREEN tribe
+                    '#f39c12',  // ORANGE tribe
+                    '#9b59b6'   // PURPLE tribe
+                ];
                 particles.forEach(p => {
                     if (p.cluster === undefined) {
                         p.cluster = Math.floor(Math.random() * config.clusterCount);
@@ -1605,9 +1611,15 @@
                 });
             }
 
-            // Setup social cluster colors
+            // Setup social cluster colors - DISTINCT tribes!
             if (currentObserver === 'social') {
-                const clusterColors = ['#27ae60', '#2ecc71', '#16a085', '#1abc9c', '#229954'];
+                const clusterColors = [
+                    '#e74c3c',  // RED tribe
+                    '#3498db',  // BLUE tribe
+                    '#27ae60',  // GREEN tribe
+                    '#f39c12',  // ORANGE tribe
+                    '#9b59b6'   // PURPLE tribe
+                ];
                 particles.forEach(p => {
                     p.color = clusterColors[p.cluster % clusterColors.length];
                 });
@@ -1920,10 +1932,10 @@
                     ctx.arc(drawX, drawY, drawSize, 0, Math.PI * 2);
                     ctx.fill();
 
-                    // Social: white stroke
-                    if (currentObserver === 'social' && lod.useGlow) {
+                    // Social: white stroke (always show for clarity!)
+                    if (currentObserver === 'social') {
                         ctx.strokeStyle = 'white';
-                        ctx.lineWidth = 1;
+                        ctx.lineWidth = 2;
                         ctx.stroke();
                     }
                 });
