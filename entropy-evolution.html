@@ -269,17 +269,17 @@
 
         <!-- Entropy Graph -->
         <div class="panel">
-            <h2>📊 Entropy Over Time</h2>
+            <h2>📊 Entropy & Rate Over Time</h2>
             <div class="canvas-wrapper">
                 <canvas id="chartCanvas"></canvas>
             </div>
 
             <div class="info-box">
                 <h3>📜 The Second Law</h3>
-                <p>Entropy (disorder) ALWAYS increases in isolated systems:</p>
-                <p><code>dS/dt ≥ 0</code></p>
-                <p>Starting Configuration: Particles clustered in corner (LOW entropy - ordered)</p>
-                <p>Final State: Particles spread uniformly (HIGH entropy - disordered)</p>
+                <p><strong>Green (S):</strong> Entropy increases from LOW → HIGH (ordered → disordered)</p>
+                <p><strong>Red (dS/dt):</strong> Rate of increase starts HIGH → decays to ZERO (exponential approach to equilibrium)</p>
+                <p>The Second Law: <code>dS/dt ≥ 0</code> - entropy ALWAYS increases!</p>
+                <p>Notice how when entropy climbs rapidly (steep green), the rate is high (red peak). As entropy levels off, the rate decays toward zero.</p>
                 <p><strong>This is irreversible!</strong> You can't un-scramble an egg. Time flows forward because entropy increases.</p>
             </div>
         </div>
@@ -297,15 +297,9 @@
             maxHistory: 2000  // Keep 2000 data points
         });
 
-        // Initialize chart renderers
+        // Initialize chart renderer
         const chart = new ChartRenderer('chartCanvas', {
             accentColor: '#2ecc71',
-            showGrid: true,
-            showAxes: true
-        });
-
-        const rateChart = new ChartRenderer('rateCanvas', {
-            accentColor: '#e74c3c',
             showGrid: true,
             showAxes: true
         });
@@ -337,6 +331,143 @@
         engine.isPlaying = true;
         engine.start();
 
+        // Dual-axis chart renderer
+        function renderDualAxisChart(entropyData, rateData) {
+            const canvas = chart.canvas;
+            const ctx = chart.ctx;
+            const padding = 60; // Extra padding for dual axes
+            const chartWidth = chart.width - padding * 2;
+            const chartHeight = chart.height - padding * 2;
+
+            // Clear canvas
+            ctx.fillStyle = '#0a0e27';
+            ctx.fillRect(0, 0, chart.width, chart.height);
+
+            if (!entropyData || entropyData.length < 2) return;
+
+            // Find bounds
+            const times = entropyData.map(d => d.time);
+            const minTime = Math.min(...times);
+            const maxTime = Math.max(...times);
+
+            const entropyValues = entropyData.map(d => d.value);
+            const minEntropy = Math.min(...entropyValues);
+            const maxEntropy = Math.max(...entropyValues);
+            const entropyRange = maxEntropy - minEntropy || 1;
+
+            let minRate = 0, maxRate = 1, rateRange = 1;
+            if (rateData && rateData.length > 0) {
+                const rateValues = rateData.map(d => d.value);
+                minRate = Math.min(...rateValues, 0);
+                maxRate = Math.max(...rateValues);
+                rateRange = maxRate - minRate || 1;
+            }
+
+            // Draw grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (i / 5) * chartHeight;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(padding + chartWidth, y);
+                ctx.stroke();
+            }
+
+            // Draw entropy line (GREEN)
+            ctx.strokeStyle = '#2ecc71';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+
+            entropyData.forEach((point, i) => {
+                const x = padding + ((point.time - minTime) / (maxTime - minTime || 1)) * chartWidth;
+                const y = chart.height - padding - ((point.value - minEntropy) / entropyRange) * chartHeight;
+
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Draw rate line (RED)
+            if (rateData && rateData.length > 0) {
+                ctx.strokeStyle = '#e74c3c';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+
+                rateData.forEach((point, i) => {
+                    const x = padding + ((point.time - minTime) / (maxTime - minTime || 1)) * chartWidth;
+                    const y = chart.height - padding - ((point.value - minRate) / rateRange) * chartHeight;
+
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+            }
+
+            // Draw axes
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, chart.height - padding);
+            ctx.lineTo(padding + chartWidth, chart.height - padding);
+            ctx.stroke();
+
+            // Labels
+            ctx.fillStyle = '#ccc';
+            ctx.font = '12px Monaco, monospace';
+            ctx.textAlign = 'center';
+
+            // X-axis label
+            ctx.fillText('Time (seconds)', padding + chartWidth / 2, chart.height - 10);
+
+            // Left Y-axis label (Entropy - GREEN)
+            ctx.save();
+            ctx.translate(15, padding + chartHeight / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillStyle = '#2ecc71';
+            ctx.fillText('Entropy (bits)', 0, 0);
+            ctx.restore();
+
+            // Right Y-axis label (Rate - RED)
+            ctx.save();
+            ctx.translate(chart.width - 15, padding + chartHeight / 2);
+            ctx.rotate(Math.PI / 2);
+            ctx.fillStyle = '#e74c3c';
+            ctx.fillText('dS/dt (bits/s)', 0, 0);
+            ctx.restore();
+
+            // Y-axis tick labels - Left (Entropy)
+            ctx.fillStyle = '#2ecc71';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 5; i++) {
+                const value = minEntropy + (i / 5) * entropyRange;
+                const y = chart.height - padding - (i / 5) * chartHeight;
+                ctx.fillText(value.toFixed(2), padding - 10, y + 4);
+            }
+
+            // Y-axis tick labels - Right (Rate)
+            if (rateData && rateData.length > 0) {
+                ctx.fillStyle = '#e74c3c';
+                ctx.textAlign = 'left';
+                for (let i = 0; i <= 5; i++) {
+                    const value = minRate + (i / 5) * rateRange;
+                    const y = chart.height - padding - (i / 5) * chartHeight;
+                    ctx.fillText(value.toFixed(4), padding + chartWidth + 10, y + 4);
+                }
+            }
+
+            // Legend
+            ctx.font = 'bold 13px Monaco, monospace';
+            ctx.textAlign = 'left';
+
+            ctx.fillStyle = '#2ecc71';
+            ctx.fillText('━ Entropy (S)', padding + 10, padding - 25);
+
+            ctx.fillStyle = '#e74c3c';
+            ctx.fillText('━ Rate (dS/dt)', padding + 140, padding - 25);
+        }
+
         // Update chart every 100ms
         setInterval(() => {
             const entropyData = engine.getTimeSeries('entropy');
@@ -349,19 +480,11 @@
                     value: d.value
                 }));
 
-                chart.renderLineChart(normalizedData, {
-                    title: 'Shannon Entropy (H) vs Time',
-                    yLabel: 'Entropy (bits)',
-                    xLabel: 'Time (seconds)',
-                    lineColor: '#2ecc71',
-                    showPoints: false
-                });
+                // Calculate dS/dt
+                const rateData = [];
+                const windowSize = 10;
 
-                // Calculate and render dS/dt chart
-                if (entropyData.length > 10) {
-                    const rateData = [];
-                    const windowSize = 10; // Average over 10 points for smoother derivative
-
+                if (entropyData.length > windowSize) {
                     for (let i = windowSize; i < entropyData.length; i++) {
                         const timeSpan = (entropyData[i].time - entropyData[i - windowSize].time) / 1000;
                         const entropyChange = entropyData[i].value - entropyData[i - windowSize].value;
@@ -372,15 +495,10 @@
                             value: rate
                         });
                     }
-
-                    rateChart.renderLineChart(rateData, {
-                        title: 'Rate of Entropy Increase',
-                        yLabel: 'dS/dt (bits/s)',
-                        xLabel: 'Time (s)',
-                        lineColor: '#e74c3c',
-                        showPoints: false
-                    });
                 }
+
+                // Render dual-axis chart
+                renderDualAxisChart(normalizedData, rateData);
             }
 
             // Update stats
@@ -499,7 +617,6 @@
         // Handle window resize
         window.addEventListener('resize', () => {
             chart.resizeCanvas();
-            rateChart.resizeCanvas();
         });
     </script>
 </body>
