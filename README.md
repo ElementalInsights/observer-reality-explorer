@@ -49,38 +49,50 @@ Watch **social polarization** emerge from simple rules:
 - **Consistent UI** - All pages share same design language
 - **Responsive** - Adapts to screen size
 
-## 📚 Academic Rigor
+## 🔬 The 8 Observer Types
 
-All mathematical implementations and references verified:
-- ✅ 17 peer-reviewed sources (2019-2025)
-- ✅ Nature, IIT, Wolfram, Rovelli sources
-- ✅ All formulas mathematically correct
-- ✅ See `VERIFICATION.md` for complete proof
+Each observer represents a fundamentally different way of perceiving reality:
 
-### Key References
-- Ramstead et al. (2023) - "Inner Screen Model" - Free Energy & Consciousness
-- Wulff et al. (2025) - Nature Human Behaviour - Semantic Embeddings
-- Albantakis et al. (2023) - IIT 4.0 - Integrated Information Theory
-- Wolfram (2020-2024) - Ruliad & Computational Foundations
-- Plus 13 more peer-reviewed sources
+1. **🌀 Quantum** - Superposition, wave-particle duality, Schrödinger equation
+2. **🎯 Classical** - Newtonian mechanics, deterministic trajectories, F=ma
+3. **🌐 Social** - Network theory, tribal clusters, echo chambers
+4. **🧠 Conscious** - Free energy principle, predictive processing, surprise minimization
+5. **🤖 AI** - Semantic embeddings, transformer attention, cosine similarity
+6. **🔥 Thermodynamic** - Heat flow, temperature gradients, Boltzmann distribution
+7. **⚡ Relativistic** - **Einstein's special relativity**, causality structure, light cones
+8. **🎲 Probabilistic** - Bayesian inference, uncertainty, likelihood distributions
+
+### 📐 Complete Mathematical Documentation
+
+Every observer includes:
+- **Description** - What it perceives
+- **Theory** - Scientific foundation
+- **Mathematics** - Complete equations (4-7 formulas each)
+- **Visualization** - How it's rendered
+
+**Total: 40+ physics equations** across all observers!
 
 ## 🚀 Quick Start
 
 ### Local Usage
-1. Clone this repository
-2. Open `observer-reality-explorer.html` in your browser
-3. No build process needed - works instantly!
+```bash
+git clone https://github.com/ElementalInsights/observer-reality-explorer.git
+cd observer-reality-explorer
+# Open index.html in your browser - that's it!
+```
 
-### GitHub Pages Setup
-1. Fork this repository
-2. Go to Settings → Pages
-3. Set source to "Deploy from a branch"
-4. Select `main` branch and `/` root
-5. **Update GitHub URL** in `observer-reality-explorer.html`:
-   ```html
-   <!-- Line 420: Replace YOUR_USERNAME with your GitHub username -->
-   <a href="https://github.com/YOUR_USERNAME/observer-reality-explorer" ...>
-   ```
+No build process, no dependencies, no npm install. Pure HTML/JS/Canvas.
+
+### GitHub Pages
+Already deployed! Visit: **[Live Demo](https://elementalinsights.github.io/observer-reality-explorer/)**
+
+### Navigation
+1. **index.html** - Landing page with 2×2 grid
+2. Click any card to explore:
+   - 🔬 Framework Benchmark
+   - 📈 Entropy Evolution
+   - ⚡ Quantum Measurement
+   - 🌐 Echo Chamber Formation
 
 ## 🎨 Design Philosophy
 
