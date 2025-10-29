@@ -309,6 +309,34 @@
         .axis path, .axis line {
             stroke: #999;
         }
+
+        .verify-badge {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+            z-index: 1000;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .verify-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.6);
+        }
+
+        .verify-badge::before {
+            content: "✓ ";
+            font-size: 1.2em;
+        }
     </style>
 </head>
 <body>
@@ -677,6 +705,7 @@
     </div>
 
     <div class="tooltip" id="tooltip"></div>
+    <a href="VERIFICATION.md" target="_blank" class="verify-badge" title="View mathematical verification">Math Verified</a>
 
     <script>
         // Load paper content
