@@ -333,14 +333,24 @@
             isCollapsed = true;
             measurementCount++;
 
-            // Animate collapse
             const particles = engine.particles;
-            collapsedPositions = particles.map(p => ({
-                x: p.x,
-                y: p.y
-            }));
 
-            // Visual effect - particles snap to measured position
+            // POSITION MEASUREMENT → Velocity becomes uncertain!
+            // Heisenberg Uncertainty: Δx·Δp ≥ ℏ/2
+            // Measuring position precisely → momentum becomes highly uncertain!
+            particles.forEach(p => {
+                // Collapse position (ghosts → single point) - already happened visually
+                collapsedPositions.push({x: p.x, y: p.y});
+
+                // RANDOMIZE VELOCITY (uncertainty principle!)
+                // Precise position measurement → complete loss of momentum information
+                const speed = uncertaintyLevel * 0.5; // Higher uncertainty = faster random motion
+                const angle = Math.random() * Math.PI * 2;
+                p.vx = Math.cos(angle) * speed;
+                p.vy = Math.sin(angle) * speed;
+            });
+
+            // Visual effect
             document.getElementById('stateDisplay').textContent = 'COLLAPSED';
             document.getElementById('stateDisplay').className = 'state-value state-collapsed';
             document.getElementById('measureBtn').disabled = true;
@@ -351,7 +361,7 @@
             item.className = 'measurement-item';
             const avgX = particles.reduce((sum, p) => sum + p.x, 0) / particles.length;
             const avgY = particles.reduce((sum, p) => sum + p.y, 0) / particles.length;
-            item.textContent = `Measurement #${measurementCount}: Collapsed at (${Math.round(avgX)}, ${Math.round(avgY)})`;
+            item.textContent = `#${measurementCount}: Position measured → velocity randomized (Δx·Δp trade-off!)`;
             historyList.insertBefore(item, historyList.firstChild);
 
             // Change to classical observer (shows definite state)
