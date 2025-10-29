@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Observer Comparison - Reality Through Different Lenses</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            background: #0a0e27;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: rgba(10,14,39,0.95);
+            padding: 15px 30px;
+            border-bottom: 2px solid #2ecc71;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-bar h1 {
+            color: #2ecc71;
+            font-size: 1.5em;
+        }
+
+        .top-bar a {
+            color: #2ecc71;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr auto;
+            gap: 0;
+            height: calc(100vh - 60px);
+        }
+
+        /* Observer Panels */
+        .observer-panel {
+            position: relative;
+            background: rgba(255,255,255,0.02);
+            border: 2px solid rgba(46,204,113,0.3);
+        }
+
+        .observer-panel.left {
+            border-right: 1px solid rgba(46,204,113,0.3);
+        }
+
+        .observer-panel.right {
+            border-left: 1px solid rgba(46,204,113,0.3);
+        }
+
+        /* Canvas */
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Observer Info Overlay */
+        .observer-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(10,14,39,0.9);
+            border: 2px solid #2ecc71;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .observer-info h2 {
+            color: #2ecc71;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .observer-info p {
+            color: #ccc;
+            font-size: 1em;
+            line-height: 1.5;
+        }
+
+        /* Controls Panel */
+        .controls-panel {
+            grid-column: 1 / -1;
+            background: rgba(10,14,39,0.95);
+            border-top: 2px solid #2ecc71;
+            padding: 20px;
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .observer-select {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .observer-select label {
+            color: #2ecc71;
+            font-weight: 700;
+            font-size: 1em;
+            margin-bottom: 5px;
+        }
+
+        .observer-select select {
+            background: rgba(46,204,113,0.1);
+            border: 2px solid #2ecc71;
+            color: #2ecc71;
+            padding: 10px 15px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            color: #aaa;
+            font-size: 1em;
+        }
+
+        .control-group input {
+            width: 200px;
+        }
+
+        button {
+            background: #2ecc71;
+            color: #0a0e27;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        button:hover {
+            background: #27ae60;
+        }
+
+        .value-display {
+            color: #2ecc71;
+            font-weight: 700;
+        }
+
+        /* Footer */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10,14,39,0.9);
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 0.8em;
+            color: #666;
+            border-top: 1px solid rgba(46,204,113,0.2);
+        }
+
+        .footer a {
+            color: #2ecc71;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <h1>🔬 Observer Comparison - Same Reality, Different Lenses</h1>
+        <a href="index.html">← Back to Home</a>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Observer Panel -->
+        <div class="observer-panel left">
+            <div class="observer-info" id="leftObserverInfo">
+                <h2 id="leftObserverName">🌀 Quantum Observer</h2>
+                <p id="leftObserverDesc">Sees particles in MULTIPLE states at once. Reality is probabilistic - particles exist as "waves" until measured. Ghost particles show superposition states.</p>
+            </div>
+            <canvas id="leftCanvas"></canvas>
+        </div>
+
+        <!-- Right Observer Panel -->
+        <div class="observer-panel right">
+            <div class="observer-info" id="rightObserverInfo">
+                <h2 id="rightObserverName">🎯 Classical Observer</h2>
+                <p id="rightObserverDesc">Sees particles with EXACT positions and velocities. Reality is deterministic - if you know initial conditions, you can predict the future perfectly. Trajectory trails show precise paths through spacetime. Newtonian mechanics.</p>
+            </div>
+            <canvas id="rightCanvas"></canvas>
+        </div>
+
+        <!-- Controls Panel -->
+        <div class="controls-panel">
+            <div class="observer-select">
+                <label>LEFT Observer:</label>
+                <select id="leftObserverSelect" onchange="updateObserver('left', this.value)">
+                    <option value="quantum">🌀 Quantum</option>
+                    <option value="classical">🎯 Classical</option>
+                    <option value="social">🌐 Social</option>
+                    <option value="conscious">🧠 Conscious</option>
+                    <option value="ai">🤖 AI</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Population: <span id="popValue" class="value-display">100</span></label>
+                <input type="range" id="populationSlider" min="20" max="500" value="100" step="20" oninput="updatePopulation(this.value)">
+            </div>
+
+            <button id="playBtn" onclick="togglePlay()">▶️ Play</button>
+
+            <div class="observer-select">
+                <label>RIGHT Observer:</label>
+                <select id="rightObserverSelect" onchange="updateObserver('right', this.value)">
+                    <option value="quantum">🌀 Quantum</option>
+                    <option value="classical" selected>🎯 Classical</option>
+                    <option value="social">🌐 Social</option>
+                    <option value="conscious">🧠 Conscious</option>
+                    <option value="ai">🤖 AI</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== STATE =====
+        let particles = [];
+        let leftObserver = 'quantum';
+        let rightObserver = 'classical';
+        let populationSize = 100;
+        let isPlaying = false;
+        let animationFrameId = null;
+
+        // Observer configurations (from simulator)
+        const observerConfigs = {
+            quantum: {
+                name: '🌀 Quantum Observer',
+                color: '#9b59b6',
+                description: 'Sees particles in MULTIPLE states at once. Reality is probabilistic - particles exist as "waves" until measured. Ghost particles show superposition states.',
+                particleSize: 3
+            },
+            classical: {
+                name: '🎯 Classical Observer',
+                color: '#3498db',
+                description: 'Sees particles with EXACT positions and velocities. Reality is deterministic - if you know initial conditions, you can predict the future perfectly. Trajectory trails show precise paths through spacetime. Newtonian mechanics.',
+                particleSize: 5
+            },
+            social: {
+                name: '🌐 Social Observer',
+                color: '#27ae60',
+                description: 'Sees CLUSTERS and group membership. Reality is relational - entities defined by tribal affiliations. Connections only form within groups (echo chambers!). Different colors = different social identities. Us vs Them.',
+                particleSize: 6
+            },
+            conscious: {
+                name: '🧠 Conscious Observer',
+                color: '#e67e22',
+                description: 'Sees FREE ENERGY (prediction errors). Particles PREDICT where they\'ll be next → measure SURPRISE when wrong → ADAPT behavior to minimize future errors. Red = high surprise (adapting!). Green = low surprise (predicting well!).',
+                particleSize: 4
+            },
+            ai: {
+                name: '🤖 AI Observer',
+                color: '#1abc9c',
+                description: 'Sees SEMANTIC RELATIONSHIPS in high-dimensional embedding space. Reality is vectors - closer particles = more similar meaning. Connection thickness shows semantic similarity. Like word2vec, transformers, or neural network attention.',
+                particleSize: 3
+            }
+        };
+
+        // Canvas setup
+        const leftCanvas = document.getElementById('leftCanvas');
+        const rightCanvas = document.getElementById('rightCanvas');
+        const leftCtx = leftCanvas.getContext('2d');
+        const rightCtx = rightCanvas.getContext('2d');
+
+        function initCanvases() {
+            [leftCanvas, rightCanvas].forEach(canvas => {
+                const parent = canvas.parentElement;
+                canvas.width = parent.clientWidth;
+                canvas.height = parent.clientHeight;
+            });
+        }
+
+        // Initialize particles
+        function createParticles() {
+            const width = leftCanvas.width;
+            const height = leftCanvas.height;
+
+            particles = Array.from({length: populationSize}, (_, i) => ({
+                id: i,
+                x: Math.random() * width,
+                y: Math.random() * height,
+                vx: (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2,
+                cluster: i % 5,
+                trail: [],
+                predictedX: 0,
+                predictedY: 0,
+                predictionError: 0
+            }));
+
+            // Assign social colors
+            const clusterColors = ['#ff4757', '#3498db', '#2ecc71', '#ffa502', '#9b59b6'];
+            particles.forEach(p => {
+                p.color = clusterColors[p.cluster];
+            });
+        }
+
+        // Update observer display
+        function updateObserver(side, observer) {
+            if (side === 'left') {
+                leftObserver = observer;
+                document.getElementById('leftObserverName').textContent = observerConfigs[observer].name;
+                document.getElementById('leftObserverDesc').textContent = observerConfigs[observer].description;
+            } else {
+                rightObserver = observer;
+                document.getElementById('rightObserverName').textContent = observerConfigs[observer].name;
+                document.getElementById('rightObserverDesc').textContent = observerConfigs[observer].description;
+            }
+        }
+
+        // Render function for single observer
+        function renderObserver(ctx, observer, width, height) {
+            const config = observerConfigs[observer];
+
+            // Clear
+            ctx.fillStyle = '#0a0e27';
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw connections
+            ctx.strokeStyle = config.color;
+            ctx.globalAlpha = 0.3;
+            ctx.lineWidth = 1;
+            particles.forEach((p, i) => {
+                particles.slice(i + 1).forEach(other => {
+                    const dx = p.x - other.x;
+                    const dy = p.y - other.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 100) {
+                        // Social: only same cluster
+                        if (observer === 'social' && p.cluster !== other.cluster) return;
+
+                        // AI: variable thickness
+                        if (observer === 'ai') {
+                            const strength = 1 - (dist / 100);
+                            ctx.lineWidth = 0.5 + strength * 5.5;
+                        }
+
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(other.x, other.y);
+                        ctx.stroke();
+                    }
+                });
+            });
+            ctx.globalAlpha = 1;
+
+            // Draw quantum ghosts
+            if (observer === 'quantum') {
+                particles.forEach(p => {
+                    for (let i = 0; i < 2; i++) {
+                        const angle = (i / 2) * Math.PI * 2;
+                        const radius = 20;
+                        const gx = p.x + Math.cos(angle) * radius;
+                        const gy = p.y + Math.sin(angle) * radius;
+
+                        ctx.globalAlpha = 0.4;
+                        ctx.fillStyle = config.color;
+                        ctx.beginPath();
+                        ctx.arc(gx, gy, config.particleSize, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                });
+                ctx.globalAlpha = 1;
+            }
+
+            // Draw classical trails
+            if (observer === 'classical') {
+                particles.forEach(p => {
+                    if (p.trail && p.trail.length > 1) {
+                        for (let i = 1; i < p.trail.length; i++) {
+                            const opacity = (i / p.trail.length) * 0.8;
+                            ctx.strokeStyle = config.color;
+                            ctx.globalAlpha = opacity;
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.moveTo(p.trail[i-1].x, p.trail[i-1].y);
+                            ctx.lineTo(p.trail[i].x, p.trail[i].y);
+                            ctx.stroke();
+                        }
+                        ctx.globalAlpha = 1;
+                    }
+                });
+            }
+
+            // Draw particles
+            particles.forEach(p => {
+                let fillColor = config.color;
+
+                // Social: cluster colors
+                if (observer === 'social') {
+                    fillColor = p.color;
+                }
+
+                // Conscious: error-based
+                if (observer === 'conscious') {
+                    const errorIntensity = Math.min(p.predictionError / 4, 1);
+                    if (errorIntensity > 0.5) {
+                        fillColor = '#ff4757';
+                    } else if (errorIntensity > 0.2) {
+                        fillColor = '#ffa502';
+                    } else {
+                        fillColor = '#2ecc71';
+                    }
+                }
+
+                ctx.globalAlpha = 0.8;
+                ctx.fillStyle = fillColor;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, config.particleSize, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Social: white stroke
+                if (observer === 'social') {
+                    ctx.strokeStyle = 'white';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+            });
+        }
+
+        // Animation loop
+        function animate() {
+            // Update particles
+            if (isPlaying) {
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    // Bounce
+                    if (p.x < 0 || p.x > leftCanvas.width) p.vx *= -1;
+                    if (p.y < 0 || p.y > leftCanvas.height) p.vy *= -1;
+
+                    // Keep in bounds
+                    p.x = Math.max(0, Math.min(leftCanvas.width, p.x));
+                    p.y = Math.max(0, Math.min(leftCanvas.height, p.y));
+
+                    // Classical trails
+                    if (leftObserver === 'classical' || rightObserver === 'classical') {
+                        if (!p.trail) p.trail = [];
+                        p.trail.push({x: p.x, y: p.y});
+                        if (p.trail.length > 30) p.trail.shift();
+                    }
+
+                    // Conscious predictions
+                    if (leftObserver === 'conscious' || rightObserver === 'conscious') {
+                        if (!p.predictedX) {
+                            p.predictedX = p.x;
+                            p.predictedY = p.y;
+                        }
+                        const error = Math.sqrt((p.predictedX - p.x)**2 + (p.predictedY - p.y)**2);
+                        p.predictionError = error * 0.8 + p.predictionError * 0.2;
+                        p.predictedX = p.x + p.vx;
+                        p.predictedY = p.y + p.vy;
+
+                        // Occasional surprises
+                        if (Math.random() < 0.05) {
+                            const shock = (Math.random() - 0.5) * 5;
+                            p.vx += shock;
+                            p.vy += shock;
+                        }
+                    }
+                });
+            }
+
+            // Render both sides
+            renderObserver(leftCtx, leftObserver, leftCanvas.width, leftCanvas.height);
+            renderObserver(rightCtx, rightObserver, rightCanvas.width, rightCanvas.height);
+
+            animationFrameId = requestAnimationFrame(animate);
+        }
+
+        // Toggle play
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('playBtn');
+            btn.textContent = isPlaying ? '⏸️ Pause' : '▶️ Play';
+            btn.style.background = isPlaying ? '#e74c3c' : '#2ecc71';
+        }
+
+        // Update population
+        function updatePopulation(value) {
+            populationSize = parseInt(value);
+            document.getElementById('popValue').textContent = value;
+            createParticles();
+        }
+
+        // Initialize
+        window.addEventListener('resize', () => {
+            initCanvases();
+            createParticles();
+        });
+
+        initCanvases();
+        createParticles();
+        animate();
+    </script>
+</body>
+</html>
