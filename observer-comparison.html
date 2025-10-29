@@ -582,24 +582,27 @@
         let frameTimes = [];
         let currentFPS = 60;
 
-        // Update telemetry every 100ms with REAL calculations
+        // Update telemetry every 100ms with FULL calculations
         setInterval(() => {
             if (particles.length === 0) return;
 
-            // Calculate kinetic energy (with proper ½ factor!)
+            const width = leftCanvas.width;
+            const height = leftCanvas.height;
+
+            // 1. Kinetic energy (with proper ½ factor!)
             const kineticEnergy = particles.reduce((sum, p) => {
                 return sum + 0.5 * (p.vx * p.vx + p.vy * p.vy);
             }, 0) / particles.length;
 
-            // Calculate temperature
+            // 2. Temperature
             const temperature = Math.sqrt(kineticEnergy) * 0.1;
 
-            // Calculate average velocity
+            // 3. Average velocity
             const avgVelocity = particles.reduce((sum, p) => {
                 return sum + Math.sqrt(p.vx * p.vx + p.vy * p.vy);
             }, 0) / particles.length;
 
-            // Calculate spatial spread (RMS distance from center)
+            // 4. Spatial spread (RMS distance from center)
             const centerX = particles.reduce((sum, p) => sum + p.x, 0) / particles.length;
             const centerY = particles.reduce((sum, p) => sum + p.y, 0) / particles.length;
             const spatialSpread = Math.sqrt(
@@ -610,7 +613,7 @@
                 }, 0) / particles.length
             );
 
-            // Calculate position/velocity variance for uncertainty
+            // 5. Uncertainty (position/velocity variance)
             const meanVx = particles.reduce((sum, p) => sum + p.vx, 0) / particles.length;
             const meanVy = particles.reduce((sum, p) => sum + p.vy, 0) / particles.length;
 
@@ -628,21 +631,71 @@
 
             const uncertainty = Math.sqrt(posVariance) * Math.sqrt(velVariance);
 
+            // 6. Shannon Entropy (grid-based)
+            let entropy = 0;
+            const gridResolution = 20;
+            const cellWidth = width / gridResolution;
+            const cellHeight = height / gridResolution;
+            const grid = new Array(gridResolution * gridResolution).fill(0);
+
+            particles.forEach(p => {
+                const cellX = Math.min(Math.floor(p.x / cellWidth), gridResolution - 1);
+                const cellY = Math.min(Math.floor(p.y / cellHeight), gridResolution - 1);
+                const cellIndex = cellY * gridResolution + cellX;
+                grid[cellIndex]++;
+            });
+
+            grid.forEach(count => {
+                if (count > 0) {
+                    const probability = count / particles.length;
+                    entropy -= probability * Math.log2(probability);
+                }
+            });
+
+            // 7. Info Deficit
+            const maxEntropy = Math.log2(gridResolution * gridResolution);
+            const infoDeficit = maxEntropy - entropy;
+
+            // 8. Potential Energy (simplified - sample only nearby particles)
+            let potentialEnergy = 0;
+            const sampleRate = Math.max(1, Math.floor(particles.length / 100)); // Sample for performance
+            for (let i = 0; i < particles.length; i += sampleRate) {
+                for (let j = i + 1; j < particles.length; j += sampleRate) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 100) {
+                        potentialEnergy -= 1.0 / (dist + 1);
+                    }
+                    if (dist < 20) {
+                        potentialEnergy += 10.0 / (dist + 1);
+                    }
+                }
+            }
+            potentialEnergy /= Math.max(1, particles.length / sampleRate);
+
+            // 9. Free Energy
+            const freeEnergy = potentialEnergy - temperature * entropy * 0.01;
+
+            // 10. Total Energy
+            const totalEnergy = kineticEnergy + potentialEnergy;
+
             const sharedTelemetry = {
                 fps: currentFPS,
                 particleCount: particles.length,
-                connectionCount: 0, // Connections not tracked in comparison mode
+                connectionCount: 0, // Not calculated for performance
                 temperature: temperature,
-                entropy: 0, // Would need grid calculation
+                entropy: entropy,
                 kineticEnergy: kineticEnergy,
-                potentialEnergy: 0, // Would need pairwise calculation
-                totalEnergy: kineticEnergy,
+                potentialEnergy: potentialEnergy,
+                totalEnergy: totalEnergy,
                 uncertainty: uncertainty,
-                networkDensity: 0,
-                freeEnergy: 0,
+                networkDensity: 0, // Not calculated for performance
+                freeEnergy: freeEnergy,
                 spatialSpread: spatialSpread,
                 avgVelocity: avgVelocity,
-                infoDeficit: 0,
+                infoDeficit: infoDeficit,
                 computationalCost: particles.length * particles.length
             };
 
