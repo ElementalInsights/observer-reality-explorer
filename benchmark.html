@@ -516,7 +516,7 @@
                     <label>Observer Type</label>
                     <select id="observerType" onchange="changeObserver(this.value)">
                         <option value="quantum">🌀 Quantum</option>
-                        <option value="classical">🎯 Classical</option>
+                        <option value="classical" selected>🎯 Classical</option>
                         <option value="social">🌐 Social</option>
                         <option value="conscious">🧠 Conscious</option>
                         <option value="ai">🤖 AI</option>
@@ -573,7 +573,7 @@
 
             <!-- Observer Details Card -->
             <div class="observer-details">
-                <h3 id="detailsName">🌀 Quantum Observer</h3>
+                <h3 id="detailsName">🎯 Classical Observer</h3>
                 <p class="details-desc" id="detailsDesc">Loading...</p>
                 <div class="details-section">
                     <div class="section-title">Theory</div>
@@ -695,7 +695,7 @@
 
         // Initialize engine (pass canvas ID, not element)
         let engine = new ObserverPhysicsEngine('canvas', {
-            observerType: 'quantum',
+            observerType: 'classical',
             populationSize: 100
         });
 
@@ -782,7 +782,7 @@
         }
 
         // Initialize details on load
-        updateObserverDetails('quantum');
+        updateObserverDetails('classical');
 
         function updateParticleCount(value) {
             document.getElementById('particleValue').textContent = value;
