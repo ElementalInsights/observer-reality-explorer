@@ -1,36 +1,53 @@
 # Observer-Dependent Reality Explorer
 
-An interactive educational platform exploring the mathematics of observer-dependent reality frameworks, bridging quantum mechanics, consciousness theories, computational semantics, and social dynamics.
+A cutting-edge physics visualization framework demonstrating how reality fundamentally depends on the observer's lens. Built on a custom particle physics engine with 8 scientifically-accurate observer types, relativistic causality, and complete mathematical documentation.
 
-![Academic Graph Paper Theme](https://img.shields.io/badge/style-academic-2ecc71)
-![Math Verified](https://img.shields.io/badge/math-verified-27ae60)
-![17 References](https://img.shields.io/badge/references-17%20papers-16a085)
+![8 Observers](https://img.shields.io/badge/observers-8%20types-2ecc71)
+![Physics Verified](https://img.shields.io/badge/physics-verified-27ae60)
+![Framework Based](https://img.shields.io/badge/architecture-framework-3498db)
+![Relativistic](https://img.shields.io/badge/causality-relativistic-f39c12)
 
-## 🎓 Features
+## ✨ Features
 
-### Split-Screen Interface
-- **Left (40%)**: Full scientific paper with all references
-- **Right (60%)**: 10 interactive D3.js visualizations
-- **Bidirectional Navigation**: Click ⚡ links in paper → jump to visualizations; Click 📄 buttons on visualizations → see paper sections
+### 🔬 Framework Benchmark (Main Experience)
+**The flagship visualization** - A complete physics sandbox featuring:
+- **8 Observer Types** - Quantum, Classical, Social, Conscious, AI, Thermodynamic, Relativistic, Probabilistic
+- **Relativistic Causality** - Color-coded light cones showing timelike/lightlike/spacelike connections
+- **Complete Physics Documentation** - Theory, mathematics, and visualization notes for each observer
+- **Live Telemetry** - 15+ real-time metrics (entropy, energy, uncertainty, β, γ, causal connections)
+- **Performance Metrics** - FPS, update/render times, memory usage
+- **Settings Modal** - Full physics documentation and parameters
+- **Interactive Controls** - Switch observers, adjust particle count (10-500), evolution speed (1-10x)
 
-### 10 Verified Visualizations
+### 📈 Entropy Evolution
+Watch the **Second Law of Thermodynamics** in action:
+- Particles start clustered (LOW entropy)
+- Spread out over time (entropy INCREASES)
+- Live graph showing H(t) → ∞
+- Split view: spatial distribution + entropy chart
+- **Demonstrates:** dS/dt ≥ 0, irreversibility of time
 
-1. **Shannon Entropy** - Information content measurement
-2. **KL Divergence** - Model-reality mismatch quantification
-3. **Semantic Embeddings** - Conceptual distance with cosine similarity
-4. **Echo Chamber Networks** - Clustering coefficient (0.6+ vs 0.16 baseline)
-5. **Free Energy Principle** - Accuracy-complexity tradeoff
-6. **Heisenberg Uncertainty** - ΔxΔp ≥ ℏ/2 demonstration
-7. **Ruliad Multiway Graph** - Computational path sampling
-8. **Integrated Information (Φ)** - Consciousness measure
-9. **Quantum Collapse** - Born rule stochastic measurement
-10. **Worldview Embeddings** - Paradigm distance in semantic space
+### ⚡ Quantum Measurement
+Interactive **wave function collapse**:
+- Before: Quantum superposition (ghost particles)
+- Click **MEASURE** → dramatic collapse animation
+- After: Single position, randomized velocity (Heisenberg uncertainty)
+- Measurement history log
+- **Demonstrates:** Observer effect, ΔxΔp ≥ ℏ/2
 
-### Academic Graph Paper Design
-- Beautiful checkered grid pattern on visualization cards
-- Green color scheme for academic aesthetic
-- Modern typography with system fonts (Inter, SF, Helvetica Neue)
-- Optimized for readability with 16px base font and 1.75 line-height
+### 🌐 Echo Chamber Formation
+Watch **social polarization** emerge from simple rules:
+- 3 interactive sliders: Homophily, Clustering, Rewiring
+- 5 colored clusters (social groups)
+- Real-time separation as homophily increases
+- **Demonstrates:** How echo chambers form naturally from "birds of a feather flock together"
+
+### 🎨 Design System
+- **Monochromatic aesthetic** - Black/white/gray professional design
+- **Color only in physics** - Particles/connections use physics-based colors
+- **Monaco monospace** - Professional developer aesthetic
+- **Consistent UI** - All pages share same design language
+- **Responsive** - Adapts to screen size
 
 ## 📚 Academic Rigor
 
