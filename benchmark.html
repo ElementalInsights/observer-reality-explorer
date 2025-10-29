@@ -136,6 +136,31 @@
             transform: rotate(90deg) scale(1.1);
         }
 
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #444;
+            border: 2px solid #666;
+            border-radius: 8px;
+            color: #fff;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+
+        .back-btn:hover {
+            background: #555;
+            transform: translateX(-5px);
+        }
+
         /* Settings Modal */
         .modal {
             display: none;
@@ -572,6 +597,9 @@
         <!-- Telemetry -->
         <div class="telemetry" id="telemetryDisplay"></div>
     </div>
+
+    <!-- Back Button (Fixed Position) -->
+    <a href="index.html" class="back-btn">← Back</a>
 
     <!-- Settings Button (Fixed Position) -->
     <button class="settings-btn" onclick="openSettings()">⚙️</button>
