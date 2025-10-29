@@ -2074,6 +2074,12 @@
                             p.predictedY = p.y;
                         }
 
+                        // Add random environmental perturbations (surprises!)
+                        // This creates ACTUAL prediction errors to detect
+                        const surprise = (Math.random() - 0.5) * 0.5;
+                        p.x += surprise;
+                        p.y += surprise;
+
                         // Calculate error between PREVIOUS prediction and ACTUAL current position
                         const error = Math.sqrt((p.predictedX - p.x)**2 + (p.predictedY - p.y)**2);
                         p.predictionError = error;
@@ -2105,10 +2111,16 @@
                         fillColor = p.color || config.color; // Fallback if color not set
                     }
 
-                    // Conscious: error-based coloring
+                    // Conscious: error-based coloring (BRIGHT RED for surprises!)
                     if (currentObserver === 'conscious') {
-                        const errorIntensity = Math.min(p.predictionError / 5, 1);
-                        fillColor = errorIntensity > 0.5 ? '#e74c3c' : config.color;
+                        const errorIntensity = Math.min(p.predictionError / 3, 1);
+                        // Gradient from observer color (low error) to bright red (high error)
+                        if (errorIntensity > 0.3) {
+                            const redAmount = (errorIntensity - 0.3) / 0.7; // 0 to 1
+                            fillColor = `rgb(${Math.floor(231 * redAmount + 231 * (1-redAmount))}, ${Math.floor(76 * redAmount + 103 * (1-redAmount))}, ${Math.floor(60 * redAmount + 34 * (1-redAmount))})`;
+                        } else {
+                            fillColor = config.color;
+                        }
                     }
 
                     // Apply coarse-graining (quantization) if observer power < 100%
