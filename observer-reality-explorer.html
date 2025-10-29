@@ -311,21 +311,18 @@
         }
 
         .verify-badge {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
             background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
             color: white;
-            padding: 15px 25px;
-            border-radius: 30px;
+            padding: 10px 20px;
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 0.9em;
             font-weight: bold;
             box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
-            z-index: 1000;
             transition: all 0.3s;
             text-decoration: none;
             display: inline-block;
+            margin-top: 10px;
         }
 
         .verify-badge:hover {
@@ -353,7 +350,9 @@
             <div class="container">
                 <h1>Interactive Visualizations</h1>
                 <p class="subtitle">Explore the Mathematics of Observer-Dependent Reality</p>
-                <p class="subtitle" style="margin-top: -20px; font-size: 0.9em; color: #2ecc71; font-weight: bold;">Check out the math!</p>
+                <div style="text-align: center; margin-top: -10px;">
+                    <a href="VERIFICATION.md" target="_blank" class="verify-badge" title="View mathematical verification">Check out the math!</a>
+                </div>
             </div>
 
         <!-- Shannon Entropy Section -->
@@ -706,7 +705,6 @@
     </div>
 
     <div class="tooltip" id="tooltip"></div>
-    <a href="VERIFICATION.md" target="_blank" class="verify-badge" title="View mathematical verification">Math Verified</a>
 
     <script>
         // Load paper content
