@@ -2175,9 +2175,10 @@
 
                         // Add occasional environmental surprises (unpredictable events)
                         if (Math.random() < 0.05) { // 5% chance
-                            const shock = (Math.random() - 0.5) * 5;
-                            p.vx += shock;
-                            p.vy += shock;
+                            const shockX = (Math.random() - 0.5) * 5;
+                            const shockY = (Math.random() - 0.5) * 5;
+                            p.vx += shockX;
+                            p.vy += shockY;
                         }
                     });
                 }
