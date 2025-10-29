@@ -2146,6 +2146,7 @@
                 }
 
                 // === ACTIVE INFERENCE (Free Energy Minimization) ===
+                // Calculate prediction errors for DISPLAY ONLY (don't modify particle physics!)
                 if (currentObserver === 'conscious') {
                     particles.forEach(p => {
                         // Initialize prediction if not set
@@ -2158,28 +2159,17 @@
                         // Calculate error between PREVIOUS prediction and ACTUAL current position
                         const error = Math.sqrt((p.predictedX - p.x)**2 + (p.predictedY - p.y)**2);
 
-                        // ACTIVE INFERENCE: Minimize prediction error by adjusting behavior!
-                        if (error > 1) {
-                            // High error → adjust velocity to reduce future errors
-                            // Move toward more predictable behavior (slower, smoother)
-                            p.vx *= 0.95; // Slow down when surprised
-                            p.vy *= 0.95;
-                        }
-
-                        // Store error with decay (errors fade over time as system adapts)
-                        p.predictionError = error * 0.8 + p.predictionError * 0.2;
+                        // Store error with decay (for smooth color transitions)
+                        p.predictionError = error * 0.7 + p.predictionError * 0.3;
 
                         // Make NEW prediction for next frame (constant velocity model)
                         p.predictedX = p.x + p.vx;
                         p.predictedY = p.y + p.vy;
 
-                        // Add occasional environmental surprises (unpredictable events)
-                        if (Math.random() < 0.05) { // 5% chance
-                            const shockX = (Math.random() - 0.5) * 5;
-                            const shockY = (Math.random() - 0.5) * 5;
-                            p.vx += shockX;
-                            p.vy += shockY;
-                        }
+                        // NOTE: We DON'T modify velocities here!
+                        // The "active inference" is a VISUALIZATION of what a conscious
+                        // system would do, but we keep the underlying physics the same
+                        // for fair comparison across all observers.
                     });
                 }
 
