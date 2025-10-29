@@ -71,12 +71,17 @@
         .control-group input {
             width: 100%;
             padding: 10px;
-            background: rgba(255,255,255,0.1);
+            background: #222;
             border: 1px solid #666;
             border-radius: 5px;
             color: #fff;
             font-family: inherit;
             font-size: 0.9em;
+        }
+
+        .control-group select option {
+            background: #222;
+            color: #fff;
         }
 
         .control-group button {
@@ -233,10 +238,6 @@
                 <button id="playBtn" onclick="togglePlay()">▶️ Play</button>
                 <button onclick="resetSimulation()">🔄 Reset</button>
             </div>
-
-            <div class="control-group">
-                <button class="danger" onclick="stressTest()">⚡ Stress Test (1000 particles)</button>
-            </div>
         </div>
 
         <!-- Canvas -->
@@ -319,6 +320,10 @@
             populationSize: 100
         });
 
+        // Start playing by default
+        engine.isPlaying = true;
+        document.getElementById('playBtn').textContent = '⏸️ Pause';
+
         // Handle resize
         window.addEventListener('resize', () => {
             canvas.width = wrapper.clientWidth;
@@ -398,14 +403,6 @@
 
         function resetSimulation() {
             engine.createParticles();
-        }
-
-        function stressTest() {
-            if (confirm('This will create 1000 particles. Performance may degrade. Continue?')) {
-                document.getElementById('particleSlider').value = 1000;
-                document.getElementById('particleValue').textContent = '1000';
-                engine.setPopulation(1000);
-            }
         }
     </script>
 </body>
