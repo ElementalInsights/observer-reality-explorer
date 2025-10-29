@@ -2009,18 +2009,20 @@
                     particles.forEach(p => {
                         if (!p.trail) p.trail = [];
                         p.trail.push({x: p.x, y: p.y});
-                        if (p.trail.length > 20) p.trail.shift();
+                        if (p.trail.length > 30) p.trail.shift(); // Longer trails (30 positions)
 
                         if (p.trail.length > 1) {
-                            ctx.strokeStyle = config.color;
-                            ctx.globalAlpha = 0.3;
-                            ctx.lineWidth = 2;
-                            ctx.beginPath();
-                            ctx.moveTo(p.trail[0].x, p.trail[0].y);
+                            // Draw trail with gradient fade
                             for (let i = 1; i < p.trail.length; i++) {
+                                const opacity = (i / p.trail.length) * 0.8; // Fade from 0 to 0.8
+                                ctx.strokeStyle = config.color;
+                                ctx.globalAlpha = opacity;
+                                ctx.lineWidth = 3;
+                                ctx.beginPath();
+                                ctx.moveTo(p.trail[i-1].x, p.trail[i-1].y);
                                 ctx.lineTo(p.trail[i].x, p.trail[i].y);
+                                ctx.stroke();
                             }
-                            ctx.stroke();
                             ctx.globalAlpha = 1;
                         }
                     });
