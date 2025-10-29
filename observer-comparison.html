@@ -120,7 +120,7 @@
         }
 
         .observer-select select {
-            background: rgba(46,204,113,0.1);
+            background: #0a0e27;
             border: 2px solid #2ecc71;
             color: #2ecc71;
             padding: 10px 15px;
@@ -128,6 +128,12 @@
             font-weight: 700;
             cursor: pointer;
             font-family: inherit;
+        }
+
+        .observer-select select option {
+            background: #0a0e27;
+            color: #2ecc71;
+            padding: 10px;
         }
 
         .control-group {
@@ -232,6 +238,11 @@
 
             <button id="playBtn" onclick="togglePlay()">▶️ Play</button>
 
+            <div class="control-group">
+                <label>Speed: <span id="speedValue" class="value-display">1x</span></label>
+                <input type="range" id="speedSlider" min="1" max="10" value="1" step="1" oninput="updateSpeed(this.value)">
+            </div>
+
             <div class="observer-select">
                 <label>RIGHT Observer:</label>
                 <select id="rightObserverSelect" onchange="updateObserver('right', this.value)">
@@ -253,6 +264,7 @@
         let populationSize = 100;
         let isPlaying = false;
         let animationFrameId = null;
+        let evolutionSpeed = 1;
 
         // Observer configurations (from simulator)
         const observerConfigs = {
@@ -455,44 +467,39 @@
         function animate() {
             // Update particles
             if (isPlaying) {
-                particles.forEach(p => {
-                    p.x += p.vx;
-                    p.y += p.vy;
+                for (let step = 0; step < evolutionSpeed; step++) {
+                    particles.forEach(p => {
+                        p.x += p.vx;
+                        p.y += p.vy;
 
-                    // Bounce
-                    if (p.x < 0 || p.x > leftCanvas.width) p.vx *= -1;
-                    if (p.y < 0 || p.y > leftCanvas.height) p.vy *= -1;
+                        // Bounce
+                        if (p.x < 0 || p.x > leftCanvas.width) p.vx *= -1;
+                        if (p.y < 0 || p.y > leftCanvas.height) p.vy *= -1;
 
-                    // Keep in bounds
-                    p.x = Math.max(0, Math.min(leftCanvas.width, p.x));
-                    p.y = Math.max(0, Math.min(leftCanvas.height, p.y));
+                        // Keep in bounds
+                        p.x = Math.max(0, Math.min(leftCanvas.width, p.x));
+                        p.y = Math.max(0, Math.min(leftCanvas.height, p.y));
 
-                    // Classical trails
-                    if (leftObserver === 'classical' || rightObserver === 'classical') {
-                        if (!p.trail) p.trail = [];
-                        p.trail.push({x: p.x, y: p.y});
-                        if (p.trail.length > 30) p.trail.shift();
-                    }
-
-                    // Conscious predictions
-                    if (leftObserver === 'conscious' || rightObserver === 'conscious') {
-                        if (!p.predictedX) {
-                            p.predictedX = p.x;
-                            p.predictedY = p.y;
+                        // Classical trails
+                        if (leftObserver === 'classical' || rightObserver === 'classical') {
+                            if (!p.trail) p.trail = [];
+                            p.trail.push({x: p.x, y: p.y});
+                            if (p.trail.length > 30) p.trail.shift();
                         }
-                        const error = Math.sqrt((p.predictedX - p.x)**2 + (p.predictedY - p.y)**2);
-                        p.predictionError = error * 0.8 + p.predictionError * 0.2;
-                        p.predictedX = p.x + p.vx;
-                        p.predictedY = p.y + p.vy;
 
-                        // Occasional surprises
-                        if (Math.random() < 0.05) {
-                            const shock = (Math.random() - 0.5) * 5;
-                            p.vx += shock;
-                            p.vy += shock;
+                        // Conscious predictions (for DISPLAY only - doesn't modify particle state!)
+                        if (leftObserver === 'conscious' || rightObserver === 'conscious') {
+                            if (!p.predictedX) {
+                                p.predictedX = p.x;
+                                p.predictedY = p.y;
+                            }
+                            const error = Math.sqrt((p.predictedX - p.x)**2 + (p.predictedY - p.y)**2);
+                            p.predictionError = error * 0.8 + p.predictionError * 0.2;
+                            p.predictedX = p.x + p.vx;
+                            p.predictedY = p.y + p.vy;
                         }
-                    }
-                });
+                    });
+                }
             }
 
             // Render both sides
@@ -515,6 +522,12 @@
             populationSize = parseInt(value);
             document.getElementById('popValue').textContent = value;
             createParticles();
+        }
+
+        // Update speed
+        function updateSpeed(value) {
+            evolutionSpeed = parseInt(value);
+            document.getElementById('speedValue').textContent = value + 'x';
         }
 
         // Initialize
