@@ -273,17 +273,17 @@
 
         .tooltip-content {
             display: none;
-            position: absolute;
-            left: 0;
-            top: 100%;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             background: rgba(10,14,39,0.98);
             border: 2px solid #00ff88;
             border-radius: 10px;
             padding: 16px;
-            width: 420px;
-            z-index: 1000;
-            margin-top: 5px;
-            box-shadow: 0 4px 20px rgba(0,255,136,0.4);
+            width: 500px;
+            z-index: 2000;
+            box-shadow: 0 4px 30px rgba(0,255,136,0.6);
         }
 
         .tooltip-icon.active .tooltip-content {
