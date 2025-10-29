@@ -1147,7 +1147,7 @@
                 color: '#27ae60',
                 description: 'Sees CLUSTERS and group membership. Reality is relational - entities are defined by their tribal affiliations. Connections only form within groups (echo chambers!). Different colors = different social identities. Us vs Them.',
                 emphasis: 'Groups, Tribes, In-groups vs Out-groups, Echo Chambers, Identity',
-                particleSize: 6,
+                particleSize: 7,
                 connectionDistance: 120,
                 showClusters: true,
                 clusterCount: 5
@@ -1504,11 +1504,11 @@
             // Update cluster assignments if switching to/from social
             if (currentObserver === 'social' && config.clusterCount) {
                 const clusterColors = [
-                    '#e74c3c',  // RED tribe
-                    '#3498db',  // BLUE tribe
-                    '#27ae60',  // GREEN tribe
-                    '#f39c12',  // ORANGE tribe
-                    '#9b59b6'   // PURPLE tribe
+                    '#ff4757',  // BRIGHT RED tribe
+                    '#3498db',  // BRIGHT BLUE tribe
+                    '#2ecc71',  // BRIGHT GREEN tribe
+                    '#ffa502',  // BRIGHT ORANGE tribe
+                    '#9b59b6'   // BRIGHT PURPLE tribe
                 ];
                 particles.forEach(p => {
                     if (p.cluster === undefined) {
@@ -1636,14 +1636,14 @@
                 });
             }
 
-            // Setup social cluster colors - DISTINCT tribes!
+            // Setup social cluster colors - VIBRANT DISTINCT tribes!
             if (currentObserver === 'social') {
                 const clusterColors = [
-                    '#e74c3c',  // RED tribe
-                    '#3498db',  // BLUE tribe
-                    '#27ae60',  // GREEN tribe
-                    '#f39c12',  // ORANGE tribe
-                    '#9b59b6'   // PURPLE tribe
+                    '#ff4757',  // BRIGHT RED tribe
+                    '#3498db',  // BRIGHT BLUE tribe
+                    '#2ecc71',  // BRIGHT GREEN tribe
+                    '#ffa502',  // BRIGHT ORANGE tribe
+                    '#9b59b6'   // BRIGHT PURPLE tribe
                 ];
                 particles.forEach(p => {
                     p.color = clusterColors[p.cluster % clusterColors.length];
