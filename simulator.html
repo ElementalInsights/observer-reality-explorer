@@ -2014,12 +2014,13 @@
                 } else {
                     // NORMAL MODE: Individual connections with observer effects
                     if (currentObserver === 'ai') {
-                        // AI: Variable thickness by semantic distance
+                        // AI: Variable thickness by semantic distance (DRAMATIC variation!)
                         links.forEach(link => {
                             const strength = 1 - (link.distance / config.connectionDistance);
                             ctx.strokeStyle = config.color;
-                            ctx.globalAlpha = (1 - link.distance / config.connectionDistance) * 0.5;
-                            ctx.lineWidth = 0.5 + strength * 3;
+                            ctx.globalAlpha = (1 - link.distance / config.connectionDistance) * 0.7;
+                            // Much more dramatic: 0.5px (far) to 6px (close)
+                            ctx.lineWidth = 0.5 + strength * 5.5;
                             ctx.beginPath();
                             ctx.moveTo(link.source.x, link.source.y);
                             ctx.lineTo(link.target.x, link.target.y);
