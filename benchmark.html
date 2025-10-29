@@ -612,18 +612,22 @@
                 <h3>⚡ Relativistic Causality (NEW!)</h3>
                 <p>In relativistic mode, connections represent <strong>causal structure</strong> in spacetime, not just spatial proximity.</p>
 
+                <p><strong>Causal Horizon:</strong> <code>c × timeWindow = 3 × 20 = 60 pixels</code></p>
+                <p>This represents "how far can light travel in our observable time window"</p>
+
                 <p><strong>Connection Types:</strong></p>
-                <p>🟡 <strong>Timelike</strong> (Yellow/Blue): Inside light cone - causally connected. Light signal could travel between particles.</p>
-                <p>🔵 <strong>Past Light Cone</strong> (Blue): Could have influenced current particle.</p>
-                <p>🟡 <strong>Future Light Cone</strong> (Yellow): Can be influenced by current particle.</p>
-                <p>🔷 <strong>Lightlike</strong> (Cyan): On light cone boundary - simultaneous events.</p>
-                <p>⚪ <strong>Spacelike</strong> (Gray dashed): Outside light cone - NO causal connection possible.</p>
+                <p>🔵 <strong>Timelike (Blue)</strong>: Inside light cone (<code>d &lt; 60px</code>) + moving toward = causally connected in PAST</p>
+                <p>🟡 <strong>Timelike (Yellow)</strong>: Inside light cone (<code>d &lt; 60px</code>) + moving apart = causally connected in FUTURE</p>
+                <p>🔷 <strong>Lightlike (Cyan)</strong>: On horizon (<code>d ≈ 60px ± 3</code>) = at light speed, simultaneous</p>
+                <p>⚪ <strong>Spacelike (Gray dashed)</strong>: Beyond horizon (<code>d &gt; 60px</code>) = NO causal connection!</p>
 
                 <p><strong>Mathematics:</strong></p>
                 <p>Spacetime interval: <code>Δs² = c²Δt² - Δx² - Δy²</code></p>
-                <p>• Timelike: <code>Δs² < 0</code> (causal)</p>
-                <p>• Lightlike: <code>Δs² = 0</code> (light speed)</p>
-                <p>• Spacelike: <code>Δs² > 0</code> (no causal link)</p>
+                <p>• Timelike: <code>Δs² &lt; 0</code> → Can exchange signals (causal)</p>
+                <p>• Lightlike: <code>Δs² = 0</code> → Light-speed separated</p>
+                <p>• Spacelike: <code>Δs² &gt; 0</code> → Causally disconnected</p>
+
+                <p><strong>Why This Matters:</strong> In relativity, only timelike-connected events can influence each other. Spacelike events are absolutely independent!</p>
             </div>
 
             <div class="modal-section">
