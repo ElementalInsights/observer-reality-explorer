@@ -126,10 +126,17 @@
         }
 
         .container {
-            background: white;
-            border-radius: 20px;
+            background-image:
+                linear-gradient(rgba(46, 204, 113, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(46, 204, 113, 0.05) 1px, transparent 1px),
+                linear-gradient(rgba(46, 204, 113, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(46, 204, 113, 0.02) 1px, transparent 1px);
+            background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+            background-color: white;
+            border-radius: 15px;
+            border-left: 5px solid #27ae60;
             padding: 40px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
 
         h1 {
