@@ -403,20 +403,17 @@
             border-radius: 18px;
         }
 
-        /* Observer Info Card (overlay on canvas) */
+        /* Observer Info Card (row above canvas) */
         .observer-info-card {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            grid-column: 1 / -1;
+            grid-row: 1;
             background: rgba(10,14,39,0.92);
             border: 2px solid rgba(0,255,136,0.5);
             border-radius: 12px;
             padding: 24px 28px;
-            max-width: 550px;
-            z-index: 5;
             backdrop-filter: blur(15px);
             box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+            text-align: center;
         }
 
         .observer-name {
@@ -995,17 +992,17 @@
             </div>
         </div>
 
+        <!-- Observer Card (full width row above everything) -->
+        <div class="observer-info-card" id="observerCard">
+            <div class="observer-name" id="observerTitle">🌀 Quantum Observer</div>
+            <div class="observer-desc-inline" id="observerDesc">Superpositions, Multiple States, Probabilistic Reality, Wave Function Collapse</div>
+            <div class="observer-description" id="observerDescription">
+                Sees particles in MULTIPLE states at once (superposition). Reality is probabilistic - particles exist as "waves" of possibility until measured. Ghost particles show "HERE or THERE" states before observation collapses the wave function.
+            </div>
+        </div>
+
         <!-- Canvas (center) -->
         <div class="viz-container">
-            <!-- Observer Description Card (overlay on canvas) -->
-            <div class="observer-info-card" id="observerCard">
-                <div class="observer-name" id="observerTitle">🌀 Quantum Observer</div>
-                <div class="observer-desc-inline" id="observerDesc">Superpositions, Multiple States, Probabilistic Reality, Wave Function Collapse</div>
-                <div class="observer-description" id="observerDescription">
-                    Sees particles in MULTIPLE states at once (superposition). Reality is probabilistic - particles exist as "waves" of possibility until measured. Ghost particles show "HERE or THERE" states before observation collapses the wave function.
-                </div>
-            </div>
-
             <canvas id="reality-canvas"></canvas>
         </div>
 
