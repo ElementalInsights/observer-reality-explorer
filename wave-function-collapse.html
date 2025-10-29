@@ -45,7 +45,7 @@
         .main-container {
             display: grid;
             grid-template-columns: 350px 1fr 350px;
-            grid-template-rows: auto 1fr;
+            grid-template-rows: 1fr auto;
             gap: 20px;
             padding: 20px;
             height: calc(100vh - 60px);
@@ -54,30 +54,32 @@
         /* Info Card */
         .info-card {
             grid-column: 1 / -1;
+            grid-row: 2;
             background: rgba(10,14,39,0.92);
             border: 2px solid #9b59b6;
-            padding: 30px;
+            padding: 25px;
             backdrop-filter: blur(15px);
-            text-align: center;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
         }
 
         .info-card h2 {
             color: #9b59b6;
-            font-size: 1.8em;
-            margin-bottom: 15px;
+            font-size: 1.3em;
+            margin-bottom: 12px;
         }
 
         .info-card p {
             color: #ccc;
-            font-size: 1.1em;
-            line-height: 1.6;
-            max-width: 900px;
-            margin: 0 auto;
+            font-size: 1em;
+            line-height: 1.5;
         }
 
         /* Controls Panel */
         .controls-panel {
             grid-column: 1;
+            grid-row: 1;
             background: rgba(10,14,39,0.95);
             border: 2px solid #2ecc71;
             padding: 20px;
@@ -97,6 +99,7 @@
         /* Visualization Panel */
         .viz-panel {
             grid-column: 2;
+            grid-row: 1;
             position: relative;
             background: rgba(255,255,255,0.02);
             border: 2px solid rgba(155,89,182,0.5);
@@ -111,6 +114,7 @@
         /* Telemetry Panel */
         .telemetry-panel {
             grid-column: 3;
+            grid-row: 1;
         }
 
         /* Buttons */
