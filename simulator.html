@@ -413,9 +413,23 @@
         }
 
         .observer-desc-inline {
-            color: #aaa;
+            color: #00ff88;
             font-size: 0.85em;
             line-height: 1.4;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .observer-description {
+            color: #bbb;
+            font-size: 0.85em;
+            line-height: 1.5;
+            font-style: italic;
+            padding: 10px;
+            background: rgba(0,255,136,0.05);
+            border-left: 3px solid rgba(0,255,136,0.3);
+            border-radius: 4px;
+            margin-top: 10px;
         }
 
         /* Live Stats Grid */
@@ -744,7 +758,10 @@
                 <!-- Observer Info -->
                 <div class="observer-info-inline">
                     <div class="observer-name" id="observerTitle">🌀 Quantum Observer</div>
-                    <div class="observer-desc-inline" id="observerDesc">Superpositions, Wave Functions, Uncertainty</div>
+                    <div class="observer-desc-inline" id="observerDesc">Superpositions, Multiple States, Probabilistic Reality, Wave Function Collapse</div>
+                    <div class="observer-description" id="observerDescription">
+                        Sees particles in MULTIPLE states at once (superposition). Reality is probabilistic - particles exist as "waves" of possibility until measured. Ghost particles show "HERE or THERE" states before observation collapses the wave function.
+                    </div>
                 </div>
 
                 <div style="height: 1px; background: rgba(0,255,136,0.2); margin: 15px 0;"></div>
@@ -1083,49 +1100,49 @@
 
         const observerConfigs = {
             quantum: {
-                name: 'Quantum Observer',
+                name: '🌀 Quantum Observer',
                 color: '#9b59b6',
-                description: 'Sees superpositions, wave functions, and quantum uncertainty',
-                emphasis: 'Superpositions, Wave Functions, Uncertainty',
+                description: 'Sees particles in MULTIPLE states at once (superposition). Reality is probabilistic - particles exist as "waves" of possibility until measured. Ghost particles show "HERE or THERE" states before observation collapses the wave function.',
+                emphasis: 'Superpositions, Multiple States, Probabilistic Reality, Wave Function Collapse',
                 particleSize: 3,
                 connectionDistance: 100,
                 showUncertainty: true,
                 showSuperposition: true
             },
             classical: {
-                name: 'Classical Observer',
+                name: '🎯 Classical Observer',
                 color: '#3498db',
-                description: 'Sees deterministic trajectories and single definite states',
-                emphasis: 'Determinism, Single Paths, Certainty',
+                description: 'Sees particles with EXACT positions and velocities. Reality is deterministic - if you know the initial conditions, you can predict the future perfectly. Trajectory trails show precise paths through spacetime. Newtonian mechanics.',
+                emphasis: 'Determinism, Single Definite States, Predictable Trajectories, Perfect Certainty',
                 particleSize: 5,
                 connectionDistance: 150,
                 showUncertainty: false,
                 showSuperposition: false
             },
             social: {
-                name: 'Social Network Observer',
+                name: '🌐 Social Observer',
                 color: '#27ae60',
-                description: 'Sees clusters, communities, and information flow patterns',
-                emphasis: 'Clusters, Echo Chambers, Network Topology',
+                description: 'Sees CLUSTERS and group membership. Reality is relational - entities are defined by their tribal affiliations. Connections only form within groups (echo chambers!). Different colors = different social identities. Us vs Them.',
+                emphasis: 'Groups, Tribes, In-groups vs Out-groups, Echo Chambers, Identity',
                 particleSize: 6,
                 connectionDistance: 120,
                 showClusters: true,
                 clusterCount: 5
             },
             conscious: {
-                name: 'Conscious System Observer',
+                name: '🧠 Conscious Observer',
                 color: '#e67e22',
-                description: 'Sees integrated information and prediction error flows',
-                emphasis: 'Integration, Free Energy, Prediction Errors',
+                description: 'Sees PREDICTION ERRORS and surprises. Reality is about minimizing free energy (surprise). Red particles = high prediction error (unexpected!). Consciousness emerges from integrating information to predict and control. Active inference.',
+                emphasis: 'Prediction Errors, Free Energy Minimization, Integrated Information, Active Inference',
                 particleSize: 4,
                 connectionDistance: 110,
                 showFlows: true
             },
             ai: {
-                name: 'AI Language Model Observer',
+                name: '🤖 AI Observer',
                 color: '#1abc9c',
-                description: 'Sees semantic embeddings and conceptual relationships',
-                emphasis: 'Embeddings, Semantic Distance, Vector Space',
+                description: 'Sees SEMANTIC RELATIONSHIPS in high-dimensional embedding space. Reality is vectors - closer particles = more similar meaning. Connection thickness shows semantic similarity. Like word2vec, transformers, or neural network attention.',
+                emphasis: 'Embeddings, Semantic Distance, Vector Space, Attention Weights',
                 particleSize: 3,
                 connectionDistance: 90,
                 showVectors: true
@@ -1146,9 +1163,10 @@
 
             // Update info display
             const infoDisplay = document.getElementById('infoDisplay');
-            // Update unified monitor observer info
+            // Update observer info display
             document.getElementById('observerTitle').textContent = config.name;
             document.getElementById('observerDesc').textContent = config.emphasis;
+            document.getElementById('observerDescription').textContent = config.description;
 
             // === WAVE FUNCTION COLLAPSE! ===
             if (previousObserver === 'quantum' && observerType !== 'quantum') {
