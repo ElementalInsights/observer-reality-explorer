@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reality Simulator - Observer Lens</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0e27;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Compact Top Bar */
+        .top-bar {
+            background: linear-gradient(135deg, #1a1f3a 0%, #0a0e27 100%);
+            padding: 15px 20px;
+            border-bottom: 2px solid #00ff88;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-bar h1 {
+            font-size: 1.3em;
+            color: #00ff88;
+            margin: 0;
+        }
+
+        .top-bar a {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.2s;
+        }
+
+        .top-bar a:hover {
+            color: #00ff88;
+        }
+
+        /* Main Canvas */
+        .main-canvas {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 40px;
+            display: flex;
+            gap: 20px;
+            padding: 40px;
+        }
+
+        /* Visualization Container */
+        .viz-container {
+            flex: 1;
+            height: 100%;
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            border: 2px solid rgba(0,255,136,0.2);
+            padding: 30px;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Math Panel */
+        .math-panel {
+            width: 860px;
+            height: 100%;
+            background: rgba(10,14,39,0.95);
+            border-radius: 20px;
+            border: 2px solid rgba(0,255,136,0.2);
+            padding: 20px;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel-column {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .math-panel h2 {
+            color: #00ff88;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #00ff88;
+        }
+
+        /* Controls in Math Panel */
+        .control-section {
+            background: rgba(0,255,136,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(0,255,136,0.2);
+            margin-bottom: 20px;
+        }
+
+        .control-section h3 {
+            color: #00ff88;
+            font-size: 0.9em;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .observer-select {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .observer-select button {
+            padding: 8px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            color: white;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .observer-select button:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .observer-select button.active {
+            background: #00ff88;
+            color: #0a0e27;
+            border-color: #00ff88;
+            font-weight: 700;
+        }
+
+        .control-row {
+            margin: 10px 0;
+        }
+
+        .control-row label {
+            display: block;
+            font-size: 0.8em;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+
+        .control-row input[type="range"] {
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        .control-values {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85em;
+            color: #00ff88;
+        }
+
+        .math-section {
+            margin-bottom: 25px;
+        }
+
+        .math-section h3 {
+            color: #00ff88;
+            font-size: 1em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .formula {
+            background: rgba(0,255,136,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #00ff88;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.8;
+        }
+
+        .formula-label {
+            color: #888;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+
+        .formula-value {
+            color: #00ff88;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        .metric-label {
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .metric-value {
+            color: #00ff88;
+            font-weight: 700;
+        }
+
+        /* Tooltip System */
+        .tooltip-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: rgba(0,255,136,0.3);
+            border: 1px solid #00ff88;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 14px;
+            font-size: 0.7em;
+            color: #00ff88;
+            cursor: help;
+            position: relative;
+        }
+
+        .tooltip-icon:hover {
+            background: rgba(0,255,136,0.5);
+        }
+
+        .tooltip-content {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background: rgba(10,14,39,0.98);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 16px;
+            width: 420px;
+            z-index: 1000;
+            margin-top: 5px;
+            box-shadow: 0 4px 20px rgba(0,255,136,0.4);
+        }
+
+        .tooltip-icon:hover .tooltip-content {
+            display: block;
+        }
+
+        .tooltip-content h4 {
+            color: #00ff88;
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+        }
+
+        .tooltip-content p {
+            color: #ddd;
+            margin: 6px 0;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .tooltip-content .why {
+            color: #9b59b6;
+            font-weight: 600;
+            margin-top: 10px;
+            font-size: 1em;
+        }
+
+        .math-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .math-panel::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+
+        .math-panel::-webkit-scrollbar-thumb {
+            background: #00ff88;
+            border-radius: 4px;
+        }
+
+        /* Cascade Effect Animation */
+        @keyframes cascade-pulse {
+            0% {
+                background: rgba(0,255,136,0.1);
+                transform: scale(1);
+            }
+            50% {
+                background: rgba(0,255,136,0.3);
+                transform: scale(1.02);
+            }
+            100% {
+                background: rgba(0,255,136,0.1);
+                transform: scale(1);
+            }
+        }
+
+        .cascade-active {
+            animation: cascade-pulse 0.6s ease-out;
+        }
+
+        .cascade-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,255,136,0.2);
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid #00ff88;
+            font-size: 0.85em;
+            color: #00ff88;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 100;
+        }
+
+        .cascade-indicator.active {
+            opacity: 1;
+        }
+
+        /* Heat Monitor Tooltip */
+        .heat-monitor {
+            cursor: help;
+        }
+
+        .heat-tooltip {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: rgba(10,14,39,0.98);
+            border: 2px solid #e74c3c;
+            border-radius: 10px;
+            padding: 16px;
+            width: 420px;
+            z-index: 1000;
+            margin-top: 5px;
+            box-shadow: 0 4px 20px rgba(231,76,60,0.4);
+        }
+
+        .heat-monitor:hover .heat-tooltip {
+            display: block;
+        }
+
+        .heat-tooltip h4 {
+            color: #e74c3c;
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+        }
+
+        .heat-tooltip p {
+            color: #ddd;
+            margin: 6px 0;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .heat-tooltip .why {
+            color: #f39c12;
+            font-weight: 600;
+            margin-top: 10px;
+            font-size: 1em;
+        }
+
+        /* Collapse animation */
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        /* Reality Grid - Optimized! */
+        #reality-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Info Display */
+        .info-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px 20px;
+            border-radius: 10px;
+            border-left: 4px solid #00ff88;
+        }
+
+        .info-display h3 {
+            color: #00ff88;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .info-display p {
+            color: #aaa;
+            font-size: 0.85em;
+            line-height: 1.6;
+            margin: 5px 0;
+        }
+
+        .info-display .emphasis {
+            color: #00ff88;
+            font-weight: 600;
+        }
+
+        /* Heat Monitor */
+        .heat-monitor {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 12px 18px;
+            border-radius: 10px;
+            border-left: 4px solid #e74c3c;
+            min-width: 180px;
+        }
+
+        .heat-label {
+            color: #e74c3c;
+            font-size: 0.9em;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .heat-bar-container {
+            width: 100%;
+            height: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .heat-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3498db 0%, #00ff88 30%, #f39c12 60%, #e74c3c 100%);
+            transition: width 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 0 10px rgba(231,76,60,0.5);
+        }
+
+        .heat-value {
+            color: #fff;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* Footer */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10,14,39,0.9);
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 0.8em;
+            color: #666;
+            border-top: 1px solid rgba(0,255,136,0.2);
+        }
+
+        .footer a {
+            color: #00ff88;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Compact Top Bar -->
+    <div class="top-bar">
+        <h1>🔬 Reality Observer Simulator</h1>
+        <a href="index.html">← Back to Theory</a>
+    </div>
+
+    <!-- Main Visualization -->
+    <div class="main-canvas">
+        <div class="viz-container">
+            <!-- Info Display -->
+            <div class="info-display" id="infoDisplay">
+                <h3>Quantum Observer</h3>
+                <p>You are viewing reality through a <span class="emphasis">quantum lens</span></p>
+                <p>Sees: <span class="emphasis">Superpositions, Wave Functions, Uncertainty</span></p>
+            </div>
+
+            <!-- Heat Monitor -->
+            <div class="heat-monitor" id="heatMonitor">
+                <div class="heat-label">🌡️ System Temperature</div>
+                <div class="heat-bar-container">
+                    <div class="heat-bar" id="heatBar"></div>
+                </div>
+                <div class="heat-value" id="heatValue">T = 0.000</div>
+
+                <!-- Heat Tooltip -->
+                <div class="heat-tooltip">
+                    <h4>What is Heat?</h4>
+                    <p><strong>Heat = Random Kinetic Energy</strong></p>
+                    <p>At the microscopic level, "heat" is just particles moving randomly. Temperature measures the <em>average</em> kinetic energy of those particles.</p>
+                    <p class="why">Why does heat matter?</p>
+                    <p><strong>Heat drives entropy!</strong> Hot systems are chaotic and disordered. Cold systems can form structure and patterns.</p>
+                    <p>💡 <strong>Try this:</strong> Click "Add Heat" and watch:</p>
+                    <p>• Temperature ↑ (particles speed up)<br>
+                    • Kinetic Energy ↑ (more motion)<br>
+                    • Entropy ↑ (more disorder)<br>
+                    • Spatial Spread ↑ (particles diffuse faster)<br>
+                    • Free Energy changes (stability shifts)</p>
+                    <p><strong>Real-world connection:</strong> This is why hot coffee spreads aroma faster, why ice melts into water, why stars form from cold gas clouds!</p>
+                </div>
+            </div>
+
+            <!-- SVG Canvas (Optimized with Spatial Grid!) -->
+            <svg id="reality-canvas"></svg>
+        </div>
+
+        <!-- Controls & Calculations Panel -->
+        <div class="math-panel">
+            <div class="cascade-indicator" id="cascadeIndicator">⚡ Cascade Update</div>
+
+            <!-- LEFT COLUMN: CONTROLS -->
+            <div class="panel-column">
+                <h2>🎮 Controls</h2>
+
+                <!-- CONTROLS -->
+                <div class="control-section">
+                <h3>Observer Type</h3>
+                <div class="observer-select">
+                    <button class="active" data-observer="quantum" onclick="switchObserver('quantum')">🔬 Quantum</button>
+                    <button data-observer="classical" onclick="switchObserver('classical')">🎯 Classical</button>
+                    <button data-observer="social" onclick="switchObserver('social')">🌐 Social</button>
+                    <button data-observer="conscious" onclick="switchObserver('conscious')">🧠 Conscious</button>
+                    <button data-observer="ai" onclick="switchObserver('ai')">🤖 AI</button>
+                </div>
+
+                <div class="control-row">
+                    <label>Population Size (N) - WebGL Accelerated ⚡</label>
+                    <input type="range" id="populationSlider" min="20" max="20000" value="100" step="50" oninput="updatePopulation(this.value)">
+                    <div class="control-values">
+                        <span>20</span>
+                        <span id="populationValue">100</span>
+                        <span style="color: #00ff88; font-weight: 700;">20,000</span>
+                    </div>
+                    <p style="color: #666; font-size: 0.7em; margin-top: 5px; line-height: 1.3;">
+                        🚀 GPU-accelerated! Scale up to see emergent patterns at massive scale!
+                    </p>
+                </div>
+
+                <div class="control-row">
+                    <label>Observer Power (Coarse-graining)</label>
+                    <input type="range" id="budgetSlider" min="0" max="100" value="100" oninput="updateBudget(this.value)">
+                    <div class="control-values">
+                        <span>Coarse</span>
+                        <span id="budgetValue">100%</span>
+                        <span>Fine</span>
+                    </div>
+                </div>
+
+                <div class="control-row">
+                    <label>Thermodynamic Evolution (2nd Law)</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button id="playBtn" onclick="toggleTimeEvolution()" style="flex: 1; padding: 8px; background: #00ff88; color: #0a0e27; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">
+                            <span id="playIcon">▶️</span> <span id="playText">Play</span>
+                        </button>
+                        <div style="flex: 2;">
+                            <input type="range" id="speedSlider" min="1" max="10" value="5" oninput="updateSpeed(this.value)" style="width: 100%;">
+                            <div class="control-values">
+                                <span>Slow</span>
+                                <span id="speedValue">5x</span>
+                                <span>Fast</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="color: #666; font-size: 0.7em; margin-top: 5px; line-height: 1.3;">
+                        Particles spread out, entropy increases, system becomes more disordered
+                    </p>
+                </div>
+
+                <div class="control-row">
+                    <label>Heat Control (Add/Remove Energy)</label>
+                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button onclick="addHeat()" style="flex: 1; padding: 10px; background: #e74c3c; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.9em;">
+                            🔥 Add Heat
+                        </button>
+                        <button onclick="removeHeat()" style="flex: 1; padding: 10px; background: #3498db; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.9em;">
+                            ❄️ Cool Down
+                        </button>
+                    </div>
+                    <p style="color: #666; font-size: 0.7em; margin-top: 5px; line-height: 1.3;">
+                        Heat = kinetic energy. Watch Temperature, K, and Entropy increase with heat!
+                    </p>
+                </div>
+            </div>
+            </div>
+
+            <!-- RIGHT COLUMN: SYSTEM STATE & CALCULATIONS -->
+            <div class="panel-column">
+                <h2>📊 System State & Calculations</h2>
+
+            <div class="math-section">
+                <div class="metric">
+                    <span class="metric-label">
+                        Particles (N):
+                        <span class="tooltip-icon">?
+                            <span class="tooltip-content">
+                                <h4>Population Size (N)</h4>
+                                <p>The total number of entities in your system - could be particles, people, neurons, or concepts.</p>
+                                <p class="why">Why it matters:</p>
+                                <p>Larger N means more complexity, more interactions, and exponentially higher computational costs (N² scaling). In real systems, observers can't track everything!</p>
+                            </span>
+                        </span>
+                    </span>
+                    <span class="metric-value" id="particleCount">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">
+                        Connections (E):
+                        <span class="tooltip-icon">?
+                            <span class="tooltip-content">
+                                <h4>Network Edges (E)</h4>
+                                <p>Number of active relationships between particles within connection distance. Forms the network topology.</p>
+                                <p class="why">Why it matters:</p>
+                                <p>High E means highly interconnected system (social clusters, quantum entanglement). Low E means isolated particles. Network structure determines information flow!</p>
+                            </span>
+                        </span>
+                    </span>
+                    <span class="metric-value" id="connectionCount">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">
+                        Observer Power:
+                        <span class="tooltip-icon">?
+                            <span class="tooltip-content">
+                                <h4>Computational Budget</h4>
+                                <p>How much resolution your observer has. Low power = coarse-grained view (particles snap to grid). High power = fine-grained precision.</p>
+                                <p class="why">Why it matters:</p>
+                                <p>Real observers (humans, AI, instruments) have LIMITED compute! You can't measure everything perfectly. Trade-off between detail and cost.</p>
+                            </span>
+                        </span>
+                    </span>
+                    <span class="metric-value" id="observerPower">100%</span>
+                </div>
+
+                <div style="height: 1px; background: rgba(0,255,136,0.2); margin: 15px 0;"></div>
+
+                <div class="metric">
+                    <span class="metric-label">
+                        Shannon Entropy (H):
+                        <span class="tooltip-icon">?
+                            <span class="tooltip-content">
+                                <h4>Shannon Entropy (Information Theory)</h4>
+                                <p><strong>H = -Σ p(x) log₂ p(x)</strong></p>
+                                <p>Measures disorder/unpredictability. We divide space into grid cells and calculate probability distribution. Higher H = more spread out, more random.</p>
+                                <p class="why">Why it matters:</p>
+                                <p>2nd Law of Thermodynamics: entropy ALWAYS increases in closed systems! Watch it grow when you hit Play. Core to information theory, physics, and ML.</p>
+                            </span>
+                        </span>
+                    </span>
+                    <span class="metric-value" id="entropyValue">0.000 bits</span>
+                </div>
+                <p style="color: #666; font-size: 0.75em; margin: 3px 0 10px 0;">
+                    H = -Σ p(x) log₂ p(x) | From 2D spatial distribution
+                </p>
+
+                <div class="metric">
+                    <span class="metric-label">
+                        Uncertainty (Δx·Δp):
+                        <span class="tooltip-icon">?
+                            <span class="tooltip-content">
+                                <h4>Heisenberg Uncertainty Principle</h4>
+                                <p><strong>Δx · Δp ≥ ℏ/2</strong></p>
+                                <p>Product of position variance (σₓ) and velocity variance (σₚ). You can't know both precisely at once!</p>
+                                <p class="why">Why it matters:</p>
+                                <p>Fundamental limit in quantum mechanics. Trade-off between knowing WHERE something is vs HOW FAST it's moving. Quantum observers see higher uncertainty than classical!</p>
+                            </span>
+                        </span>
+                    </span>
+                    <span class="metric-value" id="uncertaintyValue">0.000</span>
+                </div>
+                <p style="color: #666; font-size: 0.75em; margin: 3px 0 10px 0;">
+                    σ_pos × σ_vel | Position & velocity variance
+                </p>
+
+                <div class="metric">
+                    <span class="metric-label">
+                        Network Density (ρ):
+                        <span class="tooltip-icon">?
+                            <span class="tooltip-content">
+                                <h4>Graph Density</h4>
+                                <p><strong>ρ = 2E / N(N-1)</strong></p>
+                                <p>Ratio of actual connections to maximum possible connections. ρ=1 means fully connected (every particle connects to every other), ρ=0 means totally isolated.</p>
+                                <p class="why">Why it matters:</p>
+                                <p>Determines information flow speed, system robustness, phase transitions. Social networks: high ρ = echo chambers. Neural networks: connectivity = computational power!</p>
+                            </span>
+                        </span>
+                    </span>
+                    <span class="metric-value" id="densityValue">0.000</span>
+                </div>
+                <p style="color: #666; font-size: 0.75em; margin: 3px 0 10px 0;">
+                    2E / N(N-1) | Actual vs possible connections
+                </p>
+
+                <div class="metric">
+                    <span class="metric-label">
+                        Computational Cost (C):
+                        <span class="tooltip-icon">?
+                            <span class="tooltip-content">
+                                <h4>Algorithmic Complexity</h4>
+                                <p><strong>C = N²</strong></p>
+                                <p>Number of pairwise distance calculations per frame. Checking every particle against every other = O(N²) scaling.</p>
+                                <p class="why">Why it matters:</p>
+                                <p>This is WHY coarse-graining exists! Real systems (brains, GPUs, nature) can't compute everything. Limits to observation = fundamental to reality. Watch C explode as N increases!</p>
+                            </span>
+                        </span>
+                    </span>
+                    <span class="metric-value" id="complexityValue">0 ops</span>
+                </div>
+                <p style="color: #666; font-size: 0.75em; margin: 3px 0 10px 0;">
+                    N² | Pairwise distance calculations per frame
+                </p>
+
+                <div class="metric">
+                    <span class="metric-label">
+                        Free Energy (F):
+                        <span class="tooltip-icon">?
+                            <span class="tooltip-content">
+                                <h4>Helmholtz Free Energy</h4>
+                                <p><strong>F = U - TS</strong></p>
+                                <p>Combines potential energy (U) with entropy (S) and temperature (T). Lower F = more stable configuration.</p>
+                                <p class="why">Why it matters:</p>
+                                <p>Systems minimize free energy! Brains use "Free Energy Principle" (Karl Friston). Connects thermodynamics to prediction, consciousness, and life itself. Active inference = minimize surprise!</p>
+                            </span>
+                        </span>
+                    </span>
+                    <span class="metric-value" id="freeEnergyValue">0.000</span>
+                </div>
+                <p style="color: #666; font-size: 0.75em; margin: 3px 0 10px 0;">
+                    U - TS | Potential energy minus entropy term
+                </p>
+
+                <div style="height: 1px; background: rgba(0,255,136,0.2); margin: 15px 0;"></div>
+
+                <div class="metric">
+                    <span class="metric-label">
+                        Temperature (T):
+                        <span class="tooltip-icon">?
+                            <span class="tooltip-content">
+                                <h4>Thermodynamic Temperature</h4>
+                                <p><strong>T ∝ √(⟨v²⟩)</strong></p>
+                                <p>Derived from kinetic energy. Higher T = faster particles = more thermal motion.</p>
+                                <p class="why">Why it matters:</p>
+                                <p>Temperature drives entropy growth! Hot systems are chaotic, cold systems can form structure. Controls phase transitions (solid→liquid→gas). Heat = randomness!</p>
+                            </span>
+                        </span>
+                    </span>
+                    <span class="metric-value" id="temperatureValue">0.000</span>
+                </div>
+                <p style="color: #666; font-size: 0.75em; margin: 3px 0 10px 0;">
+                    √(⟨v²⟩) | From kinetic energy/velocity variance
+                </p>
+
+                <div class="metric">
+                    <span class="metric-label">
+                        Kinetic Energy (K):
+                        <span class="tooltip-icon">?
+                            <span class="tooltip-content">
+                                <h4>Kinetic Energy (Motion)</h4>
+                                <p><strong>K = ½mv²</strong></p>
+                                <p>Energy of motion. Sum of all particle velocities squared.</p>
+                                <p class="why">Why it matters:</p>
+                                <p>Half of total energy (K+U). Can be converted to potential energy and back. Conservation of energy = fundamental law. Kinetic energy IS heat in statistical mechanics!</p>
+                            </span>
+                        </span>
+                    </span>
+                    <span class="metric-value" id="kineticValue">0.000</span>
+                </div>
+                <p style="color: #666; font-size: 0.75em; margin: 3px 0 10px 0;">
+                    ⟨½mv²⟩ | Average kinetic energy per particle
+                </p>
+
+                <div class="metric">
+                    <span class="metric-label">
+                        Potential Energy (U):
+                        <span class="tooltip-icon">?
+                            <span class="tooltip-content">
+                                <h4>Potential Energy (Interactions)</h4>
+                                <p>Energy stored in particle interactions. Lennard-Jones potential: attractive at medium range, repulsive up close.</p>
+                                <p class="why">Why it matters:</p>
+                                <p>Determines stable configurations! Low U = particles found their "happy distance". Molecular bonds, galaxies, social networks - all minimize potential energy.</p>
+                            </span>
+                        </span>
+                    </span>
+                    <span class="metric-value" id="potentialValue">0.000</span>
+                </div>
+                <p style="color: #666; font-size: 0.75em; margin: 3px 0 10px 0;">
+                    Lennard-Jones | Particle interaction energy
+                </p>
+
+                <div class="metric">
+                    <span class="metric-label">
+                        Spatial Spread (σᵣ):
+                        <span class="tooltip-icon">?
+                            <span class="tooltip-content">
+                                <h4>Root Mean Square Spread</h4>
+                                <p>Average distance from center of mass. Measures how "puffed out" the system is.</p>
+                                <p class="why">Why it matters:</p>
+                                <p>Grows with entropy! When you hit Play, watch particles diffuse outward. 2nd law in action. Star formation, gas clouds, crowd dispersion - all follow this!</p>
+                            </span>
+                        </span>
+                    </span>
+                    <span class="metric-value" id="spatialSpreadValue">0.000</span>
+                </div>
+                <p style="color: #666; font-size: 0.75em; margin: 3px 0 10px 0;">
+                    RMS distance from center of mass
+                </p>
+
+                <div class="metric">
+                    <span class="metric-label">
+                        Info Deficit (ΔH):
+                        <span class="tooltip-icon">?
+                            <span class="tooltip-content">
+                                <h4>Information Deficit</h4>
+                                <p><strong>ΔH = H_max - H</strong></p>
+                                <p>How much entropy remains before reaching maximum disorder (uniform distribution).</p>
+                                <p class="why">Why it matters:</p>
+                                <p>Measures available "structure" or "order" in the system. High ΔH = still organized. Low ΔH = approaching heat death! Information = negative entropy (negentropy).</p>
+                            </span>
+                        </span>
+                    </span>
+                    <span class="metric-value" id="infoDeficitValue">0.000 bits</span>
+                </div>
+                <p style="color: #666; font-size: 0.75em; margin: 3px 0 10px 0;">
+                    H_max - H | Distance from maximum entropy
+                </p>
+
+                <div class="metric">
+                    <span class="metric-label">
+                        Avg Velocity (⟨v⟩):
+                        <span class="tooltip-icon">?
+                            <span class="tooltip-content">
+                                <h4>Mean Particle Speed</h4>
+                                <p>Average velocity magnitude across all particles. Proxy for system momentum.</p>
+                                <p class="why">Why it matters:</p>
+                                <p>Related to temperature and kinetic energy. Fast particles = hot system. Shows how "active" the system is. Zero mean velocity = no net drift.</p>
+                            </span>
+                        </span>
+                    </span>
+                    <span class="metric-value" id="avgVelocityValue">0.000</span>
+                </div>
+                <p style="color: #666; font-size: 0.75em; margin: 3px 0 10px 0;">
+                    Mean particle speed | System momentum
+                </p>
+
+                <div style="height: 1px; background: rgba(0,255,136,0.2); margin: 15px 0;"></div>
+
+                <div class="metric">
+                    <span class="metric-label">
+                        Total Energy (E_total):
+                        <span class="tooltip-icon">?
+                            <span class="tooltip-content">
+                                <h4>Total System Energy</h4>
+                                <p><strong>E_total = K + U</strong></p>
+                                <p>Sum of kinetic energy (motion) and potential energy (interactions). Should be conserved in isolated systems!</p>
+                                <p class="why">Why it matters:</p>
+                                <p>First Law of Thermodynamics: energy is conserved. Watch it stay constant (with slight numerical drift). Energy can flow between K↔U but total stays fixed. Foundation of physics!</p>
+                            </span>
+                        </span>
+                    </span>
+                    <span class="metric-value" id="totalEnergyValue">0.000</span>
+                </div>
+                <p style="color: #666; font-size: 0.75em; margin: 3px 0 10px 0;">
+                    K + U | Conserved in closed systems
+                </p>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        © 2025 Jacob Edwards | <a href="index.html">← Back to Theory</a> | <a href="https://github.com/ElementalInsights/observer-reality-explorer" target="_blank">GitHub</a>
+    </div>
+
+    <script>
+        // ===== STATE =====
+        let currentObserver = 'quantum';
+        let computationalBudget = 100;
+        let timeEvolutionActive = false;
+        let evolutionSpeed = 5;
+        let evolutionTime = 0;
+        let populationSize = 100;
+        let animationFrameId = null;
+
+        const observerConfigs = {
+            quantum: {
+                name: 'Quantum Observer',
+                color: '#9b59b6',
+                description: 'Sees superpositions, wave functions, and quantum uncertainty',
+                emphasis: 'Superpositions, Wave Functions, Uncertainty',
+                particleSize: 3,
+                connectionDistance: 100,
+                showUncertainty: true,
+                showSuperposition: true
+            },
+            classical: {
+                name: 'Classical Observer',
+                color: '#3498db',
+                description: 'Sees deterministic trajectories and single definite states',
+                emphasis: 'Determinism, Single Paths, Certainty',
+                particleSize: 5,
+                connectionDistance: 150,
+                showUncertainty: false,
+                showSuperposition: false
+            },
+            social: {
+                name: 'Social Network Observer',
+                color: '#27ae60',
+                description: 'Sees clusters, communities, and information flow patterns',
+                emphasis: 'Clusters, Echo Chambers, Network Topology',
+                particleSize: 6,
+                connectionDistance: 120,
+                showClusters: true,
+                clusterCount: 5
+            },
+            conscious: {
+                name: 'Conscious System Observer',
+                color: '#e67e22',
+                description: 'Sees integrated information and prediction error flows',
+                emphasis: 'Integration, Free Energy, Prediction Errors',
+                particleSize: 4,
+                connectionDistance: 110,
+                showFlows: true
+            },
+            ai: {
+                name: 'AI Language Model Observer',
+                color: '#1abc9c',
+                description: 'Sees semantic embeddings and conceptual relationships',
+                emphasis: 'Embeddings, Semantic Distance, Vector Space',
+                particleSize: 3,
+                connectionDistance: 90,
+                showVectors: true
+            }
+        };
+
+        // ===== OBSERVER SWITCHING =====
+        function switchObserver(observerType) {
+            const previousObserver = currentObserver;
+            currentObserver = observerType;
+            const config = observerConfigs[observerType];
+
+            // Update button states
+            document.querySelectorAll('.observer-select button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update info display
+            const infoDisplay = document.getElementById('infoDisplay');
+            infoDisplay.innerHTML = `
+                <h3>${config.name}</h3>
+                <p>You are viewing reality through a <span class="emphasis">${observerType} lens</span></p>
+                <p>Sees: <span class="emphasis">${config.emphasis}</span></p>
+            `;
+            infoDisplay.style.borderLeftColor = config.color;
+
+            // === WAVE FUNCTION COLLAPSE! ===
+            if (previousObserver === 'quantum' && observerType !== 'quantum') {
+                // Switching FROM quantum to anything else = MEASUREMENT
+                // Superpositions collapse into definite states
+                collapseWaveFunction(() => {
+                    // Update visualization without regenerating particles
+                    updateObserverVisualization();
+                    setTimeout(() => updateMathPanel(true), 500);
+                });
+            } else if (window.currentParticles && window.currentParticles.length === populationSize) {
+                // Particles exist, just update visualization
+                updateObserverVisualization();
+                setTimeout(() => updateMathPanel(true), 500);
+            } else {
+                // First load or population changed - create new particles
+                createReality();
+                setTimeout(() => updateMathPanel(true), 500);
+            }
+        }
+
+        // Wave function collapse animation
+        function collapseWaveFunction(callback) {
+            const ghosts = d3.selectAll('.ghosts circle');
+            const particles = d3.selectAll('.particles circle');
+
+            // Show collapse notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(155, 89, 182, 0.95);
+                color: white;
+                padding: 30px 50px;
+                border-radius: 15px;
+                font-size: 1.5em;
+                font-weight: 700;
+                z-index: 10000;
+                box-shadow: 0 0 50px rgba(155, 89, 182, 0.8);
+                animation: pulse 0.5s ease-out;
+            `;
+            notification.innerHTML = '⚡ WAVE FUNCTION COLLAPSE ⚡<br><span style="font-size: 0.6em;">Superpositions → Definite State</span>';
+            document.body.appendChild(notification);
+
+            // Animate ghosts collapsing into particles
+            ghosts.transition()
+                .duration(800)
+                .attr('r', 0)
+                .attr('opacity', 0);
+
+            // Pulse particles
+            particles.transition()
+                .duration(300)
+                .attr('r', d => observerConfigs[currentObserver].particleSize * 2)
+                .transition()
+                .duration(300)
+                .attr('r', d => observerConfigs[currentObserver].particleSize);
+
+            setTimeout(() => {
+                notification.remove();
+                callback();
+            }, 1000);
+        }
+
+        // ===== COMPUTATIONAL BUDGET =====
+        function updateBudget(value) {
+            computationalBudget = parseInt(value);
+            document.getElementById('budgetValue').textContent = value + '%';
+            document.getElementById('observerPower').textContent = value + '%';
+
+            // REAL EFFECT: Coarse-grain the view
+            const particles = window.currentParticles || [];
+
+            if (computationalBudget < 100) {
+                // Low power = Group particles into coarse-grained clusters
+                const gridSize = Math.max(5, Math.floor(50 - (computationalBudget / 100) * 45)); // 5-50 grid size
+
+                d3.selectAll('.particle').each(function(d) {
+                    // Snap to grid (quantization)
+                    const quantizedX = Math.floor(d.x / gridSize) * gridSize + gridSize/2;
+                    const quantizedY = Math.floor(d.y / gridSize) * gridSize + gridSize/2;
+
+                    d3.select(this)
+                        .attr('cx', quantizedX)
+                        .attr('cy', quantizedY)
+                        .attr('r', Math.max(3, gridSize / 8)); // Bigger clusters at low power
+                });
+            } else {
+                // High power = Show actual positions
+                d3.selectAll('.particle').each(function(d) {
+                    d3.select(this)
+                        .attr('cx', d.x)
+                        .attr('cy', d.y)
+                        .attr('r', observerConfigs[currentObserver].particleSize);
+                });
+            }
+
+            // Update connections with coarse-graining
+            updateConnections();
+
+            // Update math panel with CASCADE effect
+            updateMathPanel(true);
+        }
+
+        // ===== UPDATE MATH PANEL =====
+        function updateMathPanel(showCascade = false) {
+            const config = observerConfigs[currentObserver];
+            const particles = window.currentParticles || [];
+            const connections = window.currentConnections || [];
+
+            // Show cascade indicator if requested
+            if (showCascade) {
+                const indicator = document.getElementById('cascadeIndicator');
+                indicator.classList.add('active');
+                setTimeout(() => indicator.classList.remove('active'), 1500);
+
+                // Animate each math section
+                document.querySelectorAll('.math-section').forEach((section, i) => {
+                    setTimeout(() => {
+                        section.classList.add('cascade-active');
+                        setTimeout(() => section.classList.remove('cascade-active'), 600);
+                    }, i * 100);
+                });
+            }
+
+            // Particle count
+            document.getElementById('particleCount').textContent = particles.length;
+
+            // Connection count
+            document.getElementById('connectionCount').textContent = connections.length;
+
+            // Shannon Entropy - REAL calculation from 2D spatial distribution
+            let entropy = 0;
+            if (particles.length > 0) {
+                // Create 2D grid based on observer power (coarse-graining)
+                const gridResolution = Math.max(5, Math.floor(20 * (computationalBudget / 100)));
+                const width = 1000;
+                const height = 600;
+                const cellWidth = width / gridResolution;
+                const cellHeight = height / gridResolution;
+
+                // Count particles in each cell
+                const grid = new Array(gridResolution * gridResolution).fill(0);
+
+                particles.forEach(p => {
+                    const cellX = Math.min(Math.floor(p.x / cellWidth), gridResolution - 1);
+                    const cellY = Math.min(Math.floor(p.y / cellHeight), gridResolution - 1);
+                    const cellIndex = cellY * gridResolution + cellX;
+                    grid[cellIndex]++;
+                });
+
+                // Calculate Shannon entropy from probability distribution
+                const totalParticles = particles.length;
+                grid.forEach(count => {
+                    if (count > 0) {
+                        const probability = count / totalParticles;
+                        entropy -= probability * Math.log2(probability);
+                    }
+                });
+
+                // Max entropy for uniform distribution
+                const maxEntropy = Math.log2(gridResolution * gridResolution);
+
+                // At low power, we lose information (higher entropy relative to our grid)
+                const observerUncertainty = (100 - computationalBudget) / 100;
+                entropy = entropy + (maxEntropy - entropy) * observerUncertainty;
+            }
+
+            document.getElementById('entropyValue').textContent = `H = ${entropy.toFixed(3)} bits`;
+
+            // Heisenberg Uncertainty - REAL calculation from position/velocity variance
+            let posVariance = 0;
+            let velVariance = 0;
+
+            if (particles.length > 1) {
+                // Calculate mean position and velocity
+                const meanX = particles.reduce((sum, p) => sum + p.x, 0) / particles.length;
+                const meanY = particles.reduce((sum, p) => sum + p.y, 0) / particles.length;
+                const meanVx = particles.reduce((sum, p) => sum + p.vx, 0) / particles.length;
+                const meanVy = particles.reduce((sum, p) => sum + p.vy, 0) / particles.length;
+
+                // Calculate variance (Δx)² and (Δp)²
+                posVariance = particles.reduce((sum, p) => {
+                    const dx = p.x - meanX;
+                    const dy = p.y - meanY;
+                    return sum + (dx * dx + dy * dy);
+                }, 0) / particles.length;
+
+                velVariance = particles.reduce((sum, p) => {
+                    const dvx = p.vx - meanVx;
+                    const dvy = p.vy - meanVy;
+                    return sum + (dvx * dvx + dvy * dvy);
+                }, 0) / particles.length;
+
+                // At low observer power, we can't measure as precisely (increased uncertainty)
+                const measurementError = 1 + (100 - computationalBudget) / 50;
+                posVariance *= measurementError;
+                velVariance *= measurementError;
+            }
+
+            // Δx · Δp (standard deviations multiplied)
+            const uncertainty = Math.sqrt(posVariance) * Math.sqrt(velVariance);
+
+            // Quantum vs classical difference
+            const quantumFactor = currentObserver === 'quantum' ? 1.5 : 1.0;
+
+            document.getElementById('uncertaintyValue').textContent = `Δx·Δp = ${(uncertainty * quantumFactor).toFixed(3)}`;
+
+            // Network Density
+            const maxConnections = particles.length * (particles.length - 1) / 2;
+            const density = maxConnections > 0 ? connections.length / maxConnections : 0;
+            document.getElementById('densityValue').textContent = `ρ = ${density.toFixed(3)}`;
+
+            // Computational Cost
+            const complexity = particles.length * particles.length;
+            document.getElementById('complexityValue').textContent = `C = ${complexity.toLocaleString()} ops`;
+
+            // Free Energy - REAL calculation based on system configuration
+            // F = U - TS where U = potential energy, T = "temperature", S = entropy
+
+            // Calculate potential energy from particle interactions
+            let potentialEnergy = 0;
+            // config already declared at top of function
+
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    // Lennard-Jones-like potential: attractive at medium range, repulsive at close range
+                    if (dist < config.connectionDistance) {
+                        // Attractive term
+                        potentialEnergy -= 1.0 / (dist + 1);
+                    }
+                    if (dist < 20) {
+                        // Repulsive term at very close distances
+                        potentialEnergy += 10.0 / (dist + 1);
+                    }
+                }
+            }
+
+            // Normalize by particle count
+            potentialEnergy /= Math.max(1, particles.length);
+
+            // Temperature proxy from kinetic energy (velocity variance)
+            const kineticEnergy = particles.reduce((sum, p) => {
+                return sum + (p.vx * p.vx + p.vy * p.vy);
+            }, 0) / Math.max(1, particles.length);
+
+            const temperature = Math.sqrt(kineticEnergy) * 0.1;
+
+            // Free Energy: F = U - TS
+            // Lower free energy = more stable, ordered system
+            const freeEnergy = potentialEnergy - temperature * entropy * 0.01;
+
+            document.getElementById('freeEnergyValue').textContent = `F = ${freeEnergy.toFixed(3)}`;
+
+            // ===== NEW METRICS =====
+
+            // Temperature (already calculated above)
+            document.getElementById('temperatureValue').textContent = `T = ${temperature.toFixed(3)}`;
+
+            // Update visual heat monitor
+            const maxTemp = 2.0; // Reasonable max temperature for the bar
+            const tempPercent = Math.min((temperature / maxTemp) * 100, 100);
+            const heatBar = document.getElementById('heatBar');
+            const heatValue = document.getElementById('heatValue');
+            if (heatBar) {
+                heatBar.style.width = tempPercent + '%';
+                // Change glow intensity based on temperature
+                heatBar.style.boxShadow = `0 0 ${10 + tempPercent * 0.3}px rgba(231,76,60,${0.3 + tempPercent * 0.007})`;
+            }
+            if (heatValue) {
+                heatValue.textContent = `T = ${temperature.toFixed(3)}`;
+            }
+
+            // Kinetic Energy (already calculated above)
+            document.getElementById('kineticValue').textContent = `K = ${kineticEnergy.toFixed(3)}`;
+
+            // Potential Energy (already calculated above)
+            document.getElementById('potentialValue').textContent = `U = ${potentialEnergy.toFixed(3)}`;
+
+            // Spatial Spread - RMS distance from center of mass
+            let spatialSpread = 0;
+            if (particles.length > 0) {
+                // Calculate center of mass
+                const centerX = particles.reduce((sum, p) => sum + p.x, 0) / particles.length;
+                const centerY = particles.reduce((sum, p) => sum + p.y, 0) / particles.length;
+
+                // Calculate RMS distance from center
+                const sumSquaredDist = particles.reduce((sum, p) => {
+                    const dx = p.x - centerX;
+                    const dy = p.y - centerY;
+                    return sum + (dx * dx + dy * dy);
+                }, 0);
+
+                spatialSpread = Math.sqrt(sumSquaredDist / particles.length);
+            }
+            document.getElementById('spatialSpreadValue').textContent = `σᵣ = ${spatialSpread.toFixed(3)}`;
+
+            // Information Deficit - H_max - H (how far from maximum entropy)
+            const gridResolution = Math.max(5, Math.floor(20 * (computationalBudget / 100)));
+            const maxEntropy = Math.log2(gridResolution * gridResolution);
+            const infoDeficit = maxEntropy - entropy;
+            document.getElementById('infoDeficitValue').textContent = `ΔH = ${infoDeficit.toFixed(3)} bits`;
+
+            // Average Velocity - mean speed
+            let avgVelocity = 0;
+            if (particles.length > 0) {
+                const totalSpeed = particles.reduce((sum, p) => {
+                    const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                    return sum + speed;
+                }, 0);
+                avgVelocity = totalSpeed / particles.length;
+            }
+            document.getElementById('avgVelocityValue').textContent = `⟨v⟩ = ${avgVelocity.toFixed(3)}`;
+
+            // Total Energy = Kinetic + Potential (should be conserved!)
+            const totalEnergy = (kineticEnergy * particles.length) + (potentialEnergy * particles.length);
+            document.getElementById('totalEnergyValue').textContent = `E = ${totalEnergy.toFixed(3)}`;
+        }
+
+        // ===== UPDATE OBSERVER VISUALIZATION (keep particles, change view) =====
+        function updateObserverVisualization() {
+            const config = observerConfigs[currentObserver];
+            const svg = d3.select('#reality-canvas');
+
+            const particles = window.currentParticles || [];
+            if (particles.length === 0 || particles.length !== populationSize) {
+                createReality();
+                return;
+            }
+
+            const width = svg.node().clientWidth;
+            const height = svg.node().clientHeight;
+
+            // Update cluster assignments if switching to/from social
+            if (currentObserver === 'social' && config.clusterCount) {
+                particles.forEach(p => {
+                    if (p.cluster === undefined) {
+                        p.cluster = Math.floor(Math.random() * config.clusterCount);
+                    }
+                });
+            }
+
+            // Just redraw the visualization layers, keep particle positions
+            svg.selectAll('*').remove();
+            renderParticles(svg, particles, width, height);
+        }
+
+        // ===== REALITY VISUALIZATION =====
+        function createReality() {
+            const config = observerConfigs[currentObserver];
+            const svg = d3.select('#reality-canvas');
+            svg.selectAll('*').remove();
+
+            const width = svg.node().clientWidth;
+            const height = svg.node().clientHeight;
+
+            // Create NEW particles based on population slider
+            const particles = Array.from({length: populationSize}, (_, i) => ({
+                id: i,
+                x: Math.random() * width,
+                y: Math.random() * height,
+                vx: (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2,
+                cluster: observerConfigs[currentObserver].clusterCount ? Math.floor(Math.random() * observerConfigs[currentObserver].clusterCount) : 0
+            }));
+
+            // Store globally
+            window.currentParticles = particles;
+
+            renderParticles(svg, particles, width, height);
+        }
+
+        // ===== RENDER PARTICLES (shared by both create and update) =====
+        function renderParticles(svg, particles, width, height) {
+            const config = observerConfigs[currentObserver];
+
+            // Draw connections
+            const connections = svg.append('g').attr('class', 'connections');
+
+            function updateConnections() {
+                const links = updateConnectionsData();
+
+                // === AI OBSERVER: Connection thickness by semantic distance ===
+                if (currentObserver === 'ai') {
+                    connections.selectAll('line')
+                        .data(links, d => d.source.id + '-' + d.target.id)
+                        .join('line')
+                        .attr('class', 'connection')
+                        .attr('x1', d => d.source.x)
+                        .attr('y1', d => d.source.y)
+                        .attr('x2', d => d.target.x)
+                        .attr('y2', d => d.target.y)
+                        .attr('stroke', config.color)
+                        .attr('stroke-width', d => {
+                            // Thicker lines = stronger semantic relationship (closer particles)
+                            const strength = 1 - (d.distance / config.connectionDistance);
+                            return 0.5 + strength * 3;
+                        })
+                        .attr('opacity', d => (1 - d.distance / config.connectionDistance) * 0.5);
+                }
+                // === SOCIAL OBSERVER: Only show same-cluster connections ===
+                else if (currentObserver === 'social') {
+                    const sameClusterLinks = links.filter(l => l.source.cluster === l.target.cluster);
+                    connections.selectAll('line')
+                        .data(sameClusterLinks, d => d.source.id + '-' + d.target.id)
+                        .join('line')
+                        .attr('class', 'connection')
+                        .attr('x1', d => d.source.x)
+                        .attr('y1', d => d.source.y)
+                        .attr('x2', d => d.target.x)
+                        .attr('y2', d => d.target.y)
+                        .attr('stroke', d => d.source.color)
+                        .attr('stroke-width', 2)
+                        .attr('opacity', 0.4);
+                }
+                // === DEFAULT: Normal connections ===
+                else {
+                    connections.selectAll('line')
+                        .data(links, d => d.source.id + '-' + d.target.id)
+                        .join('line')
+                        .attr('class', 'connection')
+                        .attr('x1', d => d.source.x)
+                        .attr('y1', d => d.source.y)
+                        .attr('x2', d => d.target.x)
+                        .attr('y2', d => d.target.y)
+                        .attr('stroke', config.color)
+                        .attr('stroke-width', 1)
+                        .attr('opacity', d => (1 - d.distance / config.connectionDistance) * 0.3);
+                }
+            }
+
+            // === QUANTUM OBSERVER: Add ghost particles (superpositions) ===
+            if (currentObserver === 'quantum') {
+                const ghostGroup = svg.append('g').attr('class', 'ghosts');
+
+                // Create 2 ghost particles per real particle (superposition: HERE or THERE)
+                const ghosts = [];
+                particles.forEach(p => {
+                    // Create ghosts at opposite positions (showing superposition)
+                    for (let i = 0; i < 2; i++) {
+                        const angle = (i / 2) * Math.PI * 2;
+                        const radius = 20 + Math.random() * 15;
+                        ghosts.push({
+                            x: p.x + Math.cos(angle) * radius,
+                            y: p.y + Math.sin(angle) * radius,
+                            parent: p.id,
+                            angle: angle
+                        });
+                    }
+                });
+
+                ghostGroup.selectAll('circle')
+                    .data(ghosts)
+                    .join('circle')
+                    .attr('r', config.particleSize * 1.2)
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y)
+                    .attr('fill', config.color)
+                    .attr('opacity', 0.4)
+                    .attr('stroke', config.color)
+                    .attr('stroke-width', 1)
+                    .style('filter', 'blur(1px) drop-shadow(0 0 8px ' + config.color + ')');
+
+                // Store ghosts for animation
+                window.ghostParticles = ghosts;
+            }
+
+            // === CLASSICAL OBSERVER: Add trajectory trails ===
+            const trailGroup = svg.append('g').attr('class', 'trails');
+            if (currentObserver === 'classical') {
+                particles.forEach(p => {
+                    p.trail = [{x: p.x, y: p.y}];
+                });
+            }
+
+            // Draw particles
+            const particleGroup = svg.append('g').attr('class', 'particles');
+
+            // === SOCIAL OBSERVER: Color by cluster ===
+            if (currentObserver === 'social') {
+                // Assign cluster colors
+                const clusterColors = ['#27ae60', '#2ecc71', '#16a085', '#1abc9c', '#229954'];
+                particles.forEach(p => {
+                    p.color = clusterColors[p.cluster % clusterColors.length];
+                });
+            }
+
+            const particleElements = particleGroup.selectAll('circle')
+                .data(particles)
+                .join('circle')
+                .attr('class', 'particle')
+                .attr('r', config.particleSize)
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
+                .attr('fill', d => currentObserver === 'social' ? d.color : config.color)
+                .attr('opacity', 0.8)
+                .attr('stroke', currentObserver === 'social' ? 'white' : 'none')
+                .attr('stroke-width', currentObserver === 'social' ? 1 : 0)
+                .style('filter', 'drop-shadow(0 0 5px ' + config.color + ')');
+
+            // Store connections globally
+            window.currentConnections = [];
+
+            // Cancel old animation loop if exists
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+
+            // Animation loop
+            let frameCount = 0;
+            function animate() {
+                // Thermodynamic time evolution - 2nd Law: Entropy increases
+                if (timeEvolutionActive) {
+                    evolutionTime += evolutionSpeed * 0.01;
+
+                    // === OPTIMIZED FORCE CALCULATIONS with SPATIAL GRID ===
+                    // Build spatial grid for O(N) force calculations instead of O(N²)
+                    const forceRange = config.connectionDistance * 0.5;
+                    const forceCellSize = forceRange;
+                    const forceGrid = {};
+
+                    particles.forEach(p => {
+                        const cellX = Math.floor(p.x / forceCellSize);
+                        const cellY = Math.floor(p.y / forceCellSize);
+                        const cellKey = `${cellX},${cellY}`;
+
+                        if (!forceGrid[cellKey]) forceGrid[cellKey] = [];
+                        forceGrid[cellKey].push(p);
+                    });
+
+                    // Apply diffusion/spreading forces (particles repel, system becomes more disordered)
+                    particles.forEach(p => {
+                        let fx = 0, fy = 0;
+
+                        const cellX = Math.floor(p.x / forceCellSize);
+                        const cellY = Math.floor(p.y / forceCellSize);
+
+                        // Check only nearby cells (3x3 neighborhood)
+                        for (let dx = -1; dx <= 1; dx++) {
+                            for (let dy = -1; dy <= 1; dy++) {
+                                const neighborKey = `${cellX + dx},${cellY + dy}`;
+                                const neighbors = forceGrid[neighborKey] || [];
+
+                                neighbors.forEach(other => {
+                                    if (p.id !== other.id) {
+                                        const deltaX = p.x - other.x;
+                                        const deltaY = p.y - other.y;
+                                        const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+                                        // Repulsive force - particles spread out
+                                        if (dist < forceRange && dist > 0) {
+                                            const force = 0.01 * evolutionSpeed / (dist + 1);
+                                            fx += (deltaX / dist) * force;
+                                            fy += (deltaY / dist) * force;
+                                        }
+                                    }
+                                });
+                            }
+                        }
+
+                        // Add random thermal motion (temperature)
+                        const thermalNoise = 0.02 * evolutionSpeed;
+                        fx += (Math.random() - 0.5) * thermalNoise;
+                        fy += (Math.random() - 0.5) * thermalNoise;
+
+                        // Apply forces
+                        p.vx += fx;
+                        p.vy += fy;
+
+                        // Light damping to prevent runaway velocities
+                        p.vx *= 0.98;
+                        p.vy *= 0.98;
+
+                        // Cap maximum velocity
+                        const maxVel = 3;
+                        const vel = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                        if (vel > maxVel) {
+                            p.vx = (p.vx / vel) * maxVel;
+                            p.vy = (p.vy / vel) * maxVel;
+                        }
+                    });
+                }
+
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    // Bounce off edges
+                    if (p.x < 0 || p.x > width) p.vx *= -1;
+                    if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                    // Keep in bounds
+                    p.x = Math.max(0, Math.min(width, p.x));
+                    p.y = Math.max(0, Math.min(height, p.y));
+                });
+
+                particleElements
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+
+                // === QUANTUM: Animate ghost particles ===
+                if (currentObserver === 'quantum' && window.ghostParticles) {
+                    window.ghostParticles.forEach((ghost, i) => {
+                        const parent = particles[ghost.parent];
+                        if (parent) {
+                            // Ghosts orbit around parent with varying radius
+                            const angle = ghost.angle + (frameCount * 0.02);
+                            const radius = 20 + Math.sin(frameCount * 0.05 + i) * 12;
+                            ghost.x = parent.x + Math.cos(angle) * radius;
+                            ghost.y = parent.y + Math.sin(angle) * radius;
+                        }
+                    });
+
+                    d3.selectAll('.ghosts circle')
+                        .data(window.ghostParticles)
+                        .attr('cx', d => d.x)
+                        .attr('cy', d => d.y)
+                        .attr('opacity', 0.35 + Math.sin(frameCount * 0.05) * 0.15)
+                        .attr('r', d => config.particleSize * (1.0 + Math.sin(frameCount * 0.03) * 0.3));
+                }
+
+                // === CLASSICAL: Update trajectory trails ===
+                if (currentObserver === 'classical') {
+                    particles.forEach(p => {
+                        if (!p.trail) p.trail = [];
+                        p.trail.push({x: p.x, y: p.y});
+                        if (p.trail.length > 20) p.trail.shift(); // Keep last 20 positions
+                    });
+
+                    // Draw trails
+                    const allTrails = particles.filter(p => p.trail && p.trail.length > 1);
+                    d3.select('.trails').selectAll('path')
+                        .data(allTrails)
+                        .join('path')
+                        .attr('d', d => {
+                            return d3.line()
+                                .x(p => p.x)
+                                .y(p => p.y)
+                                .curve(d3.curveCardinal)(d.trail);
+                        })
+                        .attr('fill', 'none')
+                        .attr('stroke', config.color)
+                        .attr('stroke-width', 2)
+                        .attr('opacity', 0.3);
+                }
+
+                // === CONSCIOUS: Show prediction errors as pulses ===
+                if (currentObserver === 'conscious') {
+                    particles.forEach(p => {
+                        // Calculate prediction error (deviation from expected position)
+                        const expectedX = p.x + p.vx;
+                        const expectedY = p.y + p.vy;
+                        const actualX = p.x;
+                        const actualY = p.y;
+                        const error = Math.sqrt((expectedX - actualX)**2 + (expectedY - actualY)**2);
+                        p.predictionError = error;
+                    });
+
+                    // Color particles by error intensity
+                    particleElements
+                        .attr('fill', d => {
+                            const errorIntensity = Math.min(d.predictionError / 5, 1);
+                            return errorIntensity > 0.5 ? '#e74c3c' : config.color;
+                        });
+                }
+
+                // === SOCIAL: Color by cluster ===
+                if (currentObserver === 'social') {
+                    particleElements.attr('fill', d => d.color);
+                }
+
+                updateConnections();
+
+                // Update math panel every 30 frames (~0.5 seconds)
+                frameCount++;
+                if (frameCount % 30 === 0) {
+                    updateMathPanel();
+                }
+
+                animationFrameId = requestAnimationFrame(animate);
+            }
+
+            animate();
+            updateMathPanel();
+        }
+
+        // ===== TIME EVOLUTION =====
+        function toggleTimeEvolution() {
+            timeEvolutionActive = !timeEvolutionActive;
+            const playBtn = document.getElementById('playBtn');
+            const playIcon = document.getElementById('playIcon');
+            const playText = document.getElementById('playText');
+
+            if (timeEvolutionActive) {
+                playBtn.style.background = '#e74c3c';
+                playBtn.style.color = 'white';
+                playIcon.textContent = '⏸️';
+                playText.textContent = 'Pause';
+            } else {
+                playBtn.style.background = '#00ff88';
+                playBtn.style.color = '#0a0e27';
+                playIcon.textContent = '▶️';
+                playText.textContent = 'Play';
+            }
+        }
+
+        function updateSpeed(value) {
+            evolutionSpeed = parseInt(value);
+            document.getElementById('speedValue').textContent = value + 'x';
+        }
+
+        // ===== HEAT CONTROL =====
+        function addHeat() {
+            // Add heat = increase kinetic energy = increase particle velocities
+            const particles = window.currentParticles || [];
+            const heatFactor = 1.3; // 30% velocity increase
+
+            particles.forEach(p => {
+                p.vx *= heatFactor;
+                p.vy *= heatFactor;
+            });
+
+            // Update calculations immediately
+            updateMathPanel(true);
+
+            // Show notification
+            showNotification('🔥 Heat Added! Temperature & Entropy Increasing', '#e74c3c');
+        }
+
+        function removeHeat() {
+            // Remove heat = decrease kinetic energy = decrease particle velocities
+            const particles = window.currentParticles || [];
+            const coolFactor = 0.7; // 30% velocity decrease
+
+            particles.forEach(p => {
+                p.vx *= coolFactor;
+                p.vy *= coolFactor;
+            });
+
+            // Update calculations immediately
+            updateMathPanel(true);
+
+            // Show notification
+            showNotification('❄️ System Cooled! Temperature Decreasing', '#3498db');
+        }
+
+        function showNotification(message, color) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: ${color};
+                color: white;
+                padding: 20px 40px;
+                border-radius: 12px;
+                font-size: 1.2em;
+                font-weight: 700;
+                z-index: 10000;
+                box-shadow: 0 0 40px ${color};
+                animation: pulse 0.5s ease-out;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 1500);
+        }
+
+        // ===== POPULATION CONTROL =====
+        function updatePopulation(value) {
+            populationSize = parseInt(value);
+            document.getElementById('populationValue').textContent = value;
+
+            // Recreate reality with new population
+            createReality();
+
+            // Show cascade effect
+            setTimeout(() => updateMathPanel(true), 300);
+        }
+
+        // Update connections and store for math calculations
+        // OPTIMIZED with spatial grid partitioning!
+        function updateConnectionsData() {
+            const particles = window.currentParticles || [];
+            const config = observerConfigs[currentObserver];
+            const links = [];
+
+            // MAX CONNECTIONS to prevent lag at high N
+            const MAX_CONNECTIONS = 2000;
+
+            // === SPATIAL GRID OPTIMIZATION ===
+            // Only check particles in nearby grid cells (O(N) instead of O(N²)!)
+            const cellSize = config.connectionDistance;
+            const gridWidth = Math.ceil(1200 / cellSize); // Approximate canvas width
+            const gridHeight = Math.ceil(800 / cellSize); // Approximate canvas height
+            const grid = {};
+
+            // Assign particles to grid cells
+            particles.forEach(p => {
+                const cellX = Math.floor(p.x / cellSize);
+                const cellY = Math.floor(p.y / cellSize);
+                const cellKey = `${cellX},${cellY}`;
+
+                if (!grid[cellKey]) grid[cellKey] = [];
+                grid[cellKey].push(p);
+            });
+
+            // Check each particle only against nearby cells (3x3 neighborhood)
+            particles.forEach(p => {
+                const cellX = Math.floor(p.x / cellSize);
+                const cellY = Math.floor(p.y / cellSize);
+
+                // Check 9 nearby cells (including current)
+                for (let dx = -1; dx <= 1; dx++) {
+                    for (let dy = -1; dy <= 1; dy++) {
+                        const neighborKey = `${cellX + dx},${cellY + dy}`;
+                        const neighbors = grid[neighborKey] || [];
+
+                        neighbors.forEach(neighbor => {
+                            // Avoid duplicate connections
+                            if (p.id < neighbor.id) {
+                                const deltaX = p.x - neighbor.x;
+                                const deltaY = p.y - neighbor.y;
+                                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+                                if (distance < config.connectionDistance && distance > 0) {
+                                    links.push({
+                                        source: p,
+                                        target: neighbor,
+                                        distance: distance
+                                    });
+
+                                    // Stop if we hit max connections (prevent lag)
+                                    if (links.length >= MAX_CONNECTIONS) return;
+                                }
+                            }
+                        });
+
+                        if (links.length >= MAX_CONNECTIONS) break;
+                    }
+                    if (links.length >= MAX_CONNECTIONS) break;
+                }
+            });
+
+            window.currentConnections = links;
+            return links;
+        }
+
+        // ===== INITIALIZATION =====
+        window.addEventListener('resize', createReality);
+        createReality();
+    </script>
+</body>
+</html>
