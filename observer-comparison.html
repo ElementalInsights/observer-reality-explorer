@@ -46,7 +46,7 @@
             display: grid;
             grid-template-columns: 300px 1fr 1fr 300px;
             grid-template-rows: 1fr auto;
-            gap: 0;
+            gap: 20px;
             height: calc(100vh - 60px);
         }
 
@@ -561,6 +561,41 @@
             evolutionSpeed = parseInt(value);
             document.getElementById('speedValue').textContent = value + 'x';
         }
+
+        // Initialize telemetry displays
+        leftTelemetry = new TelemetryDisplay('leftTelemetry', {
+            title: '📊 Left Observer Metrics'
+        });
+
+        rightTelemetry = new TelemetryDisplay('rightTelemetry', {
+            title: '📊 Right Observer Metrics'
+        });
+
+        // Update telemetry every 100ms
+        setInterval(() => {
+            // For now, calculate shared metrics manually
+            // TODO: Update to use separate engines for each observer
+            const sharedTelemetry = {
+                fps: 60, // Placeholder
+                particleCount: particles.length,
+                connectionCount: 0,
+                temperature: 0,
+                entropy: 0,
+                kineticEnergy: 0,
+                potentialEnergy: 0,
+                totalEnergy: 0,
+                uncertainty: 0,
+                networkDensity: 0,
+                freeEnergy: 0,
+                spatialSpread: 0,
+                avgVelocity: 0,
+                infoDeficit: 0,
+                computationalCost: particles.length * particles.length
+            };
+
+            leftTelemetry.update(sharedTelemetry);
+            rightTelemetry.update(sharedTelemetry);
+        }, 100);
 
         // Initialize
         window.addEventListener('resize', () => {
