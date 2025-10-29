@@ -1830,9 +1830,19 @@
                     '#ffa502',  // BRIGHT ORANGE tribe
                     '#9b59b6'   // BRIGHT PURPLE tribe
                 ];
+
+                // Ensure ALL particles have colors assigned
                 particles.forEach(p => {
+                    if (p.cluster === undefined || p.cluster === null) {
+                        p.cluster = 0; // Default to first cluster
+                    }
                     p.color = clusterColors[p.cluster % clusterColors.length];
                 });
+
+                console.log('Social clusters initialized:', particles.reduce((acc, p) => {
+                    acc[p.cluster] = (acc[p.cluster] || 0) + 1;
+                    return acc;
+                }, {}));
             }
 
             // Cancel old animation
