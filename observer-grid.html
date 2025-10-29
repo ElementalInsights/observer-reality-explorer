@@ -167,7 +167,7 @@
         <div class="header">
             <div class="header-left">
                 <h1>All 8 Observers - Same Reality, Different Perceptions</h1>
-                <p>Watching the SAME 100 particles through 8 different observational lenses simultaneously</p>
+                <p>All 8 canvases show the EXACT SAME particles, but rendered through different observational frameworks. Reality isn't observer-independent - what you see depends on HOW you look!</p>
             </div>
 
             <div class="header-right">
@@ -225,13 +225,6 @@
     <!-- Back Button -->
     <a href="index.html" class="back-btn">← Back</a>
 
-    <!-- Info Box -->
-    <div class="info-box">
-        <h3>🎯 What You're Seeing</h3>
-        <p>All 8 canvases show the EXACT SAME particles, but rendered through different observational frameworks.</p>
-        <p><strong>This demonstrates:</strong> Reality isn't observer-independent - what you see depends on HOW you look!</p>
-    </div>
-
     <script>
         // SHARED PARTICLE STATE (one authoritative source)
         let sharedParticles = [];
@@ -265,6 +258,8 @@
 
         // Create SHARED particle array (single source of truth)
         const primaryEngine = engines['quantum']; // Use any engine to create particles
+        primaryEngine.isPlaying = true; // MUST be true for evolutionSpeed to work!
+        primaryEngine.evolutionSpeed = 0.3; // SLOW DOWN
         sharedParticles = primaryEngine.particles;
 
         // Assign clusters and colors for social observer
@@ -272,18 +267,28 @@
         sharedParticles.forEach((p, i) => {
             p.cluster = i % 5; // Assign to 5 clusters
             p.color = clusterColors[p.cluster];
+
+            // Reduce initial velocities by half
+            p.vx *= 0.5;
+            p.vy *= 0.5;
         });
 
         // Share particles across all engines
         observerTypes.forEach(type => {
             engines[type].particles = sharedParticles;
+            engines[type].isPlaying = true;
+            engines[type].evolutionSpeed = 0.3;
         });
 
         // Master animation loop
+        let frameSkip = 0;
         function animate() {
             if (isPlaying) {
-                // Update physics ONCE using one engine
-                primaryEngine.updatePhysics();
+                // Only update physics every 2nd frame (slow down by 50%)
+                frameSkip++;
+                if (frameSkip % 2 === 0) {
+                    primaryEngine.updatePhysics();
+                }
 
                 // Update connections for each observer type independently
                 observerTypes.forEach(type => {
@@ -377,6 +382,10 @@
             sharedParticles.forEach((p, i) => {
                 p.cluster = i % 5;
                 p.color = clusterColors[p.cluster];
+
+                // Reduce velocities by half
+                p.vx *= 0.5;
+                p.vy *= 0.5;
             });
 
             // Share new particles
