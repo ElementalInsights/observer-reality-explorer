@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Framework Benchmark - ObserverPhysicsEngine Test</title>
     <script src="physics-engine.js"></script>
+    <script src="chart-renderer.js"></script>
     <script src="telemetry-display.js"></script>
     <style>
         * {
@@ -370,6 +371,197 @@
             height: 100%;
         }
 
+        /* Mini-chart overlays */
+        .chart-overlays {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .chart-overlays.hidden {
+            display: none;
+        }
+
+        .mini-chart {
+            background: rgba(0,0,0,0.85);
+            border: 2px solid #555;
+            border-radius: 8px;
+            width: 280px;
+            height: 140px;
+            backdrop-filter: blur(5px);
+        }
+
+        .chart-toggle-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #444;
+            border: 2px solid #666;
+            border-radius: 6px;
+            color: #fff;
+            padding: 8px 12px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: background 0.3s;
+            z-index: 100;
+        }
+
+        .chart-toggle-btn:hover {
+            background: #555;
+        }
+
+        .quiz-btn {
+            position: absolute;
+            top: 10px;
+            left: 120px;
+            background: #9b59b6;
+            border: 2px solid #8e44ad;
+            border-radius: 6px;
+            color: #fff;
+            padding: 8px 12px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: background 0.3s;
+            z-index: 100;
+        }
+
+        .quiz-btn:hover {
+            background: #8e44ad;
+        }
+
+        /* Quiz Modal */
+        .quiz-modal {
+            display: none;
+            position: fixed;
+            z-index: 3000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(8px);
+        }
+
+        .quiz-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quiz-content {
+            background: #0a0a0a;
+            border: 3px solid #9b59b6;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 700px;
+            box-shadow: 0 12px 40px rgba(155, 89, 182, 0.5);
+        }
+
+        .quiz-content h2 {
+            color: #9b59b6;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .quiz-question {
+            color: #fff;
+            font-size: 1.2em;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .quiz-option {
+            background: #222;
+            border: 2px solid #555;
+            border-radius: 8px;
+            padding: 15px 20px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+        }
+
+        .quiz-option:hover {
+            background: #333;
+            border-color: #9b59b6;
+        }
+
+        .quiz-option.selected {
+            background: #9b59b6;
+            border-color: #8e44ad;
+        }
+
+        .quiz-option.correct {
+            background: #2ecc71;
+            border-color: #27ae60;
+        }
+
+        .quiz-option.incorrect {
+            background: #e74c3c;
+            border-color: #c0392b;
+        }
+
+        .quiz-feedback {
+            background: rgba(155, 89, 182, 0.1);
+            border: 2px solid #9b59b6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .quiz-feedback.show {
+            display: block;
+        }
+
+        .quiz-feedback p {
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .quiz-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .quiz-buttons button {
+            padding: 12px 24px;
+            background: #444;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+
+        .quiz-buttons button:hover {
+            background: #555;
+        }
+
+        .quiz-buttons button.primary {
+            background: #9b59b6;
+        }
+
+        .quiz-buttons button.primary:hover {
+            background: #8e44ad;
+        }
+
         .telemetry {
             background: rgba(255,255,255,0.05);
             border: 2px solid #444;
@@ -593,6 +785,17 @@
         <!-- Canvas -->
         <div class="canvas-wrapper">
             <canvas id="canvas"></canvas>
+
+            <!-- Overlay Buttons -->
+            <button class="chart-toggle-btn" onclick="toggleCharts()">📊 Graphs</button>
+            <button class="quiz-btn" onclick="startQuiz()">🎓 Quiz</button>
+
+            <!-- Mini-chart Overlays -->
+            <div class="chart-overlays hidden" id="chartOverlays">
+                <canvas id="entropyChart" class="mini-chart"></canvas>
+                <canvas id="fpsChart" class="mini-chart"></canvas>
+                <canvas id="energyChart" class="mini-chart"></canvas>
+            </div>
         </div>
 
         <!-- Telemetry -->
@@ -686,6 +889,25 @@
         </div>
     </div>
 
+    <!-- Quiz Modal -->
+    <div id="quizModal" class="quiz-modal">
+        <div class="quiz-content">
+            <h2>🎓 Physics Quiz</h2>
+            <div class="quiz-question" id="quizQuestion">Loading...</div>
+
+            <div class="quiz-options" id="quizOptions"></div>
+
+            <div class="quiz-feedback" id="quizFeedback">
+                <p id="feedbackText"></p>
+            </div>
+
+            <div class="quiz-buttons">
+                <button onclick="closeQuiz()">Close</button>
+                <button class="primary" onclick="nextQuestion()">Next Question</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Size canvas first
         const canvas = document.getElementById('canvas');
@@ -696,7 +918,9 @@
         // Initialize engine (pass canvas ID, not element)
         let engine = new ObserverPhysicsEngine('canvas', {
             observerType: 'classical',
-            populationSize: 100
+            populationSize: 100,
+            enableTimeSeries: true,  // ENABLE GRAPH DATA!
+            maxHistory: 2000
         });
 
         // Start playing by default
@@ -717,6 +941,95 @@
 
         // Start the engine (it has its own animation loop)
         engine.start();
+
+        // Initialize mini-chart renderers
+        const entropyChartRenderer = new ChartRenderer('entropyChart', {
+            padding: 25,
+            accentColor: '#2ecc71',
+            showGrid: false,
+            showAxes: false
+        });
+
+        const fpsChartRenderer = new ChartRenderer('fpsChart', {
+            padding: 25,
+            accentColor: '#3498db',
+            showGrid: false,
+            showAxes: false
+        });
+
+        const energyChartRenderer = new ChartRenderer('energyChart', {
+            padding: 25,
+            accentColor: '#e74c3c',
+            showGrid: false,
+            showAxes: false
+        });
+
+        // Graph visibility state
+        let chartsVisible = false;
+
+        // Toggle charts visibility
+        function toggleCharts() {
+            chartsVisible = !chartsVisible;
+            const overlays = document.getElementById('chartOverlays');
+            if (chartsVisible) {
+                overlays.classList.remove('hidden');
+            } else {
+                overlays.classList.add('hidden');
+            }
+        }
+
+        // Update mini-charts every 200ms
+        setInterval(() => {
+            if (!chartsVisible) return;
+
+            // Get last 30 seconds of data
+            const entropyData = engine.getTimeSeries('entropy');
+            const fpsData = engine.getTimeSeries('fps');
+            const energyData = engine.getTimeSeries('totalEnergy');
+
+            if (entropyData && entropyData.length > 1) {
+                const now = performance.now();
+                const cutoff = now - 30000; // Last 30 seconds
+
+                // Filter and normalize
+                const recentEntropy = entropyData.filter(d => d.time >= cutoff).map(d => ({
+                    time: (d.time - cutoff) / 1000,
+                    value: d.value
+                }));
+
+                const recentFPS = fpsData.filter(d => d.time >= cutoff).map(d => ({
+                    time: (d.time - cutoff) / 1000,
+                    value: d.value
+                }));
+
+                const recentEnergy = energyData.filter(d => d.time >= cutoff).map(d => ({
+                    time: (d.time - cutoff) / 1000,
+                    value: d.value
+                }));
+
+                // Render
+                if (recentEntropy.length > 1) {
+                    entropyChartRenderer.renderLineChart(recentEntropy, {
+                        title: 'Entropy (30s)',
+                        lineColor: '#2ecc71'
+                    });
+                }
+
+                if (recentFPS.length > 1) {
+                    fpsChartRenderer.renderLineChart(recentFPS, {
+                        title: 'FPS (30s)',
+                        lineColor: '#3498db'
+                    });
+                }
+
+                if (recentEnergy.length > 1) {
+                    energyChartRenderer.renderLineChart(recentEnergy, {
+                        title: 'Total Energy (30s)',
+                        lineColor: '#e74c3c'
+                    });
+                }
+            }
+        }, 200);
 
         // Performance tracking
         let frameTimes = [];
@@ -824,6 +1137,181 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeSettings();
+                closeQuiz();
+            }
+        });
+
+        // ===== QUIZ SYSTEM =====
+        const quizQuestions = [
+            {
+                question: "What happens to entropy when you increase the evolution speed?",
+                options: [
+                    "Entropy decreases (more order)",
+                    "Entropy increases faster (more chaos)",
+                    "Entropy stays the same",
+                    "Entropy oscillates"
+                ],
+                correct: 1,
+                explanation: "Higher evolution speed means more thermal motion and faster spreading, which INCREASES entropy faster. The 2nd Law (dS/dt ≥ 0) becomes more dramatic!"
+            },
+            {
+                question: "In relativistic mode, what do BLUE connections represent?",
+                options: [
+                    "Particles moving very fast",
+                    "Past light cone (could have influenced this particle)",
+                    "Future light cone (can be influenced)",
+                    "No causal connection"
+                ],
+                correct: 1,
+                explanation: "BLUE connections show the past light cone - particles that are moving TOWARD each other and could have causally influenced the current particle. This is actual relativistic physics!"
+            },
+            {
+                question: "What happens to conscious observer particles when they make good predictions?",
+                options: [
+                    "Turn RED (high error)",
+                    "Turn GREEN (low error)",
+                    "Turn BLUE (cold)",
+                    "Disappear"
+                ],
+                correct: 1,
+                explanation: "The conscious observer minimizes FREE ENERGY by reducing prediction errors. Green particles have LOW surprise (good predictions), orange is medium, red is HIGH surprise (adapting!)."
+            },
+            {
+                question: "Why can't we have spacelike connections closer than 60 pixels in relativistic mode?",
+                options: [
+                    "Rendering limitation",
+                    "Causal horizon: Light can only travel 60px in our time window",
+                    "Particles repel at close range",
+                    "Random design choice"
+                ],
+                correct: 1,
+                explanation: "The causal horizon = c × timeWindow = 3 × 20 = 60 pixels. This represents 'how far can light travel in our observable window'. Anything closer MUST be timelike or lightlike (causally connected)!"
+            },
+            {
+                question: "In social observer mode, why do connections only form within clusters?",
+                options: [
+                    "Technical bug",
+                    "Echo chambers: In-group connections only (homophily)",
+                    "Performance optimization",
+                    "Random chance"
+                ],
+                correct: 1,
+                explanation: "This demonstrates ECHO CHAMBERS! Social identity is defined by group membership. Connections form only within tribes (in-group), not across groups (out-group). This is real social network theory!"
+            },
+            {
+                question: "What does the Lorentz factor γ measure in relativistic physics?",
+                options: [
+                    "Particle temperature",
+                    "Time dilation (how much slower clocks run)",
+                    "Energy level",
+                    "Connection strength"
+                ],
+                correct: 1,
+                explanation: "γ (gamma) is the Lorentz factor = 1/√(1-v²/c²). It measures time dilation. At v=0.9c, γ≈2.3, meaning time runs 2.3x slower! Moving clocks run slow - this is real Einstein physics."
+            },
+            {
+                question: "Why is potential energy (U) often negative?",
+                options: [
+                    "Physics bug in the code",
+                    "Attractive forces create negative potential (bound system)",
+                    "Energy is being destroyed",
+                    "Temperature is too low"
+                ],
+                correct: 1,
+                explanation: "Negative potential energy is CORRECT physics! It means particles are in an attractive, bound system (like planets orbiting stars, or chemical bonds). U < 0 = stable, clustered. U > 0 = repelling, unstable."
+            },
+            {
+                question: "What's the relationship between temperature and kinetic energy?",
+                options: [
+                    "No relationship",
+                    "Temperature = √(kinetic energy)",
+                    "Temperature = kinetic energy",
+                    "Temperature = 1/kinetic energy"
+                ],
+                correct: 1,
+                explanation: "In our sim: T = √(⟨½mv²⟩) × 0.1. Temperature emerges from average kinetic energy! In real physics: T = ⟨½mv²⟩/(3/2)kᵦ. Faster particles = hotter system."
+            }
+        ];
+
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+        let quizAnswered = false;
+
+        function startQuiz() {
+            currentQuizIndex = 0;
+            quizScore = 0;
+            quizAnswered = false;
+            showQuizQuestion();
+            document.getElementById('quizModal').classList.add('active');
+        }
+
+        function closeQuiz() {
+            document.getElementById('quizModal').classList.remove('active');
+        }
+
+        function showQuizQuestion() {
+            const question = quizQuestions[currentQuizIndex];
+            quizAnswered = false;
+
+            document.getElementById('quizQuestion').textContent = `Q${currentQuizIndex + 1}/${quizQuestions.length}: ${question.question}`;
+            document.getElementById('quizFeedback').classList.remove('show');
+
+            const optionsContainer = document.getElementById('quizOptions');
+            optionsContainer.innerHTML = '';
+
+            question.options.forEach((option, index) => {
+                const div = document.createElement('div');
+                div.className = 'quiz-option';
+                div.textContent = option;
+                div.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(div);
+            });
+        }
+
+        function selectAnswer(selected) {
+            if (quizAnswered) return;
+
+            quizAnswered = true;
+            const question = quizQuestions[currentQuizIndex];
+            const options = document.querySelectorAll('.quiz-option');
+
+            options.forEach((opt, index) => {
+                if (index === question.correct) {
+                    opt.classList.add('correct');
+                } else if (index === selected) {
+                    opt.classList.add('incorrect');
+                }
+            });
+
+            // Show feedback
+            const feedback = document.getElementById('quizFeedback');
+            const feedbackText = document.getElementById('feedbackText');
+
+            if (selected === question.correct) {
+                quizScore++;
+                feedbackText.innerHTML = `<strong style="color: #2ecc71;">✓ Correct!</strong><br>${question.explanation}`;
+            } else {
+                feedbackText.innerHTML = `<strong style="color: #e74c3c;">✗ Incorrect.</strong><br>${question.explanation}`;
+            }
+
+            feedback.classList.add('show');
+        }
+
+        function nextQuestion() {
+            if (currentQuizIndex < quizQuestions.length - 1) {
+                currentQuizIndex++;
+                showQuizQuestion();
+            } else {
+                // Quiz complete!
+                alert(`Quiz Complete! Score: ${quizScore}/${quizQuestions.length}\n\n${quizScore >= 6 ? '🎉 Excellent! You understand the physics!' : quizScore >= 4 ? '👍 Good job! Review the observer details for more insights.' : '📚 Keep exploring! Click the ⚙️ button to read more physics documentation.'}`);
+                closeQuiz();
+            }
+        }
+
+        // Close quiz when clicking outside
+        document.getElementById('quizModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeQuiz();
             }
         });
     </script>
