@@ -369,9 +369,8 @@
             document.getElementById('stateDisplay').className = 'state-value state-superposition';
             document.getElementById('measureBtn').disabled = false;
 
-            // Return to quantum observer
+            // Return to quantum observer (keeps same particles!)
             engine.setObserver('quantum');
-            engine.createParticles();
         }
 
         // Update population
