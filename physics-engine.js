@@ -750,21 +750,87 @@ class ObserverPhysicsEngine {
             this.ctx.globalAlpha = 1;
         }
 
-        // Relativistic: light cones (optional, can be performance intensive)
-        if (this.config.observerType === 'relativistic' && this.particles.length < 150) {
+        // Relativistic: light cones and worldlines
+        if (this.config.observerType === 'relativistic') {
             this.particles.forEach(p => {
                 const vel = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-                if (vel > 1) {
-                    const angle = Math.atan2(p.vy, p.vx);
-                    const coneLength = vel * 8;
 
+                if (vel > 0.5) { // Lower threshold to show more effects
+                    const angle = Math.atan2(p.vy, p.vx);
+                    const c = config.speedOfLight;
+                    const beta = vel / c;
+
+                    // Worldline trail (past trajectory)
+                    const trailLength = 30 + beta * 40;
                     this.ctx.strokeStyle = config.color;
-                    this.ctx.globalAlpha = 0.15;
-                    this.ctx.lineWidth = 2;
+                    this.ctx.globalAlpha = 0.3 + beta * 0.4;
+                    this.ctx.lineWidth = 1 + beta * 2;
                     this.ctx.beginPath();
                     this.ctx.moveTo(p.x, p.y);
-                    this.ctx.lineTo(p.x - Math.cos(angle) * coneLength, p.y - Math.sin(angle) * coneLength);
+                    this.ctx.lineTo(
+                        p.x - Math.cos(angle) * trailLength,
+                        p.y - Math.sin(angle) * trailLength
+                    );
                     this.ctx.stroke();
+
+                    // Light cone (future possibilities)
+                    if (beta > 0.3) { // Only show for faster particles
+                        const coneAngle = Math.PI / 4; // 45 degree cone
+                        const coneLength = 40 * beta;
+
+                        this.ctx.globalAlpha = 0.2 + beta * 0.3;
+                        this.ctx.lineWidth = 1;
+
+                        // Draw cone edges
+                        for (let side = -1; side <= 1; side += 2) {
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(p.x, p.y);
+                            this.ctx.lineTo(
+                                p.x + Math.cos(angle + side * coneAngle) * coneLength,
+                                p.y + Math.sin(angle + side * coneAngle) * coneLength
+                            );
+                            this.ctx.stroke();
+                        }
+
+                        // Fill cone with gradient
+                        const gradient = this.ctx.createRadialGradient(
+                            p.x, p.y, 0,
+                            p.x + Math.cos(angle) * coneLength,
+                            p.y + Math.sin(angle) * coneLength,
+                            coneLength
+                        );
+                        gradient.addColorStop(0, `rgba(255, 200, 100, ${0.15 * beta})`);
+                        gradient.addColorStop(1, 'rgba(255, 200, 100, 0)');
+
+                        this.ctx.fillStyle = gradient;
+                        this.ctx.globalAlpha = beta * 0.4;
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(p.x, p.y);
+                        this.ctx.arc(
+                            p.x, p.y, coneLength,
+                            angle - coneAngle,
+                            angle + coneAngle
+                        );
+                        this.ctx.closePath();
+                        this.ctx.fill();
+                    }
+
+                    // Doppler shift aura for very fast particles
+                    if (beta > 0.6) {
+                        const auraSize = config.particleSize * (2 + beta * 3);
+                        const auraGradient = this.ctx.createRadialGradient(
+                            p.x, p.y, 0,
+                            p.x, p.y, auraSize
+                        );
+                        auraGradient.addColorStop(0, `rgba(255, 100, 50, ${beta * 0.5})`);
+                        auraGradient.addColorStop(1, 'rgba(255, 100, 50, 0)');
+
+                        this.ctx.fillStyle = auraGradient;
+                        this.ctx.globalAlpha = beta * 0.6;
+                        this.ctx.beginPath();
+                        this.ctx.arc(p.x, p.y, auraSize, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
                 }
             });
             this.ctx.globalAlpha = 1;
