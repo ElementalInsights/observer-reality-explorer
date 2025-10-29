@@ -778,7 +778,7 @@
                 <div style="margin-bottom: 20px;">
                     <div class="metric">
                         <span class="metric-label">Population:</span>
-                        <span class="metric-value" id="popDisplay">20</span>
+                        <span class="metric-value" id="popDisplay">100</span>
                     </div>
                     <div class="metric">
                         <span class="metric-label">Temperature:</span>
@@ -1124,10 +1124,10 @@
 
                 <div class="control-row">
                     <label>Population Size (N) - LOD Optimized ⚡</label>
-                    <input type="range" id="populationSlider" min="20" max="1000" value="20" step="20" oninput="updatePopulation(this.value)">
+                    <input type="range" id="populationSlider" min="20" max="1000" value="100" step="20" oninput="updatePopulation(this.value)">
                     <div class="control-values">
                         <span>20</span>
-                        <span id="populationValue">20</span>
+                        <span id="populationValue">100</span>
                         <span style="color: #2ecc71; font-weight: 700;">1k</span>
                     </div>
                     <p style="color: #888; font-size: 0.95em; margin-top: 8px; line-height: 1.5;">
@@ -1279,7 +1279,7 @@
         let timeEvolutionActive = false;
         let evolutionSpeed = 5;
         let evolutionTime = 0;
-        let populationSize = 20;
+        let populationSize = 100;
         let animationFrameId = null;
 
         const observerConfigs = {
