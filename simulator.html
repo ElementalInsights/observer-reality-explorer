@@ -55,15 +55,15 @@
             left: 0;
             right: 0;
             bottom: 40px;
-            display: flex;
+            display: grid;
+            grid-template-columns: 420px 1fr 380px;
             gap: 20px;
             padding: 40px;
         }
 
-        /* Visualization Container */
+        /* Visualization Container (center) */
         .viz-container {
-            flex: 1;
-            height: 100%;
+            grid-column: 2;
             background: rgba(255,255,255,0.03);
             border-radius: 20px;
             border: 2px solid rgba(0,255,136,0.2);
@@ -73,30 +73,33 @@
             overflow: hidden;
         }
 
-        /* Math Panel */
+        /* Math Panel (left side) */
         .math-panel {
-            width: 860px;
-            height: 100%;
+            grid-column: 1;
             background: rgba(10,14,39,0.95);
             border-radius: 20px;
             border: 2px solid rgba(0,255,136,0.2);
             padding: 20px;
             overflow-y: auto;
             backdrop-filter: blur(10px);
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            direction: rtl; /* Reverse column order */
         }
 
-        .panel-column {
+        /* Controls Panel (right side) */
+        .controls-panel {
+            grid-column: 3;
+            background: rgba(10,14,39,0.95);
+            border-radius: 20px;
+            border: 2px solid rgba(0,255,136,0.2);
+            padding: 20px;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
             gap: 15px;
-            direction: ltr; /* Reset direction for content */
         }
 
-        .math-panel h2 {
+        .controls-panel h2,
+        .math-row h2 {
             color: #00ff88;
             font-size: 1.2em;
             margin-bottom: 15px;
@@ -104,7 +107,7 @@
             border-bottom: 2px solid #00ff88;
         }
 
-        /* Controls in Math Panel */
+        /* Controls Section */
         .control-section {
             background: rgba(0,255,136,0.05);
             padding: 15px;
@@ -667,94 +670,9 @@
 
     <!-- Main Visualization -->
     <div class="main-canvas">
-        <div class="viz-container">
-            <!-- Canvas (GPU-Accelerated!) -->
-            <canvas id="reality-canvas"></canvas>
-        </div>
-
-        <!-- Controls & Calculations Panel -->
+        <!-- System State & Calculations (left column) -->
         <div class="math-panel">
-            <div class="cascade-indicator" id="cascadeIndicator">⚡ Cascade Update</div>
-
-            <!-- CONTROLS COLUMN (displayed on right via CSS) -->
-            <div class="panel-column">
-                <h2>🎮 Controls</h2>
-
-                <!-- CONTROLS -->
-                <div class="control-section">
-                <h3>Observer Type</h3>
-                <div class="observer-select">
-                    <button class="active" data-observer="quantum" onclick="switchObserver('quantum')">🔬 Quantum</button>
-                    <button data-observer="classical" onclick="switchObserver('classical')">🎯 Classical</button>
-                    <button data-observer="social" onclick="switchObserver('social')">🌐 Social</button>
-                    <button data-observer="conscious" onclick="switchObserver('conscious')">🧠 Conscious</button>
-                    <button data-observer="ai" onclick="switchObserver('ai')">🤖 AI</button>
-                </div>
-
-                <div class="control-row">
-                    <label>Population Size (N) - LOD Optimized ⚡</label>
-                    <input type="range" id="populationSlider" min="20" max="1000" value="20" step="20" oninput="updatePopulation(this.value)">
-                    <div class="control-values">
-                        <span>20</span>
-                        <span id="populationValue">20</span>
-                        <span style="color: #00ff88; font-weight: 700;">1k</span>
-                    </div>
-                    <p style="color: #666; font-size: 0.7em; margin-top: 5px; line-height: 1.3;">
-                        🚀 GPU-accelerated! Scale up to see emergent patterns at massive scale!
-                    </p>
-                </div>
-
-                <div class="control-row">
-                    <label>Observer Power (Coarse-graining)</label>
-                    <input type="range" id="budgetSlider" min="0" max="100" value="100" oninput="updateBudget(this.value)">
-                    <div class="control-values">
-                        <span>Coarse</span>
-                        <span id="budgetValue">100%</span>
-                        <span>Fine</span>
-                    </div>
-                </div>
-
-                <div class="control-row">
-                    <label>Thermodynamic Evolution (2nd Law)</label>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <button id="playBtn" onclick="toggleTimeEvolution()" style="flex: 1; padding: 8px; background: #00ff88; color: #0a0e27; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">
-                            <span id="playIcon">▶️</span> <span id="playText">Play</span>
-                        </button>
-                        <div style="flex: 2;">
-                            <input type="range" id="speedSlider" min="1" max="10" value="5" oninput="updateSpeed(this.value)" style="width: 100%;">
-                            <div class="control-values">
-                                <span>Slow</span>
-                                <span id="speedValue">5x</span>
-                                <span>Fast</span>
-                            </div>
-                        </div>
-                    </div>
-                    <p style="color: #666; font-size: 0.7em; margin-top: 5px; line-height: 1.3;">
-                        Particles spread out, entropy increases, system becomes more disordered
-                    </p>
-                </div>
-
-                <div class="control-row">
-                    <label>Heat Control (Add/Remove Energy)</label>
-                    <div style="display: flex; gap: 8px; margin-top: 8px;">
-                        <button onclick="addHeat()" style="flex: 1; padding: 10px; background: #e74c3c; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.9em;">
-                            🔥 Add Heat
-                        </button>
-                        <button onclick="removeHeat()" style="flex: 1; padding: 10px; background: #3498db; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.9em;">
-                            ❄️ Cool Down
-                        </button>
-                    </div>
-                    <p style="color: #666; font-size: 0.7em; margin-top: 5px; line-height: 1.3;">
-                        Heat = kinetic energy. Watch Temperature, K, and Entropy increase with heat!
-                    </p>
-                </div>
-            </div>
-            </div>
-
-            <!-- RIGHT COLUMN: SYSTEM STATE & CALCULATIONS -->
-            <div class="panel-column">
-                <h2>📊 System State & Calculations</h2>
-
+            <h2>System State & Calculations</h2>
                 <!-- Observer Info -->
                 <div class="observer-info-inline">
                     <div class="observer-name" id="observerTitle">🌀 Quantum Observer</div>
@@ -1079,6 +997,86 @@
                     K + U | Conserved in closed systems
                 </p>
             </div>
+        </div>
+
+        <!-- Canvas (center) -->
+        <div class="viz-container">
+            <canvas id="reality-canvas"></canvas>
+        </div>
+
+        <!-- Controls (right column) -->
+        <div class="controls-panel">
+            <div class="cascade-indicator" id="cascadeIndicator">⚡ Cascade Update</div>
+            <h2>Controls</h2>
+
+                <!-- CONTROLS -->
+                <div class="control-section">
+                <h3>Observer Type</h3>
+                <div class="observer-select">
+                    <button class="active" data-observer="quantum" onclick="switchObserver('quantum')">🔬 Quantum</button>
+                    <button data-observer="classical" onclick="switchObserver('classical')">🎯 Classical</button>
+                    <button data-observer="social" onclick="switchObserver('social')">🌐 Social</button>
+                    <button data-observer="conscious" onclick="switchObserver('conscious')">🧠 Conscious</button>
+                    <button data-observer="ai" onclick="switchObserver('ai')">🤖 AI</button>
+                </div>
+
+                <div class="control-row">
+                    <label>Population Size (N) - LOD Optimized ⚡</label>
+                    <input type="range" id="populationSlider" min="20" max="1000" value="20" step="20" oninput="updatePopulation(this.value)">
+                    <div class="control-values">
+                        <span>20</span>
+                        <span id="populationValue">20</span>
+                        <span style="color: #00ff88; font-weight: 700;">1k</span>
+                    </div>
+                    <p style="color: #666; font-size: 0.7em; margin-top: 5px; line-height: 1.3;">
+                        🚀 GPU-accelerated! Scale up to see emergent patterns at massive scale!
+                    </p>
+                </div>
+
+                <div class="control-row">
+                    <label>Observer Power (Coarse-graining)</label>
+                    <input type="range" id="budgetSlider" min="0" max="100" value="100" oninput="updateBudget(this.value)">
+                    <div class="control-values">
+                        <span>Coarse</span>
+                        <span id="budgetValue">100%</span>
+                        <span>Fine</span>
+                    </div>
+                </div>
+
+                <div class="control-row">
+                    <label>Thermodynamic Evolution (2nd Law)</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button id="playBtn" onclick="toggleTimeEvolution()" style="flex: 1; padding: 8px; background: #00ff88; color: #0a0e27; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">
+                            <span id="playIcon">▶️</span> <span id="playText">Play</span>
+                        </button>
+                        <div style="flex: 2;">
+                            <input type="range" id="speedSlider" min="1" max="10" value="5" oninput="updateSpeed(this.value)" style="width: 100%;">
+                            <div class="control-values">
+                                <span>Slow</span>
+                                <span id="speedValue">5x</span>
+                                <span>Fast</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="color: #666; font-size: 0.7em; margin-top: 5px; line-height: 1.3;">
+                        Particles spread out, entropy increases, system becomes more disordered
+                    </p>
+                </div>
+
+                <div class="control-row">
+                    <label>Heat Control (Add/Remove Energy)</label>
+                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button onclick="addHeat()" style="flex: 1; padding: 10px; background: #e74c3c; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.9em;">
+                            🔥 Add Heat
+                        </button>
+                        <button onclick="removeHeat()" style="flex: 1; padding: 10px; background: #3498db; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.9em;">
+                            ❄️ Cool Down
+                        </button>
+                    </div>
+                    <p style="color: #666; font-size: 0.7em; margin-top: 5px; line-height: 1.3;">
+                        Heat = kinetic energy. Watch Temperature, K, and Entropy increase with heat!
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -1480,10 +1478,13 @@
 
             // Update cluster assignments if switching to/from social
             if (currentObserver === 'social' && config.clusterCount) {
+                const clusterColors = ['#27ae60', '#2ecc71', '#16a085', '#1abc9c', '#229954'];
                 particles.forEach(p => {
                     if (p.cluster === undefined) {
                         p.cluster = Math.floor(Math.random() * config.clusterCount);
                     }
+                    // ASSIGN COLORS!
+                    p.color = clusterColors[p.cluster % clusterColors.length];
                 });
             }
 
@@ -1893,7 +1894,7 @@
 
                     // Social: cluster colors
                     if (currentObserver === 'social') {
-                        fillColor = p.color;
+                        fillColor = p.color || config.color; // Fallback if color not set
                     }
 
                     // Conscious: error-based coloring
