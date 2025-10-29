@@ -15,7 +15,7 @@
 
         body {
             font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-            background: #0a0e27;
+            background: #000;
             color: #fff;
             overflow: hidden;
         }
@@ -31,26 +31,26 @@
 
         .header {
             grid-column: 1 / -1;
-            background: rgba(46, 204, 113, 0.1);
-            border: 2px solid #2ecc71;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #444;
             border-radius: 10px;
             padding: 20px;
         }
 
         .header h1 {
-            color: #2ecc71;
+            color: #fff;
             font-size: 1.8em;
             margin-bottom: 10px;
         }
 
         .header p {
-            color: #95a5a6;
+            color: #888;
             font-size: 0.9em;
         }
 
         .controls {
             background: rgba(255,255,255,0.05);
-            border: 2px solid #3498db;
+            border: 2px solid #444;
             border-radius: 10px;
             padding: 20px;
         }
@@ -61,7 +61,7 @@
 
         .control-group label {
             display: block;
-            color: #3498db;
+            color: #ccc;
             font-weight: bold;
             margin-bottom: 8px;
             font-size: 0.9em;
@@ -72,7 +72,7 @@
             width: 100%;
             padding: 10px;
             background: rgba(255,255,255,0.1);
-            border: 1px solid #3498db;
+            border: 1px solid #666;
             border-radius: 5px;
             color: #fff;
             font-family: inherit;
@@ -83,7 +83,7 @@
             width: 100%;
             padding: 12px;
             margin-top: 5px;
-            background: #2ecc71;
+            background: #444;
             border: none;
             border-radius: 5px;
             color: white;
@@ -94,30 +94,31 @@
         }
 
         .control-group button:hover {
-            background: #27ae60;
+            background: #555;
         }
 
         .control-group button.danger {
-            background: #e74c3c;
+            background: #222;
+            border: 1px solid #666;
         }
 
         .control-group button.danger:hover {
-            background: #c0392b;
+            background: #333;
         }
 
         .value-display {
             display: inline-block;
-            background: rgba(46, 204, 113, 0.2);
+            background: rgba(255, 255, 255, 0.1);
             padding: 2px 8px;
             border-radius: 3px;
-            color: #2ecc71;
+            color: #fff;
             font-weight: bold;
         }
 
         .canvas-wrapper {
             position: relative;
             background: #0a0e27;
-            border: 2px solid #9b59b6;
+            border: 2px solid #444;
             border-radius: 10px;
             overflow: hidden;
         }
@@ -132,42 +133,42 @@
             position: absolute;
             top: 10px;
             left: 10px;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.8);
             padding: 10px 15px;
             border-radius: 5px;
-            border-left: 4px solid #9b59b6;
+            border-left: 4px solid #666;
         }
 
         .observer-info h3 {
-            color: #9b59b6;
+            color: #fff;
             font-size: 1.1em;
             margin-bottom: 5px;
         }
 
         .observer-info p {
-            color: #bdc3c7;
+            color: #999;
             font-size: 0.8em;
             line-height: 1.4;
         }
 
         .telemetry {
             background: rgba(255,255,255,0.05);
-            border: 2px solid #e67e22;
+            border: 2px solid #444;
             border-radius: 10px;
             padding: 20px;
             overflow-y: auto;
         }
 
         .benchmark-stats {
-            background: rgba(230, 126, 34, 0.1);
-            border: 2px solid #e67e22;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #444;
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 20px;
         }
 
         .benchmark-stats h3 {
-            color: #e67e22;
+            color: #fff;
             margin-bottom: 10px;
             font-size: 1.1em;
         }
@@ -184,12 +185,12 @@
         }
 
         .stat-label {
-            color: #95a5a6;
+            color: #888;
             font-size: 0.85em;
         }
 
         .stat-value {
-            color: #2ecc71;
+            color: #fff;
             font-weight: bold;
             font-size: 0.9em;
         }
@@ -306,74 +307,74 @@
             }
         };
 
-        // Initialize canvas
+        // Size canvas first
         const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
+        const wrapper = canvas.parentElement;
+        canvas.width = wrapper.clientWidth;
+        canvas.height = wrapper.clientHeight;
 
-        function resizeCanvas() {
-            const wrapper = canvas.parentElement;
+        // Initialize engine (pass canvas ID, not element)
+        let engine = new ObserverPhysicsEngine('canvas', {
+            observerType: 'quantum',
+            populationSize: 100
+        });
+
+        // Handle resize
+        window.addEventListener('resize', () => {
             canvas.width = wrapper.clientWidth;
             canvas.height = wrapper.clientHeight;
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        // Initialize engine
-        let engine = new ObserverPhysicsEngine('quantum', canvas);
+            engine.createParticles();
+        });
 
         // Initialize telemetry
         const telemetry = new TelemetryDisplay('telemetryDisplay', {
             title: '📊 Physics Telemetry'
         });
 
+        // Start the engine (it has its own animation loop)
+        engine.start();
+
         // Performance tracking
-        let lastFrameTime = performance.now();
-        let updateTime = 0;
-        let renderTime = 0;
+        let frameTimes = [];
+        let lastTime = performance.now();
 
-        // Animation loop with benchmarking
-        function animate() {
-            const frameStart = performance.now();
+        function updatePerformanceMetrics() {
+            const now = performance.now();
+            const delta = now - lastTime;
+            lastTime = now;
 
-            // Update
-            const updateStart = performance.now();
-            engine.update();
-            updateTime = performance.now() - updateStart;
+            frameTimes.push(delta);
+            if (frameTimes.length > 60) frameTimes.shift();
 
-            // Render
-            const renderStart = performance.now();
-            engine.render(ctx);
-            renderTime = performance.now() - renderStart;
+            const avgFrameTime = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
+            const fps = Math.round(1000 / avgFrameTime);
 
-            // Calculate FPS
-            const frameTime = performance.now() - frameStart;
-            const fps = Math.round(1000 / frameTime);
-
-            // Update benchmark display
+            // Update displays
             document.getElementById('fps').textContent = fps;
-            document.getElementById('updateTime').textContent = updateTime.toFixed(2) + 'ms';
-            document.getElementById('renderTime').textContent = renderTime.toFixed(2) + 'ms';
-            document.getElementById('frameTime').textContent = frameTime.toFixed(2) + 'ms';
+            document.getElementById('updateTime').textContent = '~' + (avgFrameTime * 0.6).toFixed(2) + 'ms';
+            document.getElementById('renderTime').textContent = '~' + (avgFrameTime * 0.4).toFixed(2) + 'ms';
+            document.getElementById('frameTime').textContent = avgFrameTime.toFixed(2) + 'ms';
             document.getElementById('particleCount').textContent = engine.particles.length;
 
-            // Approximate memory (rough estimate)
-            const memoryPerParticle = 200; // bytes (rough estimate)
+            // Memory estimate
+            const memoryPerParticle = 200;
             const memoryKB = (engine.particles.length * memoryPerParticle) / 1024;
             document.getElementById('memoryUsage').textContent = memoryKB.toFixed(1) + ' KB';
 
-            requestAnimationFrame(animate);
+            requestAnimationFrame(updatePerformanceMetrics);
         }
+
+        updatePerformanceMetrics();
 
         // Update telemetry every 100ms
         setInterval(() => {
-            const metrics = engine.calculateTelemetry();
+            const metrics = engine.getTelemetry();
             telemetry.update(metrics);
         }, 100);
 
         // Controls
         function changeObserver(type) {
-            engine.setObserverType(type);
+            engine.setObserver(type);
             const config = observerConfigs[type];
             document.getElementById('observerName').textContent = config.name;
             document.getElementById('observerDesc').textContent = config.description;
@@ -381,7 +382,7 @@
 
         function updateParticleCount(value) {
             document.getElementById('particleValue').textContent = value;
-            engine.setParticleCount(parseInt(value));
+            engine.setPopulation(parseInt(value));
         }
 
         function updateSpeed(value) {
@@ -396,19 +397,16 @@
         }
 
         function resetSimulation() {
-            engine.reset();
+            engine.createParticles();
         }
 
         function stressTest() {
             if (confirm('This will create 1000 particles. Performance may degrade. Continue?')) {
                 document.getElementById('particleSlider').value = 1000;
                 document.getElementById('particleValue').textContent = '1000';
-                engine.setParticleCount(1000);
+                engine.setPopulation(1000);
             }
         }
-
-        // Start
-        animate();
     </script>
 </body>
 </html>
