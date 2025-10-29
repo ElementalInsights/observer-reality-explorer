@@ -2109,14 +2109,18 @@
                         }
 
                         // Add random environmental perturbations (surprises!)
-                        // This creates ACTUAL prediction errors to detect
-                        // Some particles get BIG surprises (chaotic events!)
-                        const isBigSurprise = Math.random() < 0.3; // 30% chance of big shock
-                        const surpriseScale = isBigSurprise ? 5 : 1;
-                        const surpriseX = (Math.random() - 0.5) * 2 * surpriseScale;
-                        const surpriseY = (Math.random() - 0.5) * 2 * surpriseScale;
-                        p.x += surpriseX;
-                        p.y += surpriseY;
+                        // Only shock particles occasionally (not every frame!)
+                        if (Math.random() < 0.1) { // 10% chance per frame
+                            const isBigSurprise = Math.random() < 0.3; // 30% of shocks are BIG
+                            const surpriseScale = isBigSurprise ? 8 : 2;
+                            const surpriseX = (Math.random() - 0.5) * 2 * surpriseScale;
+                            const surpriseY = (Math.random() - 0.5) * 2 * surpriseScale;
+                            p.x += surpriseX;
+                            p.y += surpriseY;
+                            p.justSurprised = true; // Mark as surprised this frame
+                        } else {
+                            p.justSurprised = false;
+                        }
 
                         // Calculate error between PREVIOUS prediction and ACTUAL current position
                         const error = Math.sqrt((p.predictedX - p.x)**2 + (p.predictedY - p.y)**2);
@@ -2151,16 +2155,16 @@
 
                     // Conscious: error-based coloring (BRIGHT RED for surprises!)
                     if (currentObserver === 'conscious') {
-                        // Normalize error (with big surprises, can be 0-10)
-                        const errorIntensity = Math.min(p.predictionError / 4, 1);
+                        // Normalize error (with big surprises, can be 0-16)
+                        const errorIntensity = Math.min(p.predictionError / 5, 1);
 
-                        // Clear 3-color system
-                        if (errorIntensity > 0.5) {
+                        // Clear 3-color system with hysteresis (colors persist)
+                        if (errorIntensity > 0.6 || p.justSurprised) {
                             fillColor = '#ff4757'; // BRIGHT RED (HIGH SURPRISE!)
-                        } else if (errorIntensity > 0.2) {
+                        } else if (errorIntensity > 0.3) {
                             fillColor = '#ffa502'; // ORANGE (medium error)
                         } else {
-                            fillColor = '#2ecc71'; // GREEN (good prediction)
+                            fillColor = config.color; // Observer color (good prediction)
                         }
                     }
 
