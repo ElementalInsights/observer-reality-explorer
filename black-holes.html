@@ -379,13 +379,6 @@
                         </div>
                     </div>
 
-                    <!-- Action buttons -->
-                    <div class="header-buttons">
-                        <button onclick="dropParticle('radial')">🪐 Drop In</button>
-                        <button onclick="dropParticle('orbit')">🛸 Orbit</button>
-                        <button onclick="dropParticle('escape')">🚀 Escape</button>
-                        <button onclick="resetScene()">🔄 Reset</button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -663,7 +656,6 @@
 
         // Simulation state
         let observerDistance = 5; // In units of Rs
-        let particles = [];
         let frameCount = 0;
         let accretionDiskRotation = 0;
 
@@ -688,117 +680,7 @@
             return { density, surfaceGravity, hawkingTemp };
         }
 
-        // Particle system with proper orbital mechanics
-        class Particle {
-            constructor(x, y, type = 'radial') {
-                this.x = x;
-                this.y = y;
-                this.type = type;
-                this.trail = [];
-                this.age = 0;
-                this.dead = false;
-
-                const centerX = dims.width / 2;
-                const centerY = dims.height / 2;
-                const dx = this.x - centerX;
-                const dy = this.y - centerY;
-                const r = Math.sqrt(dx * dx + dy * dy);
-                const scale = dims.width / 20;
-
-                // Set initial velocity based on type
-                if (type === 'radial') {
-                    // Drop straight in
-                    this.vx = 0;
-                    this.vy = 0;
-                } else if (type === 'orbit') {
-                    // Orbital velocity at distance r
-                    const vOrbit = Math.sqrt((scale * 1.0) / r) * 2; // Simplified orbital speed
-                    this.vx = (-dy / r) * vOrbit;
-                    this.vy = (dx / r) * vOrbit;
-                } else if (type === 'escape') {
-                    // Escape velocity
-                    const vEscape = Math.sqrt((2 * scale * 1.0) / r) * 2.5;
-                    this.vx = (-dy / r) * vEscape * 0.7;
-                    this.vy = (dx / r) * vEscape * 0.7;
-                }
-            }
-
-            update() {
-                const centerX = dims.width / 2;
-                const centerY = dims.height / 2;
-                const dx = this.x - centerX;
-                const dy = this.y - centerY;
-                const r = Math.sqrt(dx * dx + dy * dy);
-
-                // Gravitational acceleration (proper physics)
-                const scale = dims.width / 20;
-                const a = (scale * 1.0) / (r * r + 0.1); // GM/r^2 simplified
-
-                this.vx += (-dx / r) * a * 0.5;
-                this.vy += (-dy / r) * a * 0.5;
-
-                // Update position
-                this.x += this.vx;
-                this.y += this.vy;
-
-                // Trail with fading
-                this.trail.push({ x: this.x, y: this.y });
-                if (this.trail.length > 100) this.trail.shift();
-
-                // Check if crossed event horizon
-                const horizonRadius = scale * 1.0;
-                if (r < horizonRadius) {
-                    this.dead = true;
-                }
-
-                // Check if escaped
-                if (r > dims.width * 0.55) {
-                    this.dead = true;
-                }
-
-                this.age++;
-            }
-
-            draw() {
-                // Draw trail with color based on type
-                let trailColor = '#4dabf7';
-                if (this.type === 'orbit') trailColor = '#2ecc71';
-                if (this.type === 'escape') trailColor = '#ffd43b';
-
-                ctx.strokeStyle = trailColor;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                for (let i = 1; i < this.trail.length; i++) {
-                    ctx.globalAlpha = (i / this.trail.length) * 0.7;
-                    ctx.moveTo(this.trail[i-1].x, this.trail[i-1].y);
-                    ctx.lineTo(this.trail[i].x, this.trail[i].y);
-                }
-                ctx.stroke();
-
-                // Draw particle
-                ctx.globalAlpha = 1;
-                ctx.fillStyle = trailColor;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, 6, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        function dropParticle(type = 'radial') {
-            const centerX = dims.width / 2;
-            const centerY = dims.height / 2;
-            const angle = Math.random() * Math.PI * 2;
-            const distance = dims.width * 0.35;
-
-            particles.push(new Particle(
-                centerX + Math.cos(angle) * distance,
-                centerY + Math.sin(angle) * distance,
-                type
-            ));
-        }
-
         function resetScene() {
-            particles = [];
             distantTime = 0;
             nearTime = 0;
         }
@@ -1114,13 +996,6 @@
             // Draw black hole
             drawBlackHole();
 
-            // Update and draw particles
-            particles = particles.filter(p => !p.dead && p.age < 500);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-
             // Update stats
             updateStats();
 
@@ -1195,7 +1070,8 @@
             document.getElementById('slowFactor').textContent = slowText;
 
             // Escape velocity as fraction of c
-            const vEscape = Math.sqrt(2 / r);
+            // v_esc = √(2GM/r) = c√(Rs/r) = c/√(r/Rs) when r is in units of Rs
+            const vEscape = 1 / Math.sqrt(r); // Fraction of c
             document.getElementById('escapeVel').textContent = (vEscape * c_km).toFixed(0) + ' km/s (' + (vEscape * 100).toFixed(1) + '% of c)';
 
             // Tidal force: Δg = 2GM h / r³ (assuming h = 2m for human height)
