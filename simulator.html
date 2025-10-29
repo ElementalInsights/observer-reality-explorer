@@ -1671,13 +1671,29 @@
                     '#ffa502',  // BRIGHT ORANGE tribe
                     '#9b59b6'   // BRIGHT PURPLE tribe
                 ];
-                particles.forEach(p => {
-                    if (p.cluster === undefined) {
-                        p.cluster = Math.floor(Math.random() * config.clusterCount);
-                    }
-                    // ASSIGN COLORS!
+
+                // ASSIGN RANDOM CLUSTERS to all particles
+                particles.forEach((p, i) => {
+                    // Distribute evenly across clusters
+                    p.cluster = i % config.clusterCount;
                     p.color = clusterColors[p.cluster % clusterColors.length];
+
+                    // Position particles in their cluster's region
+                    const cols = Math.ceil(Math.sqrt(config.clusterCount));
+                    const regionWidth = window.canvasWidth / cols;
+                    const regionHeight = window.canvasHeight / Math.ceil(config.clusterCount / cols);
+                    const regionX = (p.cluster % cols) * regionWidth;
+                    const regionY = Math.floor(p.cluster / cols) * regionHeight;
+
+                    // Reposition to cluster region (with some randomness)
+                    p.x = regionX + Math.random() * regionWidth;
+                    p.y = regionY + Math.random() * regionHeight;
                 });
+
+                console.log('Social observer activated - cluster distribution:', particles.reduce((acc, p) => {
+                    acc[p.cluster] = (acc[p.cluster] || 0) + 1;
+                    return acc;
+                }, {}));
             }
 
             // Cancel old animation and restart with new observer
