@@ -1728,15 +1728,39 @@
             }
 
             // Create NEW particles based on population slider
-            const particles = Array.from({length: populationSize}, (_, i) => ({
-                id: i,
-                x: Math.random() * width,
-                y: Math.random() * height,
-                vx: (Math.random() - 0.5) * 2,
-                vy: (Math.random() - 0.5) * 2,
-                cluster: observerConfigs[currentObserver].clusterCount ? Math.floor(Math.random() * observerConfigs[currentObserver].clusterCount) : 0,
-                trail: [] // For classical observer trails
-            }));
+            const particles = Array.from({length: populationSize}, (_, i) => {
+                const cluster = observerConfigs[currentObserver].clusterCount ?
+                    Math.floor(Math.random() * observerConfigs[currentObserver].clusterCount) : 0;
+
+                // For social observer, spawn clusters in different regions
+                let x, y;
+                if (currentObserver === 'social' && observerConfigs[currentObserver].clusterCount) {
+                    // Divide space into regions for each cluster
+                    const clusterCount = observerConfigs[currentObserver].clusterCount;
+                    const cols = Math.ceil(Math.sqrt(clusterCount));
+                    const regionWidth = width / cols;
+                    const regionHeight = height / Math.ceil(clusterCount / cols);
+                    const regionX = (cluster % cols) * regionWidth;
+                    const regionY = Math.floor(cluster / cols) * regionHeight;
+
+                    // Spawn within cluster's region (with some spread)
+                    x = regionX + Math.random() * regionWidth;
+                    y = regionY + Math.random() * regionHeight;
+                } else {
+                    x = Math.random() * width;
+                    y = Math.random() * height;
+                }
+
+                return {
+                    id: i,
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    cluster: cluster,
+                    trail: []
+                };
+            });
 
             // Store globally
             window.currentParticles = particles;
