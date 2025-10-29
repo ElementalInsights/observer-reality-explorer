@@ -627,8 +627,32 @@ class ObserverPhysicsEngine {
 
     // ===== PUBLIC API =====
     setObserver(observerType) {
+        const previousObserver = this.config.observerType;
         this.config.observerType = observerType;
-        this.createParticles(); // Recreate for different spawn patterns
+
+        // Don't recreate particles - just update observer-specific properties!
+        const config = this.observerConfigs[observerType];
+
+        // Update cluster colors if switching to social
+        if (observerType === 'social' && config.clusterCount) {
+            const clusterColors = ['#ff4757', '#3498db', '#2ecc71', '#ffa502', '#9b59b6'];
+            this.particles.forEach((p, i) => {
+                p.cluster = i % config.clusterCount;
+                p.color = clusterColors[p.cluster];
+            });
+        }
+
+        // Clear trails when switching away from classical
+        if (previousObserver === 'classical' && observerType !== 'classical') {
+            this.particles.forEach(p => p.trail = []);
+        }
+
+        // Initialize trails when switching to classical
+        if (observerType === 'classical') {
+            this.particles.forEach(p => {
+                if (!p.trail) p.trail = [];
+            });
+        }
     }
 
     setPopulation(size) {
