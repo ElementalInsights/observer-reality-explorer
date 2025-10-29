@@ -84,6 +84,9 @@
             border-radius: 10px;
             padding: 20px;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         .panel h2 {
@@ -184,6 +187,30 @@
             font-weight: bold;
             font-size: 1.05em;
         }
+
+        .speed-control {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .speed-control label {
+            color: #bbb;
+            font-size: 0.85em;
+            white-space: nowrap;
+        }
+
+        .speed-control input[type="range"] {
+            width: 150px;
+            cursor: pointer;
+        }
+
+        .speed-value {
+            color: #fff;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
@@ -196,6 +223,11 @@
             </div>
 
             <div class="header-right">
+                <div class="speed-control">
+                    <label for="speedSlider">Time Speed</label>
+                    <input type="range" id="speedSlider" min="0.25" max="5" step="0.25" value="1">
+                    <span class="speed-value" id="speedValue">1.0x</span>
+                </div>
                 <div class="header-buttons">
                     <button id="playBtn" onclick="togglePlay()">⏸️ Pause</button>
                     <button onclick="resetToLowEntropy()">🔄 Reset (Low Entropy)</button>
@@ -319,6 +351,16 @@
             const btn = document.getElementById('playBtn');
             btn.textContent = engine.isPlaying ? '⏸️ Pause' : '▶️ Play';
         }
+
+        // Speed control
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValue = document.getElementById('speedValue');
+
+        speedSlider.addEventListener('input', (e) => {
+            const speed = parseFloat(e.target.value);
+            engine.timeScale = speed;
+            speedValue.textContent = speed.toFixed(2) + 'x';
+        });
 
         // Handle window resize
         window.addEventListener('resize', () => {
