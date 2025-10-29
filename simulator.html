@@ -403,36 +403,42 @@
             border-radius: 18px;
         }
 
-        /* Inline Observer Info in System State */
-        .observer-info-inline {
-            margin-bottom: 15px;
+        /* Observer Info Card (overlay on canvas) */
+        .observer-info-card {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10,14,39,0.92);
+            border: 2px solid rgba(0,255,136,0.5);
+            border-radius: 12px;
+            padding: 24px 28px;
+            max-width: 550px;
+            z-index: 5;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
         }
 
         .observer-name {
             color: #00ff88;
-            font-size: 1.1em;
+            font-size: 1.3em;
             font-weight: 700;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
 
         .observer-desc-inline {
             color: #00ff88;
-            font-size: 0.85em;
+            font-size: 0.9em;
             line-height: 1.4;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
 
         .observer-description {
-            color: #bbb;
-            font-size: 0.85em;
-            line-height: 1.5;
-            font-style: italic;
-            padding: 10px;
-            background: rgba(0,255,136,0.05);
-            border-left: 3px solid rgba(0,255,136,0.3);
-            border-radius: 4px;
-            margin-top: 10px;
+            color: #ddd;
+            font-size: 1.05em;
+            line-height: 1.8;
+            padding: 0;
         }
 
         /* Live Stats Grid */
@@ -672,17 +678,7 @@
     <div class="main-canvas">
         <!-- System State & Calculations (left column) -->
         <div class="math-panel">
-            <h2>System State & Calculations</h2>
-                <!-- Observer Info -->
-                <div class="observer-info-inline">
-                    <div class="observer-name" id="observerTitle">🌀 Quantum Observer</div>
-                    <div class="observer-desc-inline" id="observerDesc">Superpositions, Multiple States, Probabilistic Reality, Wave Function Collapse</div>
-                    <div class="observer-description" id="observerDescription">
-                        Sees particles in MULTIPLE states at once (superposition). Reality is probabilistic - particles exist as "waves" of possibility until measured. Ghost particles show "HERE or THERE" states before observation collapses the wave function.
-                    </div>
-                </div>
-
-                <div style="height: 1px; background: rgba(0,255,136,0.2); margin: 15px 0;"></div>
+            <h2>📊 System State</h2>
 
                 <!-- Live System Stats -->
                 <div class="live-stats-grid">
@@ -1001,6 +997,15 @@
 
         <!-- Canvas (center) -->
         <div class="viz-container">
+            <!-- Observer Description Card (overlay on canvas) -->
+            <div class="observer-info-card" id="observerCard">
+                <div class="observer-name" id="observerTitle">🌀 Quantum Observer</div>
+                <div class="observer-desc-inline" id="observerDesc">Superpositions, Multiple States, Probabilistic Reality, Wave Function Collapse</div>
+                <div class="observer-description" id="observerDescription">
+                    Sees particles in MULTIPLE states at once (superposition). Reality is probabilistic - particles exist as "waves" of possibility until measured. Ghost particles show "HERE or THERE" states before observation collapses the wave function.
+                </div>
+            </div>
+
             <canvas id="reality-canvas"></canvas>
         </div>
 
