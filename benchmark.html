@@ -374,12 +374,13 @@
         /* Mini-chart overlays */
         .chart-overlays {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 15px;
+            right: 15px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
             pointer-events: none;
+            z-index: 50;
         }
 
         .chart-overlays.hidden {
@@ -387,31 +388,41 @@
         }
 
         .mini-chart {
-            background: rgba(0,0,0,0.85);
-            border: 2px solid #555;
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #666;
             border-radius: 8px;
-            width: 280px;
-            height: 140px;
-            backdrop-filter: blur(5px);
+            width: 300px;
+            height: 150px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
         }
 
         .chart-toggle-btn {
             position: absolute;
             top: 10px;
             left: 10px;
-            background: #444;
-            border: 2px solid #666;
+            background: #2ecc71;
+            border: 2px solid #27ae60;
             border-radius: 6px;
             color: #fff;
-            padding: 8px 12px;
-            font-size: 0.85em;
+            padding: 10px 16px;
+            font-size: 0.9em;
+            font-weight: bold;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s;
             z-index: 100;
+            box-shadow: 0 2px 8px rgba(46, 204, 113, 0.4);
         }
 
         .chart-toggle-btn:hover {
-            background: #555;
+            background: #27ae60;
+            transform: scale(1.05);
+        }
+
+        .chart-toggle-btn.active {
+            background: #e74c3c;
+            border-color: #c0392b;
+            box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4);
         }
 
         .quiz-btn {
@@ -702,11 +713,12 @@
                 <div class="header-buttons">
                     <button id="playBtn" onclick="togglePlay()">⏸️ Pause</button>
                     <button onclick="resetSimulation()">🔄 Reset</button>
+                    <button id="graphBtn" onclick="toggleCharts()">📊 Graphs</button>
+                    <button onclick="startQuiz()" style="background: #9b59b6;">🎓 Quiz</button>
                 </div>
 
                 <div class="header-control">
-                    <label>Observer Type</label>
-                    <select id="observerType" onchange="changeObserver(this.value)">
+                    <select id="observerType" onchange="changeObserver(this.value)" style="margin-top: 0;">
                         <option value="quantum">🌀 Quantum</option>
                         <option value="classical" selected>🎯 Classical</option>
                         <option value="social">🌐 Social</option>
@@ -785,21 +797,26 @@
         <!-- Canvas -->
         <div class="canvas-wrapper">
             <canvas id="canvas"></canvas>
-
-            <!-- Overlay Buttons -->
-            <button class="chart-toggle-btn" onclick="toggleCharts()">📊 Graphs</button>
-            <button class="quiz-btn" onclick="startQuiz()">🎓 Quiz</button>
-
-            <!-- Mini-chart Overlays -->
-            <div class="chart-overlays hidden" id="chartOverlays">
-                <canvas id="entropyChart" class="mini-chart"></canvas>
-                <canvas id="fpsChart" class="mini-chart"></canvas>
-                <canvas id="energyChart" class="mini-chart"></canvas>
-            </div>
         </div>
 
-        <!-- Telemetry -->
-        <div class="telemetry" id="telemetryDisplay"></div>
+        <!-- Right Panel: Telemetry + Charts -->
+        <div class="telemetry">
+            <!-- Live Graphs Section -->
+            <div id="chartsSection" class="hidden" style="margin-bottom: 20px;">
+                <div style="background: rgba(255, 255, 255, 0.08); border: 2px solid #555; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                    <canvas id="entropyChart" style="width: 100%; height: 150px; display: block;"></canvas>
+                </div>
+                <div style="background: rgba(255, 255, 255, 0.08); border: 2px solid #555; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                    <canvas id="fpsChart" style="width: 100%; height: 150px; display: block;"></canvas>
+                </div>
+                <div style="background: rgba(255, 255, 255, 0.08); border: 2px solid #555; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                    <canvas id="energyChart" style="width: 100%; height: 150px; display: block;"></canvas>
+                </div>
+            </div>
+
+            <!-- Telemetry Display -->
+            <div id="telemetryDisplay"></div>
+        </div>
     </div>
 
     <!-- Back Button (Fixed Position) -->
@@ -970,11 +987,24 @@
         // Toggle charts visibility
         function toggleCharts() {
             chartsVisible = !chartsVisible;
-            const overlays = document.getElementById('chartOverlays');
+            const chartsSection = document.getElementById('chartsSection');
+            const btn = document.getElementById('graphBtn');
+
             if (chartsVisible) {
-                overlays.classList.remove('hidden');
+                chartsSection.classList.remove('hidden');
+                btn.textContent = '✕ Hide Graphs';
+                btn.style.background = '#e74c3c';
+
+                // Resize chart canvases
+                setTimeout(() => {
+                    entropyChartRenderer.resizeCanvas();
+                    fpsChartRenderer.resizeCanvas();
+                    energyChartRenderer.resizeCanvas();
+                }, 100);
             } else {
-                overlays.classList.add('hidden');
+                chartsSection.classList.add('hidden');
+                btn.textContent = '📊 Graphs';
+                btn.style.background = '#444';
             }
         }
 
@@ -987,7 +1017,7 @@
             const fpsData = engine.getTimeSeries('fps');
             const energyData = engine.getTimeSeries('totalEnergy');
 
-            if (entropyData && entropyData.length > 1) {
+            if (entropyData && entropyData.length > 5) {
                 const now = performance.now();
                 const cutoff = now - 30000; // Last 30 seconds
 
@@ -1008,26 +1038,47 @@
                 }));
 
                 // Render
-                if (recentEntropy.length > 1) {
+                if (recentEntropy.length > 5) {
                     entropyChartRenderer.renderLineChart(recentEntropy, {
                         title: 'Entropy (30s)',
-                        lineColor: '#2ecc71'
+                        lineColor: '#2ecc71',
+                        yLabel: 'H',
+                        xLabel: 'Time (s)'
                     });
                 }
 
-                if (recentFPS.length > 1) {
+                if (recentFPS.length > 5) {
                     fpsChartRenderer.renderLineChart(recentFPS, {
                         title: 'FPS (30s)',
-                        lineColor: '#3498db'
+                        lineColor: '#3498db',
+                        yLabel: 'FPS',
+                        xLabel: 'Time (s)'
                     });
                 }
 
-                if (recentEnergy.length > 1) {
+                if (recentEnergy.length > 5) {
                     energyChartRenderer.renderLineChart(recentEnergy, {
                         title: 'Total Energy (30s)',
-                        lineColor: '#e74c3c'
+                        lineColor: '#e74c3c',
+                        yLabel: 'E',
+                        xLabel: 'Time (s)'
                     });
                 }
+            } else {
+                // Show "waiting for data" message
+                const ctx1 = document.getElementById('entropyChart').getContext('2d');
+                const ctx2 = document.getElementById('fpsChart').getContext('2d');
+                const ctx3 = document.getElementById('energyChart').getContext('2d');
+
+                [ctx1, ctx2, ctx3].forEach((ctx, i) => {
+                    const canvas = ctx.canvas;
+                    ctx.fillStyle = '#0a0e27';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#888';
+                    ctx.font = '14px Monaco';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Collecting data...', canvas.width / 2, canvas.height / 2);
+                });
             }
         }, 200);
 
@@ -1302,9 +1353,37 @@
                 currentQuizIndex++;
                 showQuizQuestion();
             } else {
-                // Quiz complete!
-                alert(`Quiz Complete! Score: ${quizScore}/${quizQuestions.length}\n\n${quizScore >= 6 ? '🎉 Excellent! You understand the physics!' : quizScore >= 4 ? '👍 Good job! Review the observer details for more insights.' : '📚 Keep exploring! Click the ⚙️ button to read more physics documentation.'}`);
-                closeQuiz();
+                // Quiz complete - show score in modal!
+                const questionDiv = document.getElementById('quizQuestion');
+                const optionsDiv = document.getElementById('quizOptions');
+                const feedbackDiv = document.getElementById('quizFeedback');
+                const buttonsDiv = document.querySelector('.quiz-buttons');
+
+                questionDiv.innerHTML = `
+                    <div style="text-align: center; padding: 20px 0;">
+                        <div style="font-size: 3em; margin-bottom: 20px;">
+                            ${quizScore >= 6 ? '🎉' : quizScore >= 4 ? '👍' : '📚'}
+                        </div>
+                        <div style="font-size: 1.5em; margin-bottom: 15px; color: #2ecc71;">
+                            Score: ${quizScore}/${quizQuestions.length}
+                        </div>
+                        <div style="font-size: 1.1em; color: #ccc; line-height: 1.6;">
+                            ${quizScore >= 6 ?
+                                'Excellent! You understand the physics!' :
+                                quizScore >= 4 ?
+                                'Good job! Review the observer details for more insights.' :
+                                'Keep exploring! Click the ⚙️ button to read more physics documentation.'}
+                        </div>
+                    </div>
+                `;
+                optionsDiv.innerHTML = '';
+                feedbackDiv.classList.remove('show');
+
+                // Change buttons
+                buttonsDiv.innerHTML = `
+                    <button onclick="closeQuiz()">Close</button>
+                    <button class="primary" onclick="startQuiz()">Retake Quiz</button>
+                `;
             }
         }
 

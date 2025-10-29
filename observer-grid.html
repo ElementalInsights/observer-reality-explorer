@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All 8 Observers - Same Reality, 8 Different Perceptions</title>
+    <script src="physics-engine.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #444;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            color: #fff;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .header-left p {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-right button {
+            padding: 10px 20px;
+            background: #444;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: background 0.3s;
+        }
+
+        .header-right button:hover {
+            background: #555;
+        }
+
+        /* 8-Observer Grid (2 rows × 4 columns) */
+        .observer-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .observer-cell {
+            background: #0a0e27;
+            border: 2px solid #444;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            transition: border-color 0.3s;
+        }
+
+        .observer-cell:hover {
+            border-color: #666;
+        }
+
+        .observer-label {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0,0,0,0.85);
+            border: 2px solid #555;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .observer-cell canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .back-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: #444;
+            border: 2px solid #666;
+            border-radius: 8px;
+            color: #fff;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1em;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .back-btn:hover {
+            background: #555;
+            transform: translateX(-5px);
+        }
+
+        .info-box {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #555;
+            border-radius: 8px;
+            padding: 15px 20px;
+            max-width: 300px;
+            z-index: 1000;
+        }
+
+        .info-box h3 {
+            color: #fff;
+            font-size: 1em;
+            margin-bottom: 8px;
+        }
+
+        .info-box p {
+            color: #ccc;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <h1>🌈 All 8 Observers - Same Reality, Different Perceptions</h1>
+                <p>Watching the SAME 100 particles through 8 different observational lenses simultaneously</p>
+            </div>
+
+            <div class="header-right">
+                <button id="playBtn" onclick="togglePlay()">⏸️ Pause</button>
+                <button onclick="resetAll()">🔄 Reset</button>
+            </div>
+        </div>
+
+        <!-- 8-Observer Grid -->
+        <div class="observer-grid">
+            <!-- Row 1 -->
+            <div class="observer-cell">
+                <div class="observer-label">🌀 Quantum</div>
+                <canvas id="canvas-quantum"></canvas>
+            </div>
+
+            <div class="observer-cell">
+                <div class="observer-label">🎯 Classical</div>
+                <canvas id="canvas-classical"></canvas>
+            </div>
+
+            <div class="observer-cell">
+                <div class="observer-label">🌐 Social</div>
+                <canvas id="canvas-social"></canvas>
+            </div>
+
+            <div class="observer-cell">
+                <div class="observer-label">🧠 Conscious</div>
+                <canvas id="canvas-conscious"></canvas>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="observer-cell">
+                <div class="observer-label">🤖 AI</div>
+                <canvas id="canvas-ai"></canvas>
+            </div>
+
+            <div class="observer-cell">
+                <div class="observer-label">🔥 Thermodynamic</div>
+                <canvas id="canvas-thermodynamic"></canvas>
+            </div>
+
+            <div class="observer-cell">
+                <div class="observer-label">⚡ Relativistic</div>
+                <canvas id="canvas-relativistic"></canvas>
+            </div>
+
+            <div class="observer-cell">
+                <div class="observer-label">🎲 Probabilistic</div>
+                <canvas id="canvas-probabilistic"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <a href="index.html" class="back-btn">← Back</a>
+
+    <!-- Info Box -->
+    <div class="info-box">
+        <h3>🎯 What You're Seeing</h3>
+        <p>All 8 canvases show the EXACT SAME particles, but rendered through different observational frameworks.</p>
+        <p><strong>This demonstrates:</strong> Reality isn't observer-independent - what you see depends on HOW you look!</p>
+    </div>
+
+    <script>
+        // SHARED PARTICLE STATE (one authoritative source)
+        let sharedParticles = [];
+        let isPlaying = true;
+
+        // Initialize canvases
+        const observerTypes = ['quantum', 'classical', 'social', 'conscious', 'ai', 'thermodynamic', 'relativistic', 'probabilistic'];
+        const engines = {};
+
+        observerTypes.forEach(type => {
+            const canvasId = `canvas-${type}`;
+            const canvas = document.getElementById(canvasId);
+            const parent = canvas.parentElement;
+
+            // Size canvas
+            canvas.width = parent.clientWidth;
+            canvas.height = parent.clientHeight;
+
+            // Create engine (but don't create particles yet!)
+            engines[type] = new ObserverPhysicsEngine(canvasId, {
+                observerType: type,
+                populationSize: 100
+            });
+
+            // Don't start individual loops - we'll render manually
+            engines[type].isPlaying = false;
+        });
+
+        // Create SHARED particle array (single source of truth)
+        const primaryEngine = engines['quantum']; // Use any engine to create particles
+        sharedParticles = primaryEngine.particles;
+
+        // Share particles across all engines
+        observerTypes.forEach(type => {
+            engines[type].particles = sharedParticles;
+        });
+
+        // Master animation loop
+        function animate() {
+            if (isPlaying) {
+                // Update physics ONCE using one engine
+                primaryEngine.updatePhysics();
+
+                // Update connections for each observer type independently
+                observerTypes.forEach(type => {
+                    const engine = engines[type];
+
+                    // Update observer-specific physics (trails, predictions, etc.)
+                    engine.particles.forEach(p => {
+                        // Classical trails
+                        if (type === 'classical') {
+                            if (!p.trail) p.trail = [];
+                            p.trail.push({x: p.x, y: p.y});
+                            if (p.trail.length > 30) p.trail.shift();
+                        }
+
+                        // Conscious predictions
+                        if (type === 'conscious') {
+                            if (!p.predictedX) {
+                                p.predictedX = p.x;
+                                p.predictedY = p.y;
+                                p.predictionError = 0;
+                            }
+
+                            const error = Math.sqrt((p.predictedX - p.x)**2 + (p.predictedY - p.y)**2);
+                            p.predictionError = error * 0.7 + p.predictionError * 0.3;
+                            p.predictedX = p.x + p.vx;
+                            p.predictedY = p.y + p.vy;
+
+                            if (Math.random() < 0.05) {
+                                p.vx += (Math.random() - 0.5) * 5;
+                                p.vy += (Math.random() - 0.5) * 5;
+                            }
+                        }
+
+                        // Thermodynamic temperature
+                        if (type === 'thermodynamic') {
+                            const vel = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                            p.temperature = (p.temperature || 50) * 0.99 + vel * 10;
+                            p.temperature = p.temperature * 0.98 + 50 * 0.02;
+                        }
+
+                        // Relativistic time
+                        if (type === 'relativistic') {
+                            const vel = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                            const c = 3;
+                            if (vel > c) {
+                                const factor = c / vel;
+                                p.vx *= factor;
+                                p.vy *= factor;
+                            }
+                            const beta = Math.min(vel / c, 0.99);
+                            const gamma = 1 / Math.sqrt(1 - beta * beta);
+                            p.properTime = (p.properTime || 0) + (1 / gamma);
+                        }
+
+                        // Probabilistic updates
+                        if (type === 'probabilistic') {
+                            const vel = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                            const likelihood = Math.exp(-vel * 0.5);
+                            p.probability = (p.probability || 0.01) * 0.95 + likelihood * 0.05;
+                            p.variance = (p.variance || 1) * 0.98 + Math.abs(vel - 1.5) * 0.02;
+                        }
+                    });
+                });
+            }
+
+            // Render each observer view
+            observerTypes.forEach(type => {
+                engines[type].render();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        // Start animation
+        animate();
+
+        // Controls
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('playBtn');
+            btn.textContent = isPlaying ? '⏸️ Pause' : '▶️ Play';
+        }
+
+        function resetAll() {
+            // Recreate particles
+            primaryEngine.createParticles();
+            sharedParticles = primaryEngine.particles;
+
+            // Share new particles
+            observerTypes.forEach(type => {
+                engines[type].particles = sharedParticles;
+            });
+        }
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            observerTypes.forEach(type => {
+                const canvas = document.getElementById(`canvas-${type}`);
+                const parent = canvas.parentElement;
+                canvas.width = parent.clientWidth;
+                canvas.height = parent.clientHeight;
+            });
+        });
+    </script>
+</body>
+</html>
