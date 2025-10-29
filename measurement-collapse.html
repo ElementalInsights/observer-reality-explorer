@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wave Function Collapse - Quantum Measurement</title>
+    <script src="physics-engine.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 400px 1fr 400px;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #444;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            color: #fff;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .header-left p {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        .header-right button {
+            padding: 15px 30px;
+            background: #9b59b6;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4);
+        }
+
+        .header-right button:hover {
+            background: #8e44ad;
+            transform: scale(1.05);
+        }
+
+        .header-right button:disabled {
+            background: #444;
+            cursor: not-allowed;
+            opacity: 0.5;
+            box-shadow: none;
+        }
+
+        .panel {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid #444;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .panel h2 {
+            color: #fff;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        .canvas-wrapper {
+            background: #0a0e27;
+            border: 2px solid #555;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .state-indicator {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid #555;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .state-indicator h3 {
+            color: #fff;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .state-value {
+            font-size: 2em;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .state-superposition {
+            background: rgba(155, 89, 182, 0.2);
+            color: #9b59b6;
+        }
+
+        .state-collapsed {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .info-section {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid #555;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-section h3 {
+            color: #fff;
+            font-size: 1.1em;
+            margin-bottom: 12px;
+        }
+
+        .info-section p {
+            color: #ccc;
+            font-size: 0.9em;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .info-section code {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #ddd;
+        }
+
+        .measurement-history {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .measurement-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.05);
+            border-left: 3px solid #2ecc71;
+            border-radius: 4px;
+        }
+
+        .measurement-item .count {
+            color: #2ecc71;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .measurement-item .uncertainty {
+            color: #888;
+            font-size: 0.85em;
+        }
+
+        .back-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: #444;
+            border: 2px solid #666;
+            border-radius: 8px;
+            color: #fff;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1em;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .back-btn:hover {
+            background: #555;
+            transform: translateX(-5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <h1>⚡ Wave Function Collapse</h1>
+                <p>Quantum measurement causes superposition → single outcome</p>
+            </div>
+
+            <div class="header-right">
+                <button id="measureBtn" onclick="performMeasurement()">⚡ MEASURE!</button>
+            </div>
+        </div>
+
+        <!-- Left Panel: State & Controls -->
+        <div class="panel">
+            <div class="state-indicator">
+                <h3>Quantum State</h3>
+                <div class="state-value" id="stateDisplay">SUPERPOSITION</div>
+            </div>
+
+            <div class="info-section">
+                <h3>🌀 Before Measurement</h3>
+                <p>Particles exist in <strong>superposition</strong> - simultaneously in multiple positions (ghost particles).</p>
+                <p><code>|ψ⟩ = α|position₁⟩ + β|position₂⟩</code></p>
+                <p>The wavefunction ψ contains ALL possible states.</p>
+            </div>
+
+            <div class="info-section">
+                <h3>⚡ During Measurement</h3>
+                <p>Observation <strong>collapses</strong> the wavefunction to a single outcome.</p>
+                <p><code>|ψ⟩ → |measured_position⟩</code></p>
+                <p>Ghosts disappear, particle localizes.</p>
+            </div>
+
+            <div class="info-section">
+                <h3>🎯 After Measurement</h3>
+                <p>Position is now <strong>certain</strong>, but velocity becomes <strong>uncertain</strong>!</p>
+                <p><code>ΔxΔp ≥ ℏ/2</code> (Heisenberg)</p>
+                <p>Precise position → Random velocity</p>
+            </div>
+
+            <button onclick="resetSystem()" style="width: 100%; padding: 12px; background: #444; border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; font-size: 1em; margin-top: 15px;">
+                🔄 Reset to Superposition
+            </button>
+        </div>
+
+        <!-- Center Panel: Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <!-- Right Panel: Measurement History -->
+        <div class="panel">
+            <h2>📊 Measurement History</h2>
+            <div class="measurement-history" id="historyList">
+                <p style="color: #888; text-align: center; padding: 40px;">
+                    Click MEASURE to begin!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <a href="index.html" class="back-btn">← Back</a>
+
+    <script>
+        // Initialize engine in quantum mode
+        const engine = new ObserverPhysicsEngine('canvas', {
+            observerType: 'quantum',
+            populationSize: 50
+        });
+
+        engine.isPlaying = true;
+        engine.start();
+
+        let isCollapsed = false;
+        let measurementCount = 0;
+        let originalVelocities = null;
+
+        // Perform measurement (collapse wave function!)
+        function performMeasurement() {
+            if (isCollapsed) return;
+
+            isCollapsed = true;
+            measurementCount++;
+
+            // Save original velocities
+            if (!originalVelocities) {
+                originalVelocities = engine.particles.map(p => ({
+                    vx: p.vx,
+                    vy: p.vy
+                }));
+            }
+
+            // Animate transition to collapsed state
+            engine.animateTransition('superposition', 'collapsed', 1000, () => {
+                // After collapse: Randomize velocities (Heisenberg uncertainty!)
+                engine.particles.forEach(p => {
+                    const speed = 2.0; // High uncertainty
+                    const angle = Math.random() * Math.PI * 2;
+                    p.vx = Math.cos(angle) * speed;
+                    p.vy = Math.sin(angle) * speed;
+                });
+            });
+
+            // Visual feedback
+            document.getElementById('stateDisplay').textContent = 'COLLAPSED';
+            document.getElementById('stateDisplay').className = 'state-value state-collapsed';
+            document.getElementById('measureBtn').disabled = true;
+
+            // Add to history
+            const telemetry = engine.getTelemetry();
+            const historyItem = document.createElement('div');
+            historyItem.className = 'measurement-item';
+            historyItem.innerHTML = `
+                <span class="count">#${measurementCount}</span>
+                Collapsed to specific positions<br>
+                <span class="uncertainty">Uncertainty: Δx·Δp = ${telemetry.uncertainty.toFixed(2)}</span>
+            `;
+            const historyList = document.getElementById('historyList');
+            historyList.insertBefore(historyItem, historyList.firstChild);
+        }
+
+        // Reset system to superposition
+        function resetSystem() {
+            isCollapsed = false;
+
+            // Restore original velocities
+            if (originalVelocities) {
+                engine.particles.forEach((p, i) => {
+                    if (originalVelocities[i]) {
+                        p.vx = originalVelocities[i].vx;
+                        p.vy = originalVelocities[i].vy;
+                    }
+                });
+            }
+
+            // Reset to quantum observer
+            engine.setObserver('quantum');
+            engine.setState('superposition');
+
+            // Visual feedback
+            document.getElementById('stateDisplay').textContent = 'SUPERPOSITION';
+            document.getElementById('stateDisplay').className = 'state-value state-superposition';
+            document.getElementById('measureBtn').disabled = false;
+        }
+
+        // Update stats
+        setInterval(() => {
+            const telemetry = engine.getTelemetry();
+            // Could show real-time metrics here if desired
+        }, 100);
+    </script>
+</body>
+</html>
