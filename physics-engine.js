@@ -452,10 +452,29 @@ class ObserverPhysicsEngine {
 
             // Update predictions for conscious observer
             if (this.config.observerType === 'conscious') {
+                if (!p.predictedX) {
+                    p.predictedX = p.x;
+                    p.predictedY = p.y;
+                    p.predictionError = 0;
+                }
+
+                // Calculate error between PREVIOUS prediction and ACTUAL current position
                 const error = Math.sqrt((p.predictedX - p.x)**2 + (p.predictedY - p.y)**2);
+
+                // Store error with decay (for smooth color transitions)
                 p.predictionError = error * 0.7 + p.predictionError * 0.3;
+
+                // Make NEW prediction for next frame
                 p.predictedX = p.x + p.vx;
                 p.predictedY = p.y + p.vy;
+
+                // Add occasional environmental surprises (creates prediction errors!)
+                if (Math.random() < 0.05) { // 5% chance
+                    const shockX = (Math.random() - 0.5) * 5;
+                    const shockY = (Math.random() - 0.5) * 5;
+                    p.vx += shockX;
+                    p.vy += shockY;
+                }
             }
         });
     }
