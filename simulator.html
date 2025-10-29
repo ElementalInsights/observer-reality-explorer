@@ -298,14 +298,15 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(10,14,39,0.98);
-            border: 3px solid #00ff88;
-            border-radius: 12px;
-            padding: 24px;
-            width: 550px;
-            max-height: 80vh;
+            border: 4px solid #00ff88;
+            border-radius: 16px;
+            padding: 40px;
+            width: 700px;
+            max-width: 90vw;
+            max-height: 85vh;
             overflow-y: auto;
-            z-index: 3000;
-            box-shadow: 0 8px 40px rgba(0,255,136,0.8), 0 0 0 9999px rgba(0,0,0,0.7);
+            z-index: 10000;
+            box-shadow: 0 12px 60px rgba(0,255,136,1), 0 0 0 9999px rgba(0,0,0,0.85);
         }
 
         .tooltip-icon.active .tooltip-content {
@@ -314,15 +315,24 @@
 
         .tooltip-content h4 {
             color: #00ff88;
-            margin: 0 0 10px 0;
-            font-size: 1.1em;
+            margin: 0 0 20px 0;
+            font-size: 1.8em;
+            font-weight: 700;
+            text-align: center;
+            border-bottom: 2px solid #00ff88;
+            padding-bottom: 15px;
         }
 
         .tooltip-content p {
-            color: #ddd;
-            margin: 8px 0;
-            font-size: 1.05em;
-            line-height: 1.6;
+            color: #eee;
+            margin: 15px 0;
+            font-size: 1.3em;
+            line-height: 1.7;
+        }
+
+        .tooltip-content strong {
+            color: #00ff88;
+            font-size: 1.1em;
         }
 
         .tooltip-content .why {
@@ -531,14 +541,15 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(10,14,39,0.98);
-            border: 3px solid #9b59b6;
-            border-radius: 12px;
-            padding: 24px;
-            width: 550px;
-            max-height: 80vh;
+            border: 4px solid #9b59b6;
+            border-radius: 16px;
+            padding: 40px;
+            width: 700px;
+            max-width: 90vw;
+            max-height: 85vh;
             overflow-y: auto;
-            z-index: 3000;
-            box-shadow: 0 8px 40px rgba(155,89,182,0.8), 0 0 0 9999px rgba(0,0,0,0.7);
+            z-index: 10000;
+            box-shadow: 0 12px 60px rgba(155,89,182,1), 0 0 0 9999px rgba(0,0,0,0.85);
         }
 
         .stat-row-hover.active .stat-tooltip {
@@ -547,15 +558,24 @@
 
         .stat-tooltip h4 {
             color: #9b59b6;
-            margin: 0 0 10px 0;
-            font-size: 1em;
+            margin: 0 0 20px 0;
+            font-size: 1.8em;
+            font-weight: 700;
+            text-align: center;
+            border-bottom: 2px solid #9b59b6;
+            padding-bottom: 15px;
         }
 
         .stat-tooltip p {
-            color: #ddd;
-            margin: 8px 0;
-            font-size: 1.05em;
-            line-height: 1.6;
+            color: #eee;
+            margin: 15px 0;
+            font-size: 1.3em;
+            line-height: 1.7;
+        }
+
+        .stat-tooltip strong {
+            color: #9b59b6;
+            font-size: 1.1em;
         }
 
         .stat-tooltip .why {
@@ -1024,9 +1044,9 @@
                             <span class="tooltip-content">
                                 <h4>Total System Energy</h4>
                                 <p><strong>E_total = K + U</strong></p>
-                                <p>Sum of kinetic energy (motion) and potential energy (interactions). Should be conserved in isolated systems!</p>
+                                <p>Sum of kinetic energy (motion) and potential energy (interactions).</p>
                                 <p class="why">Why it matters:</p>
-                                <p>First Law of Thermodynamics: energy is conserved. Watch it stay constant (with slight numerical drift). Energy can flow between K↔U but total stays fixed. Foundation of physics!</p>
+                                <p><strong>First Law of Thermodynamics:</strong> In isolated systems, energy is conserved. Here, there's slight damping (0.99x per frame) that dissipates energy to simulate environmental friction. Energy flows between K↔U, but total slowly decreases. In perfect isolation, it would be constant!</p>
                             </span>
                         </span>
                     </span>
@@ -1778,9 +1798,10 @@
                         p.vx += fx;
                         p.vy += fy;
 
-                        // Damping
-                        p.vx *= 0.98;
-                        p.vy *= 0.98;
+                        // Light damping (simulates energy dissipation to environment)
+                        // NOTE: This means energy is NOT perfectly conserved!
+                        p.vx *= 0.99;
+                        p.vy *= 0.99;
 
                         // Cap velocity
                         const maxVel = 3;
@@ -1935,12 +1956,19 @@
                 // === CALCULATE CONSCIOUS PREDICTION ERRORS ===
                 if (currentObserver === 'conscious') {
                     particles.forEach(p => {
-                        const expectedX = p.x + p.vx;
-                        const expectedY = p.y + p.vy;
-                        const actualX = p.x;
-                        const actualY = p.y;
-                        const error = Math.sqrt((expectedX - actualX)**2 + (expectedY - actualY)**2);
+                        // Initialize prediction if not set
+                        if (!p.predictedX) {
+                            p.predictedX = p.x;
+                            p.predictedY = p.y;
+                        }
+
+                        // Calculate error between PREVIOUS prediction and ACTUAL current position
+                        const error = Math.sqrt((p.predictedX - p.x)**2 + (p.predictedY - p.y)**2);
                         p.predictionError = error;
+
+                        // Make NEW prediction for next frame (assuming constant velocity)
+                        p.predictedX = p.x + p.vx;
+                        p.predictedY = p.y + p.vy;
                     });
                 }
 
@@ -2002,320 +2030,6 @@
                 // === UPDATE MATH PANEL (Less frequently at high N) ===
                 frameCount++;
                 if (frameCount % lod.mathPanelUpdateInterval === 0) {
-                    updateMathPanel();
-                }
-
-                animationFrameId = requestAnimationFrame(animate);
-            }
-
-            animate();
-            updateMathPanel();
-        }
-
-        // ===== OLD SVG RENDERING (DEPRECATED - keeping for reference) =====
-        function renderParticles(svg, particles, width, height) {
-            const config = observerConfigs[currentObserver];
-
-            // Draw connections
-            const connections = svg.append('g').attr('class', 'connections');
-
-            function updateConnections() {
-                const links = updateConnectionsData();
-
-                // === AI OBSERVER: Connection thickness by semantic distance ===
-                if (currentObserver === 'ai') {
-                    connections.selectAll('line')
-                        .data(links, d => d.source.id + '-' + d.target.id)
-                        .join('line')
-                        .attr('class', 'connection')
-                        .attr('x1', d => d.source.x)
-                        .attr('y1', d => d.source.y)
-                        .attr('x2', d => d.target.x)
-                        .attr('y2', d => d.target.y)
-                        .attr('stroke', config.color)
-                        .attr('stroke-width', d => {
-                            // Thicker lines = stronger semantic relationship (closer particles)
-                            const strength = 1 - (d.distance / config.connectionDistance);
-                            return 0.5 + strength * 3;
-                        })
-                        .attr('opacity', d => (1 - d.distance / config.connectionDistance) * 0.5);
-                }
-                // === SOCIAL OBSERVER: Only show same-cluster connections ===
-                else if (currentObserver === 'social') {
-                    const sameClusterLinks = links.filter(l => l.source.cluster === l.target.cluster);
-                    connections.selectAll('line')
-                        .data(sameClusterLinks, d => d.source.id + '-' + d.target.id)
-                        .join('line')
-                        .attr('class', 'connection')
-                        .attr('x1', d => d.source.x)
-                        .attr('y1', d => d.source.y)
-                        .attr('x2', d => d.target.x)
-                        .attr('y2', d => d.target.y)
-                        .attr('stroke', d => d.source.color)
-                        .attr('stroke-width', 2)
-                        .attr('opacity', 0.4);
-                }
-                // === DEFAULT: Normal connections ===
-                else {
-                    connections.selectAll('line')
-                        .data(links, d => d.source.id + '-' + d.target.id)
-                        .join('line')
-                        .attr('class', 'connection')
-                        .attr('x1', d => d.source.x)
-                        .attr('y1', d => d.source.y)
-                        .attr('x2', d => d.target.x)
-                        .attr('y2', d => d.target.y)
-                        .attr('stroke', config.color)
-                        .attr('stroke-width', 1)
-                        .attr('opacity', d => (1 - d.distance / config.connectionDistance) * 0.3);
-                }
-            }
-
-            // === QUANTUM OBSERVER: Add ghost particles (superpositions) ===
-            if (currentObserver === 'quantum') {
-                const ghostGroup = svg.append('g').attr('class', 'ghosts');
-
-                // Create 2 ghost particles per real particle (superposition: HERE or THERE)
-                const ghosts = [];
-                particles.forEach(p => {
-                    // Create ghosts at opposite positions (showing superposition)
-                    for (let i = 0; i < 2; i++) {
-                        const angle = (i / 2) * Math.PI * 2;
-                        const radius = 20 + Math.random() * 15;
-                        ghosts.push({
-                            x: p.x + Math.cos(angle) * radius,
-                            y: p.y + Math.sin(angle) * radius,
-                            parent: p.id,
-                            angle: angle
-                        });
-                    }
-                });
-
-                ghostGroup.selectAll('circle')
-                    .data(ghosts)
-                    .join('circle')
-                    .attr('r', config.particleSize * 1.2)
-                    .attr('cx', d => d.x)
-                    .attr('cy', d => d.y)
-                    .attr('fill', config.color)
-                    .attr('opacity', 0.4)
-                    .attr('stroke', config.color)
-                    .attr('stroke-width', 1)
-                    .style('filter', 'blur(1px) drop-shadow(0 0 8px ' + config.color + ')');
-
-                // Store ghosts for animation
-                window.ghostParticles = ghosts;
-            }
-
-            // === CLASSICAL OBSERVER: Add trajectory trails ===
-            const trailGroup = svg.append('g').attr('class', 'trails');
-            if (currentObserver === 'classical') {
-                particles.forEach(p => {
-                    p.trail = [{x: p.x, y: p.y}];
-                });
-            }
-
-            // Draw particles
-            const particleGroup = svg.append('g').attr('class', 'particles');
-
-            // === SOCIAL OBSERVER: Color by cluster ===
-            if (currentObserver === 'social') {
-                // Assign cluster colors
-                const clusterColors = ['#27ae60', '#2ecc71', '#16a085', '#1abc9c', '#229954'];
-                particles.forEach(p => {
-                    p.color = clusterColors[p.cluster % clusterColors.length];
-                });
-            }
-
-            const particleElements = particleGroup.selectAll('circle')
-                .data(particles)
-                .join('circle')
-                .attr('class', 'particle')
-                .attr('r', config.particleSize)
-                .attr('cx', d => d.x)
-                .attr('cy', d => d.y)
-                .attr('fill', d => currentObserver === 'social' ? d.color : config.color)
-                .attr('opacity', 0.8)
-                .attr('stroke', currentObserver === 'social' ? 'white' : 'none')
-                .attr('stroke-width', currentObserver === 'social' ? 1 : 0)
-                .style('filter', 'drop-shadow(0 0 5px ' + config.color + ')');
-
-            // Store connections globally
-            window.currentConnections = [];
-
-            // Cancel old animation loop if exists
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-            }
-
-            // Animation loop
-            let frameCount = 0;
-            function animate() {
-                // Thermodynamic time evolution - 2nd Law: Entropy increases
-                if (timeEvolutionActive) {
-                    evolutionTime += evolutionSpeed * 0.01;
-
-                    // === OPTIMIZED FORCE CALCULATIONS with SPATIAL GRID ===
-                    // Build spatial grid for O(N) force calculations instead of O(N²)
-                    const forceRange = config.connectionDistance * 0.5;
-                    const forceCellSize = forceRange;
-                    const forceGrid = {};
-
-                    particles.forEach(p => {
-                        const cellX = Math.floor(p.x / forceCellSize);
-                        const cellY = Math.floor(p.y / forceCellSize);
-                        const cellKey = `${cellX},${cellY}`;
-
-                        if (!forceGrid[cellKey]) forceGrid[cellKey] = [];
-                        forceGrid[cellKey].push(p);
-                    });
-
-                    // Apply diffusion/spreading forces (particles repel, system becomes more disordered)
-                    particles.forEach(p => {
-                        let fx = 0, fy = 0;
-
-                        const cellX = Math.floor(p.x / forceCellSize);
-                        const cellY = Math.floor(p.y / forceCellSize);
-
-                        // Check only nearby cells (3x3 neighborhood)
-                        for (let dx = -1; dx <= 1; dx++) {
-                            for (let dy = -1; dy <= 1; dy++) {
-                                const neighborKey = `${cellX + dx},${cellY + dy}`;
-                                const neighbors = forceGrid[neighborKey] || [];
-
-                                neighbors.forEach(other => {
-                                    if (p.id !== other.id) {
-                                        const deltaX = p.x - other.x;
-                                        const deltaY = p.y - other.y;
-                                        const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-                                        // Repulsive force - particles spread out
-                                        if (dist < forceRange && dist > 0) {
-                                            const force = 0.01 * evolutionSpeed / (dist + 1);
-                                            fx += (deltaX / dist) * force;
-                                            fy += (deltaY / dist) * force;
-                                        }
-                                    }
-                                });
-                            }
-                        }
-
-                        // Add random thermal motion (temperature)
-                        const thermalNoise = 0.02 * evolutionSpeed;
-                        fx += (Math.random() - 0.5) * thermalNoise;
-                        fy += (Math.random() - 0.5) * thermalNoise;
-
-                        // Apply forces
-                        p.vx += fx;
-                        p.vy += fy;
-
-                        // Light damping to prevent runaway velocities
-                        p.vx *= 0.98;
-                        p.vy *= 0.98;
-
-                        // Cap maximum velocity
-                        const maxVel = 3;
-                        const vel = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-                        if (vel > maxVel) {
-                            p.vx = (p.vx / vel) * maxVel;
-                            p.vy = (p.vy / vel) * maxVel;
-                        }
-                    });
-                }
-
-                particles.forEach(p => {
-                    p.x += p.vx;
-                    p.y += p.vy;
-
-                    // Bounce off edges
-                    if (p.x < 0 || p.x > width) p.vx *= -1;
-                    if (p.y < 0 || p.y > height) p.vy *= -1;
-
-                    // Keep in bounds
-                    p.x = Math.max(0, Math.min(width, p.x));
-                    p.y = Math.max(0, Math.min(height, p.y));
-                });
-
-                particleElements
-                    .attr('cx', d => d.x)
-                    .attr('cy', d => d.y);
-
-                // === QUANTUM: Animate ghost particles ===
-                if (currentObserver === 'quantum' && window.ghostParticles) {
-                    window.ghostParticles.forEach((ghost, i) => {
-                        const parent = particles[ghost.parent];
-                        if (parent) {
-                            // Ghosts orbit around parent with varying radius
-                            const angle = ghost.angle + (frameCount * 0.02);
-                            const radius = 20 + Math.sin(frameCount * 0.05 + i) * 12;
-                            ghost.x = parent.x + Math.cos(angle) * radius;
-                            ghost.y = parent.y + Math.sin(angle) * radius;
-                        }
-                    });
-
-                    d3.selectAll('.ghosts circle')
-                        .data(window.ghostParticles)
-                        .attr('cx', d => d.x)
-                        .attr('cy', d => d.y)
-                        .attr('opacity', 0.35 + Math.sin(frameCount * 0.05) * 0.15)
-                        .attr('r', d => config.particleSize * (1.0 + Math.sin(frameCount * 0.03) * 0.3));
-                }
-
-                // === CLASSICAL: Update trajectory trails ===
-                if (currentObserver === 'classical') {
-                    particles.forEach(p => {
-                        if (!p.trail) p.trail = [];
-                        p.trail.push({x: p.x, y: p.y});
-                        if (p.trail.length > 20) p.trail.shift(); // Keep last 20 positions
-                    });
-
-                    // Draw trails
-                    const allTrails = particles.filter(p => p.trail && p.trail.length > 1);
-                    d3.select('.trails').selectAll('path')
-                        .data(allTrails)
-                        .join('path')
-                        .attr('d', d => {
-                            return d3.line()
-                                .x(p => p.x)
-                                .y(p => p.y)
-                                .curve(d3.curveCardinal)(d.trail);
-                        })
-                        .attr('fill', 'none')
-                        .attr('stroke', config.color)
-                        .attr('stroke-width', 2)
-                        .attr('opacity', 0.3);
-                }
-
-                // === CONSCIOUS: Show prediction errors as pulses ===
-                if (currentObserver === 'conscious') {
-                    particles.forEach(p => {
-                        // Calculate prediction error (deviation from expected position)
-                        const expectedX = p.x + p.vx;
-                        const expectedY = p.y + p.vy;
-                        const actualX = p.x;
-                        const actualY = p.y;
-                        const error = Math.sqrt((expectedX - actualX)**2 + (expectedY - actualY)**2);
-                        p.predictionError = error;
-                    });
-
-                    // Color particles by error intensity
-                    particleElements
-                        .attr('fill', d => {
-                            const errorIntensity = Math.min(d.predictionError / 5, 1);
-                            return errorIntensity > 0.5 ? '#e74c3c' : config.color;
-                        });
-                }
-
-                // === SOCIAL: Color by cluster ===
-                if (currentObserver === 'social') {
-                    particleElements.attr('fill', d => d.color);
-                }
-
-                updateConnections();
-
-                // Update math panel every 30 frames (~0.5 seconds)
-                frameCount++;
-                if (frameCount % 30 === 0) {
                     updateMathPanel();
                 }
 
