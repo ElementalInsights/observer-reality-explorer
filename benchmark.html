@@ -112,27 +112,116 @@
         }
 
         .settings-btn {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
             background: #444;
             border: 2px solid #666;
-            border-radius: 8px;
+            border-radius: 50%;
             color: #fff;
-            font-size: 1.5em;
-            width: 48px;
-            height: 48px;
+            font-size: 1.8em;
+            width: 60px;
+            height: 60px;
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
 
         .settings-btn:hover {
             background: #555;
-            transform: translateY(-50%) rotate(90deg);
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        /* Settings Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #0a0a0a;
+            border: 2px solid #555;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #444;
+        }
+
+        .modal-header h2 {
+            color: #fff;
+            font-size: 1.5em;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: #444;
+            border: none;
+            color: #fff;
+            font-size: 1.5em;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: #666;
+        }
+
+        .modal-section {
+            margin-bottom: 25px;
+        }
+
+        .modal-section h3 {
+            color: #fff;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        .modal-section p {
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .modal-section code {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #ddd;
         }
 
         .controls {
@@ -368,8 +457,6 @@
                 <p>Testing ObserverPhysicsEngine performance across different observer types and particle counts</p>
             </div>
 
-            <button class="settings-btn" onclick="openSettings()">⚙️</button>
-
             <div class="header-right">
                 <div class="header-buttons">
                     <button id="playBtn" onclick="togglePlay()">⏸️ Pause</button>
@@ -461,6 +548,68 @@
 
         <!-- Telemetry -->
         <div class="telemetry" id="telemetryDisplay"></div>
+    </div>
+
+    <!-- Settings Button (Fixed Position) -->
+    <button class="settings-btn" onclick="openSettings()">⚙️</button>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ Physics Engine Settings</h2>
+                <button class="close-btn" onclick="closeSettings()">✕</button>
+            </div>
+
+            <div class="modal-section">
+                <h3>🔬 Framework Architecture</h3>
+                <p>The <code>ObserverPhysicsEngine</code> is a unified framework that simulates reality through different observational lenses. Each observer type uses the same underlying particle system but interprets and renders it differently.</p>
+            </div>
+
+            <div class="modal-section">
+                <h3>⚡ Physics Defaults</h3>
+                <p><strong>Population Size:</strong> <code>100 particles</code> - Balance between visual richness and performance</p>
+                <p><strong>Evolution Speed:</strong> <code>1x</code> - Real-time simulation rate</p>
+                <p><strong>Connection Distance:</strong> <code>80-150px</code> - Varies by observer type</p>
+                <p><strong>Computational Budget:</strong> <code>100</code> - Adaptive quality scaling</p>
+            </div>
+
+            <div class="modal-section">
+                <h3>🎯 Observer-Specific Parameters</h3>
+                <p><strong>Quantum:</strong> Ghost particles orbit at <code>20px ± 12px</code> radius</p>
+                <p><strong>Classical:</strong> Trails store <code>30 frames</code> of history</p>
+                <p><strong>Social:</strong> <code>5 clusters</code> with in-group connections only</p>
+                <p><strong>Conscious:</strong> Prediction error decay: <code>α=0.7</code>, surprise rate: <code>5%</code></p>
+                <p><strong>Thermodynamic:</strong> Temperature range: <code>20-170</code>, ambient: <code>50</code></p>
+                <p><strong>Relativistic:</strong> Speed of light: <code>c=5</code> pixels/frame</p>
+                <p><strong>Probabilistic:</strong> Variance update: <code>α=0.98</code></p>
+            </div>
+
+            <div class="modal-section">
+                <h3>🧮 Core Physics Equations</h3>
+                <p><strong>Force Calculation:</strong> <code>F = 0.01 * evolutionSpeed / (distance + 1)</code></p>
+                <p><strong>Thermal Noise:</strong> <code>noise = 0.02 * evolutionSpeed</code></p>
+                <p><strong>Velocity Damping:</strong> <code>v *= 0.99</code> per frame</p>
+                <p><strong>Max Velocity:</strong> <code>3 pixels/frame</code></p>
+            </div>
+
+            <div class="modal-section">
+                <h3>📊 Telemetry Metrics</h3>
+                <p><strong>Shannon Entropy:</strong> Grid resolution <code>5-20</code> (adaptive), calculated as <code>S = -Σ p log₂ p</code></p>
+                <p><strong>Temperature:</strong> <code>T = √(kinetic_energy) * 0.1</code></p>
+                <p><strong>Uncertainty:</strong> <code>Δx * Δp</code> (position × velocity variance)</p>
+                <p><strong>Free Energy:</strong> <code>F = U - TS</code> (potential - temperature×entropy)</p>
+            </div>
+
+            <div class="modal-section">
+                <h3>🎨 Rendering Pipeline</h3>
+                <p>1. Clear canvas (<code>#0a0e27</code> background)</p>
+                <p>2. Update spatial grid for connections</p>
+                <p>3. Draw connections with observer-specific filtering</p>
+                <p>4. Render observer effects (ghosts, trails, glows, etc.)</p>
+                <p>5. Draw particles with observer-specific coloring</p>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -580,6 +729,29 @@
         function resetSimulation() {
             engine.createParticles();
         }
+
+        // Settings modal functions
+        function openSettings() {
+            document.getElementById('settingsModal').classList.add('active');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('settingsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSettings();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSettings();
+            }
+        });
     </script>
 </body>
 </html>
