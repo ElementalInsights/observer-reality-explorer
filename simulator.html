@@ -61,9 +61,10 @@
             padding: 40px;
         }
 
-        /* Visualization Container (center) */
+        /* Visualization Container (center, row 2) */
         .viz-container {
             grid-column: 2;
+            grid-row: 2;
             background: rgba(255,255,255,0.03);
             border-radius: 20px;
             border: 2px solid rgba(0,255,136,0.2);
@@ -73,9 +74,10 @@
             overflow: hidden;
         }
 
-        /* Math Panel (left side) */
+        /* Math Panel (left side, row 2) */
         .math-panel {
             grid-column: 1;
+            grid-row: 2;
             background: rgba(10,14,39,0.95);
             border-radius: 20px;
             border: 2px solid rgba(0,255,136,0.2);
@@ -84,9 +86,18 @@
             backdrop-filter: blur(10px);
         }
 
-        /* Controls Panel (right side) */
+        .math-panel h2 {
+            color: #00ff88;
+            font-size: 1.2em;
+            margin: 0 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #00ff88;
+        }
+
+        /* Controls Panel (right side, row 2) */
         .controls-panel {
             grid-column: 3;
+            grid-row: 2;
             background: rgba(10,14,39,0.95);
             border-radius: 20px;
             border: 2px solid rgba(0,255,136,0.2);
@@ -96,6 +107,14 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
+        }
+
+        .controls-panel h2 {
+            color: #00ff88;
+            font-size: 1.2em;
+            margin: 0 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #00ff88;
         }
 
         .controls-panel h2,
