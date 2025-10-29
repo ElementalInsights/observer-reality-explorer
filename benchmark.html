@@ -35,17 +35,80 @@
             border: 2px solid #444;
             border-radius: 10px;
             padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
         }
 
-        .header h1 {
+        .header-left h1 {
             color: #fff;
             font-size: 1.8em;
             margin-bottom: 10px;
         }
 
-        .header p {
+        .header-left p {
             color: #888;
             font-size: 0.9em;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .header-control {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .header-control label {
+            color: #ccc;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+
+        .header-control select,
+        .header-control input[type="range"] {
+            padding: 8px;
+            background: #222;
+            border: 1px solid #666;
+            border-radius: 5px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.85em;
+            min-width: 140px;
+        }
+
+        .header-control select option {
+            background: #222;
+            color: #fff;
+        }
+
+        .header-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .header-buttons button {
+            padding: 8px 16px;
+            background: #444;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s;
+            white-space: nowrap;
+        }
+
+        .header-buttons button:hover {
+            background: #555;
         }
 
         .controls {
@@ -298,44 +361,47 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>🔬 Framework Benchmark</h1>
-            <p>Testing ObserverPhysicsEngine performance across different observer types and particle counts</p>
-        </div>
+            <div class="header-left">
+                <h1>🔬 Framework Benchmark</h1>
+                <p>Testing ObserverPhysicsEngine performance across different observer types and particle counts</p>
+            </div>
 
-        <!-- Controls -->
-        <div class="controls">
-            <div class="control-group">
-                <div class="button-row">
-                    <button id="playBtn" onclick="togglePlay()">▶️ Play</button>
+            <div class="header-right">
+                <div class="header-buttons">
+                    <button id="playBtn" onclick="togglePlay()">⏸️ Pause</button>
                     <button onclick="resetSimulation()">🔄 Reset</button>
                 </div>
-            </div>
 
-            <div class="control-group">
-                <label>Observer Type</label>
-                <select id="observerType" onchange="changeObserver(this.value)">
-                    <option value="quantum">🌀 Quantum</option>
-                    <option value="classical">🎯 Classical</option>
-                    <option value="social">🌐 Social</option>
-                    <option value="conscious">🧠 Conscious</option>
-                    <option value="ai">🤖 AI</option>
-                    <option value="thermodynamic">🔥 Thermodynamic</option>
-                    <option value="relativistic">⚡ Relativistic</option>
-                    <option value="probabilistic">🎲 Probabilistic</option>
-                </select>
-            </div>
+                <div class="header-control">
+                    <label>Observer Type</label>
+                    <select id="observerType" onchange="changeObserver(this.value)">
+                        <option value="quantum">🌀 Quantum</option>
+                        <option value="classical">🎯 Classical</option>
+                        <option value="social">🌐 Social</option>
+                        <option value="conscious">🧠 Conscious</option>
+                        <option value="ai">🤖 AI</option>
+                        <option value="thermodynamic">🔥 Thermodynamic</option>
+                        <option value="relativistic">⚡ Relativistic</option>
+                        <option value="probabilistic">🎲 Probabilistic</option>
+                    </select>
+                </div>
 
-            <div class="control-group">
-                <label>Particle Count: <span class="value-display" id="particleValue">100</span></label>
-                <input type="range" id="particleSlider" min="10" max="500" value="100" step="10"
-                       oninput="updateParticleCount(this.value)">
-            </div>
+                <div class="header-control">
+                    <label>Particles: <span class="value-display" id="particleValue">100</span></label>
+                    <input type="range" id="particleSlider" min="10" max="500" value="100" step="10"
+                           oninput="updateParticleCount(this.value)">
+                </div>
 
-            <div class="control-group">
-                <label>Evolution Speed: <span class="value-display" id="speedValue">1x</span></label>
-                <input type="range" id="speedSlider" min="1" max="10" value="1"
-                       oninput="updateSpeed(this.value)">
+                <div class="header-control">
+                    <label>Speed: <span class="value-display" id="speedValue">1x</span></label>
+                    <input type="range" id="speedSlider" min="1" max="10" value="1"
+                           oninput="updateSpeed(this.value)">
+                </div>
             </div>
+        </div>
+
+        <!-- Left Panel -->
+        <div class="controls">
 
             <div class="benchmark-stats">
                 <h3>⚡ Performance Metrics</h3>
