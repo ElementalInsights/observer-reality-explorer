@@ -166,7 +166,7 @@
         <!-- Header -->
         <div class="header">
             <div class="header-left">
-                <h1>🌈 All 8 Observers - Same Reality, Different Perceptions</h1>
+                <h1>All 8 Observers - Same Reality, Different Perceptions</h1>
                 <p>Watching the SAME 100 particles through 8 different observational lenses simultaneously</p>
             </div>
 
@@ -256,6 +256,9 @@
                 populationSize: 100
             });
 
+            // Slow down evolution speed by half
+            engines[type].evolutionSpeed = 0.5;
+
             // Don't start individual loops - we'll render manually
             engines[type].isPlaying = false;
         });
@@ -263,6 +266,13 @@
         // Create SHARED particle array (single source of truth)
         const primaryEngine = engines['quantum']; // Use any engine to create particles
         sharedParticles = primaryEngine.particles;
+
+        // Assign clusters and colors for social observer
+        const clusterColors = ['#ff4757', '#3498db', '#2ecc71', '#ffa502', '#9b59b6'];
+        sharedParticles.forEach((p, i) => {
+            p.cluster = i % 5; // Assign to 5 clusters
+            p.color = clusterColors[p.cluster];
+        });
 
         // Share particles across all engines
         observerTypes.forEach(type => {
@@ -361,6 +371,13 @@
             // Recreate particles
             primaryEngine.createParticles();
             sharedParticles = primaryEngine.particles;
+
+            // Reassign clusters and colors for social observer
+            const clusterColors = ['#ff4757', '#3498db', '#2ecc71', '#ffa502', '#9b59b6'];
+            sharedParticles.forEach((p, i) => {
+                p.cluster = i % 5;
+                p.color = clusterColors[p.cluster];
+            });
 
             // Share new particles
             observerTypes.forEach(type => {
