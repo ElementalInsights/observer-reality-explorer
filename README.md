@@ -150,6 +150,13 @@ If you find this educational tool useful:
 2. Share with researchers, students, and educators
 3. Use in your courses or presentations (attribution appreciated)
 
+## 👤 Author
+
+**Jacob Edwards**
+Elemental Insights
+📧 jacob.edwards@elementalinsights.com
+🔗 [GitHub](https://github.com/ElementalInsights)
+
 ## 🙏 Acknowledgments
 
 Built with Claude Code - Anthropic's official CLI for Claude
@@ -159,3 +166,5 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ---
 
 **Educational Resource** | **17 Peer-Reviewed Sources** | **10 Interactive Visualizations** | **Publication-Quality**
+
+© 2025 Jacob Edwards / Elemental Insights. Released under MIT License.

@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Edwards"
+    given-names: "Jacob"
+    email: jacob.edwards@elementalinsights.com
+    affiliation: "Elemental Insights"
+title: "Observer-Dependent Reality Explorer: Interactive Mathematical Visualizations"
+version: 1.0.0
+date-released: 2025-01-29
+url: "https://github.com/ElementalInsights/observer-reality-explorer"
+repository-code: "https://github.com/ElementalInsights/observer-reality-explorer"
+keywords:
+  - quantum-mechanics
+  - consciousness
+  - information-theory
+  - free-energy-principle
+  - semantic-embeddings
+  - interactive-visualizations
+  - observer-dependent-reality
+  - computational-epistemology
+license: MIT
+abstract: >
+  An interactive educational platform exploring the mathematics of observer-dependent
+  reality frameworks. Features 10 verified D3.js visualizations bridging quantum
+  mechanics, consciousness theories, computational semantics, and social dynamics.
+  Includes split-screen interface with full scientific paper and bidirectional
+  navigation between concepts and visualizations. All mathematical implementations
+  verified against 17 peer-reviewed sources (2019-2025).
