@@ -94,36 +94,49 @@ Already deployed! Visit: **[Live Demo](https://elementalinsights.github.io/obser
    - ⚡ Quantum Measurement
    - 🌐 Echo Chamber Formation
 
-## 🎨 Design Philosophy
+## ⚙️ Framework Architecture
 
-### Typography
-- System font stack for native OS rendering
-- 16px base size for comfortable reading
-- 1.75 line-height for optimal readability
-- Font smoothing for crisp text
-- Proper weight hierarchy (600-700)
+### ObserverPhysicsEngine (`physics-engine.js`)
+The core of everything - a unified particle physics simulation:
+- **8 observer configurations** with complete scientific documentation
+- **Real thermodynamics** - Entropy, temperature, free energy calculations
+- **Spatial grid optimization** - O(N) connection updates instead of O(N²)
+- **Relativistic physics** - Speed of light limit, time dilation, causality structure
+- **Time series tracking** - Track any metric over time for graphing
+- **Animation states** - Smooth transitions for quantum collapse
+- **Network evolution** - Homophily, clustering, rewiring rules
 
-### Color Scheme
-- **Primary Green**: #27ae60 (forest green)
-- **Teal Accents**: #16a085
-- **Success Green**: #2ecc71
-- **Text**: #2c3e50, #34495e
+### Additional Components
+- **TimeSeriesTracker** - Stores 1000 data points per metric, enables graphing
+- **ChartRenderer** - Line charts, heatmaps, bar charts (no dependencies!)
+- **TelemetryDisplay** - Live physics metrics component
 
-### Graph Paper Pattern
-Cards feature academic notebook aesthetic:
-- Small grid: 20px × 20px (fine lines)
-- Large grid: 100px × 100px (emphasis lines)
-- Green-tinted overlay: rgba(46, 204, 113, 0.05)
+### Key Innovations
+🌟 **Physically Accurate Relativistic Causality** - Connections represent actual causal structure:
+- 🔵 Blue = Past light cone (could have influenced)
+- 🟡 Yellow = Future light cone (can influence)
+- 🔷 Cyan = Lightlike (simultaneous)
+- ⚪ Gray dashed = Spacelike (no causal connection!)
+
+Calculates: `Δs² = c²Δt² - Δx² - Δy²` to determine timelike/lightlike/spacelike separation
 
 ## 📁 File Structure
 
 ```
 observer-reality-explorer/
-├── observer-reality-explorer.html  # Main interactive application
-├── sbbodrf.md                      # Full scientific paper
-├── VERIFICATION.md                 # Mathematical proof document
-├── README.md                       # This file
-└── .git/                           # Git repository
+├── index.html                      # Landing page (2×2 navigation grid)
+├── benchmark.html                  # Framework Benchmark (main experience)
+├── entropy-evolution.html          # 2nd Law visualization
+├── measurement-collapse.html       # Quantum measurement demo
+├── echo-chamber-formation.html     # Social network polarization
+├── physics-engine.js               # Core framework (~1400 lines)
+├── chart-renderer.js               # Graphing system (~350 lines)
+├── telemetry-display.js            # Metrics display (~200 lines)
+├── archive/                        # Legacy pages (preserved)
+│   ├── simulator.html
+│   ├── observer-comparison.html
+│   └── wave-function-collapse.html
+└── README.md                       # This file
 ```
 
 ## 🔬 Mathematical Implementations
