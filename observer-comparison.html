@@ -525,16 +525,29 @@
                             if (p.trail.length > 30) p.trail.shift();
                         }
 
-                        // Conscious predictions (for DISPLAY only - doesn't modify particle state!)
+                        // Conscious predictions with environmental surprises!
                         if (leftObserver === 'conscious' || rightObserver === 'conscious') {
                             if (!p.predictedX) {
                                 p.predictedX = p.x;
                                 p.predictedY = p.y;
+                                p.predictionError = 0;
                             }
+
+                            // Calculate error
                             const error = Math.sqrt((p.predictedX - p.x)**2 + (p.predictedY - p.y)**2);
-                            p.predictionError = error * 0.8 + p.predictionError * 0.2;
+                            p.predictionError = error * 0.7 + p.predictionError * 0.3;
+
+                            // Update prediction
                             p.predictedX = p.x + p.vx;
                             p.predictedY = p.y + p.vy;
+
+                            // Add occasional surprises (creates actual prediction errors!)
+                            if (Math.random() < 0.05) {
+                                const shockX = (Math.random() - 0.5) * 5;
+                                const shockY = (Math.random() - 0.5) * 5;
+                                p.vx += shockX;
+                                p.vy += shockY;
+                            }
                         }
                     });
                 }
