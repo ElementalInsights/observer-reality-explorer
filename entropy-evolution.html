@@ -257,6 +257,10 @@
                     <span class="stat-value" id="currentTemp">--</span>
                 </div>
                 <div class="stat-row">
+                    <span class="stat-label">Entropy Rate (dS/dt):</span>
+                    <span class="stat-value" id="entropyRate">--</span>
+                </div>
+                <div class="stat-row">
                     <span class="stat-label">Time to Max Entropy:</span>
                     <span class="stat-value" id="timeToMax">--</span>
                 </div>
@@ -293,12 +297,21 @@
             maxHistory: 2000  // Keep 2000 data points
         });
 
-        // Initialize chart renderer
+        // Initialize chart renderers
         const chart = new ChartRenderer('chartCanvas', {
             accentColor: '#2ecc71',
             showGrid: true,
             showAxes: true
         });
+
+        const rateChart = new ChartRenderer('rateCanvas', {
+            accentColor: '#e74c3c',
+            showGrid: true,
+            showAxes: true
+        });
+
+        // Smoothed time estimate tracker
+        let smoothedTimeToMax = null;
 
         // Start in low-entropy configuration (particles in corner)
         function resetToLowEntropy() {
@@ -324,9 +337,6 @@
         engine.isPlaying = true;
         engine.start();
 
-        // Smoothed time estimate tracker
-        let smoothedTimeToMax = null;
-
         // Update chart every 100ms
         setInterval(() => {
             const entropyData = engine.getTimeSeries('entropy');
@@ -346,6 +356,31 @@
                     lineColor: '#2ecc71',
                     showPoints: false
                 });
+
+                // Calculate and render dS/dt chart
+                if (entropyData.length > 10) {
+                    const rateData = [];
+                    const windowSize = 10; // Average over 10 points for smoother derivative
+
+                    for (let i = windowSize; i < entropyData.length; i++) {
+                        const timeSpan = (entropyData[i].time - entropyData[i - windowSize].time) / 1000;
+                        const entropyChange = entropyData[i].value - entropyData[i - windowSize].value;
+                        const rate = entropyChange / timeSpan;
+
+                        rateData.push({
+                            time: (entropyData[i].time - startTime) / 1000,
+                            value: rate
+                        });
+                    }
+
+                    rateChart.renderLineChart(rateData, {
+                        title: 'Rate of Entropy Increase',
+                        yLabel: 'dS/dt (bits/s)',
+                        xLabel: 'Time (s)',
+                        lineColor: '#e74c3c',
+                        showPoints: false
+                    });
+                }
             }
 
             // Update stats
@@ -354,19 +389,29 @@
             document.getElementById('currentSpread').textContent = (telemetry.spatialSpread || 0).toFixed(1) + ' px';
             document.getElementById('currentTemp').textContent = (telemetry.temperature || 0).toFixed(3);
 
+            // Calculate and display entropy rate (dS/dt)
+            if (entropyData && entropyData.length > 20) {
+                const lookback = Math.min(30, entropyData.length);
+                const recentData = entropyData.slice(-lookback);
+                const timeSpan = (recentData[recentData.length - 1].time - recentData[0].time) / 1000;
+                const entropyChange = recentData[recentData.length - 1].value - recentData[0].value;
+                const rate = entropyChange / timeSpan;
+
+                if (rate >= 0) {
+                    document.getElementById('entropyRate').textContent =
+                        '+' + rate.toFixed(4) + ' bits/s';
+                } else {
+                    document.getElementById('entropyRate').textContent =
+                        rate.toFixed(4) + ' bits/s';
+                }
+            }
+
             // Calculate time to maximum entropy
             if (entropyData && entropyData.length > 30) {
                 const currentEntropy = entropyData[entropyData.length - 1].value;
-
-                // Calculate rate of change (average over last 50 data points for smoother estimate)
-                const lookback = Math.min(50, entropyData.length);
-                const recentData = entropyData.slice(-lookback);
-                const timeSpan = (recentData[recentData.length - 1].time - recentData[0].time) / 1000; // seconds
-                const entropyChange = recentData[recentData.length - 1].value - recentData[0].value;
-                const rate = entropyChange / timeSpan; // bits per second
+                const currentTime = (entropyData[entropyData.length - 1].time - entropyData[0].time) / 1000;
 
                 // Theoretical maximum entropy for uniform distribution on a 20x20 grid
-                // H_max = log₂(N_cells) where particles are uniformly distributed
                 const gridResolution = 20;
                 const maxEntropy = Math.log2(gridResolution * gridResolution);
 
@@ -374,23 +419,56 @@
                 const targetEntropy = maxEntropy * 0.95;
                 const remainingEntropy = targetEntropy - currentEntropy;
 
-                if (rate > 0.001 && remainingEntropy > 0) {
-                    const rawTimeToMax = remainingEntropy / rate; // seconds
+                if (remainingEntropy > 0 && entropyData.length > 50) {
+                    // Fit exponential approach: S(t) = S_max - A*e^(-t/τ)
+                    // Use data from middle section (not too early, not too late)
+                    const startIdx = Math.floor(entropyData.length * 0.2);
+                    const endIdx = Math.floor(entropyData.length * 0.8);
+                    const fitData = entropyData.slice(startIdx, endIdx);
 
-                    // Apply exponential smoothing to reduce jitter
-                    if (smoothedTimeToMax === null) {
-                        smoothedTimeToMax = rawTimeToMax;
-                    } else {
-                        const alpha = 0.15; // Smoothing factor (lower = smoother)
-                        smoothedTimeToMax = alpha * rawTimeToMax + (1 - alpha) * smoothedTimeToMax;
-                    }
+                    if (fitData.length > 20) {
+                        const t1 = (fitData[0].time - entropyData[0].time) / 1000;
+                        const s1 = fitData[0].value;
+                        const t2 = (fitData[fitData.length - 1].time - entropyData[0].time) / 1000;
+                        const s2 = fitData[fitData.length - 1].value;
 
-                    if (smoothedTimeToMax < 60) {
-                        document.getElementById('timeToMax').textContent = smoothedTimeToMax.toFixed(0) + ' sec';
-                    } else if (smoothedTimeToMax < 3600) {
-                        document.getElementById('timeToMax').textContent = (smoothedTimeToMax / 60).toFixed(1) + ' min';
+                        // Estimate time constant τ from exponential approach
+                        // If S approaches S_max exponentially: (S_max - S) decreases exponentially
+                        const remaining1 = maxEntropy - s1;
+                        const remaining2 = maxEntropy - s2;
+
+                        if (remaining1 > 0 && remaining2 > 0 && remaining2 < remaining1) {
+                            const tau = -(t2 - t1) / Math.log(remaining2 / remaining1);
+
+                            // Time to reach target from current state
+                            const currentRemaining = maxEntropy - currentEntropy;
+                            const targetRemaining = maxEntropy - targetEntropy;
+                            const rawTimeToMax = tau * Math.log(currentRemaining / targetRemaining);
+
+                            // Apply exponential smoothing
+                            if (smoothedTimeToMax === null || rawTimeToMax < 0 || !isFinite(rawTimeToMax)) {
+                                smoothedTimeToMax = rawTimeToMax;
+                            } else {
+                                const alpha = 0.2;
+                                smoothedTimeToMax = alpha * rawTimeToMax + (1 - alpha) * smoothedTimeToMax;
+                            }
+
+                            if (smoothedTimeToMax > 0 && isFinite(smoothedTimeToMax)) {
+                                if (smoothedTimeToMax < 60) {
+                                    document.getElementById('timeToMax').textContent = smoothedTimeToMax.toFixed(0) + ' sec';
+                                } else if (smoothedTimeToMax < 3600) {
+                                    document.getElementById('timeToMax').textContent = (smoothedTimeToMax / 60).toFixed(1) + ' min';
+                                } else {
+                                    document.getElementById('timeToMax').textContent = (smoothedTimeToMax / 3600).toFixed(1) + ' hr';
+                                }
+                            } else {
+                                document.getElementById('timeToMax').textContent = 'Very soon!';
+                            }
+                        } else {
+                            document.getElementById('timeToMax').textContent = 'Stabilizing...';
+                        }
                     } else {
-                        document.getElementById('timeToMax').textContent = (smoothedTimeToMax / 3600).toFixed(1) + ' hr';
+                        document.getElementById('timeToMax').textContent = 'Gathering data...';
                     }
                 } else if (remainingEntropy <= 0) {
                     document.getElementById('timeToMax').textContent = 'At maximum!';
@@ -421,6 +499,7 @@
         // Handle window resize
         window.addEventListener('resize', () => {
             chart.resizeCanvas();
+            rateChart.resizeCanvas();
         });
     </script>
 </body>
