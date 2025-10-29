@@ -374,8 +374,8 @@
                             <input type="range" id="massSlider" min="3" max="200" step="1" value="10" style="width: 100%;">
                         </div>
                         <div class="distance-slider" style="flex: 1;">
-                            <label for="distanceSlider">Distance: <span class="distance-value" id="distanceValue">5.0 R<sub>s</sub></span></label>
-                            <input type="range" id="distanceSlider" min="1.5" max="10" step="0.1" value="5" style="width: 100%;">
+                            <label for="distanceSlider">Observer Distance: <span class="distance-value" id="distanceValue">5.0 R<sub>s</sub></span> (1.0 = Event Horizon!)</label>
+                            <input type="range" id="distanceSlider" min="1.001" max="10" step="0.001" value="5" style="width: 100%;">
                         </div>
                     </div>
 
@@ -412,11 +412,12 @@
                         <div class="clock-detail">Far from black hole</div>
                         <div class="clock-detail">Normal time flow</div>
                     </div>
-                    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-width: 100px;">
+                    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-width: 120px;">
                         <div style="font-size: 1.8em; font-weight: bold; color: #ffd43b;">↔</div>
                         <div style="font-size: 0.9em; color: #bbb; margin-top: 5px;">Time Δ</div>
                         <div style="font-size: 1.6em; font-weight: bold; color: #ffd43b; margin-top: 5px;" id="timeDelta">0.0s</div>
-                        <div style="font-size: 0.85em; color: #888; margin-top: 5px; text-align: center;">How much the near observer lags behind</div>
+                        <div style="font-size: 1em; color: #ff6b6b; margin-top: 8px; font-weight: bold;" id="slowFactor">1.00x slower</div>
+                        <div style="font-size: 0.8em; color: #888; margin-top: 3px; text-align: center;">Near observer lag</div>
                     </div>
                     <div class="clock near">
                         <div class="clock-label">🔴 Near Observer</div>
@@ -467,8 +468,12 @@
             <div class="info-box" style="margin-top: 10px;">
                 <h3>👁️ Observer State</h3>
                 <div class="stat-row">
-                    <span class="stat-label">Distance from Center:</span>
-                    <span class="stat-value" id="currentDistance">--</span>
+                    <span class="stat-label">Distance (Schwarzschild):</span>
+                    <span class="stat-value" id="distanceRs">--</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Distance (Absolute):</span>
+                    <span class="stat-value" id="distanceAbs">--</span>
                 </div>
                 <div class="stat-row">
                     <span class="stat-label">Time Dilation (γ):</span>
@@ -486,6 +491,45 @@
                     <span class="stat-label">Status:</span>
                     <span class="stat-value" id="status">Safe</span>
                 </div>
+            </div>
+
+            <div class="info-box" style="margin-top: 10px; background: rgba(46, 204, 113, 0.1); border: 2px solid #2ecc71;">
+                <h3 style="color: #2ecc71;">🤯 Tidal Forces vs Time Dilation</h3>
+                <p><strong>Time Dilation:</strong> <code>γ = 1/√(1 - Rs/r)</code> - Depends ONLY on r/Rs ratio</p>
+                <p><strong>Tidal Forces:</strong> <code>Δg = 2GMh/r³</code> - Depends on mass (∝ 1/M²)</p>
+
+                <p style="margin-top: 10px;"><strong>At the horizon (1.0 Rs) of different black holes:</strong></p>
+                <p id="tidalComparison"></p>
+
+                <p style="margin-top: 10px;"><strong>The Mind-Blow:</strong> Same time dilation, WILDLY different tidal forces! This is why you could survive crossing into Sgr A* but would be vaporized by a stellar black hole!</p>
+            </div>
+
+            <div class="info-box" style="margin-top: 10px; background: rgba(46, 204, 113, 0.1); border: 2px solid #2ecc71;">
+                <h3 style="color: #2ecc71;">📏 Scale Comparison</h3>
+                <p>Time dilation depends ONLY on the <strong>ratio</strong> r/Rs, not absolute distance!</p>
+                <p id="scaleComparison"></p>
+                <p style="margin-top: 10px;"><strong>This is why general relativity is about CURVED SPACETIME, not just gravity!</strong> The geometry is what matters, not the absolute scale.</p>
+            </div>
+
+            <div class="info-box" style="margin-top: 10px; background: rgba(255, 107, 107, 0.1); border: 2px solid #ff6b6b;">
+                <h3 style="color: #ff6b6b;">⏱️ Maximum Slowdown: INFINITY at the Horizon!</h3>
+                <p><strong>The event horizon is shown as the glowing RED circle (1.0 Rs)</strong></p>
+                <p><strong>At the event horizon (r = 1.000 Rs):</strong> γ → ∞</p>
+                <p>Time dilation approaches <strong>infinity</strong> as you approach the horizon!</p>
+
+                <p style="margin-top: 10px;"><strong>What this means:</strong></p>
+                <p>• <strong>From YOUR perspective falling in:</strong> You cross the horizon in finite proper time (seconds to hours) and don't notice anything special happening (except tidal forces!). No barrier, no wall, just empty space.</p>
+
+                <p>• <strong>From a DISTANT observer's perspective:</strong> You appear to slow down asymptotically and <strong>FREEZE</strong> at the red circle, taking infinite coordinate time to cross. You get infinitely redshifted and fade to black. They NEVER see you cross!</p>
+
+                <p style="margin-top: 10px;"><strong>Try this:</strong> Slide down toward 1.0 Rs and watch the clocks diverge!</p>
+                <p>• <strong>1.5 Rs:</strong> γ = 1.73x (cyan photon sphere)</p>
+                <p>• <strong>1.1 Rs:</strong> γ = 3.3x</p>
+                <p>• <strong>1.05 Rs:</strong> γ = 4.6x</p>
+                <p>• <strong>1.01 Rs:</strong> γ = 10x</p>
+                <p>• <strong>1.001 Rs:</strong> γ = 31x - Near clock almost stops!</p>
+
+                <p style="margin-top: 10px;"><strong>This is the ultimate observer-dependent reality!</strong> Two observers see completely different things happening to the same event. There is no "absolute" answer to "did they cross the horizon?"</p>
             </div>
 
             <div class="info-box">
@@ -556,17 +600,27 @@
             'TON 618': { mass: 6.6e10, name: 'TON 618', description: 'One of the most massive known' }
         };
 
-        // Format large numbers
+        // Format large numbers with proper notation
         function formatMass(mass) {
-            if (mass >= 1e9) {
-                return (mass / 1e9).toFixed(2) + ' billion M☉';
+            if (mass >= 1e12) {
+                return (mass / 1e12).toFixed(2) + ' trillion M☉ (' + mass.toExponential(2) + ')';
+            } else if (mass >= 1e9) {
+                return (mass / 1e9).toFixed(1) + ' billion M☉';
             } else if (mass >= 1e6) {
-                return (mass / 1e6).toFixed(2) + ' million M☉';
+                return (mass / 1e6).toFixed(1) + ' million M☉';
             } else if (mass >= 1000) {
-                return (mass / 1000).toFixed(1) + ' thousand M☉';
+                return (mass / 1000).toFixed(0) + ' thousand M☉';
             } else {
                 return mass.toFixed(0) + ' M☉';
             }
+        }
+
+        // Format mass for display with kg in scientific notation
+        function formatMassDetailed(mass) {
+            const massKg = mass * M_sun;
+            let readable = formatMass(mass);
+            let scientific = (massKg / 1e30).toExponential(2) + ' × 10³⁰ kg';
+            return readable + ' (' + scientific + ')';
         }
 
         function formatDistance(meters) {
@@ -837,10 +891,36 @@
             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
             ctx.font = 'bold 16px Monaco';
             ctx.textAlign = 'center';
-            ctx.fillText(`${M_solar_masses.toFixed(0)} M☉`, centerX, centerY - 10);
+
+            // Format mass for display
+            let massText = '';
+            if (M_solar_masses >= 1e9) {
+                massText = (M_solar_masses / 1e9).toFixed(0) + 'B M☉';
+            } else if (M_solar_masses >= 1e6) {
+                massText = (M_solar_masses / 1e6).toFixed(0) + 'M M☉';
+            } else if (M_solar_masses >= 1000) {
+                massText = (M_solar_masses / 1000).toFixed(0) + 'K M☉';
+            } else {
+                massText = M_solar_masses.toFixed(0) + ' M☉';
+            }
+
+            ctx.fillText(massText, centerX, centerY - 10);
             ctx.font = '12px Monaco';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-            ctx.fillText(`Rs = ${(Rs / 1000).toFixed(1)} km`, centerX, centerY + 8);
+
+            // Format Rs for display
+            let rsText = '';
+            if (Rs >= 1e9) {
+                rsText = `Rs = ${(Rs / 1e9).toFixed(1)}B km`;
+            } else if (Rs >= 1e6) {
+                rsText = `Rs = ${(Rs / 1e6).toFixed(0)}M km`;
+            } else if (Rs >= 1000) {
+                rsText = `Rs = ${(Rs / 1000).toFixed(0)}K km`;
+            } else {
+                rsText = `Rs = ${Rs.toFixed(0)} km`;
+            }
+
+            ctx.fillText(rsText, centerX, centerY + 8);
 
             // Gravitational lensing rings with distance labels
             for (let i = 2; i <= 4; i++) {
@@ -857,7 +937,22 @@
                 const labelX = centerX + scale * i + 5;
                 const labelY = centerY + 3;
                 ctx.fillText(`${i}.0 Rs`, labelX, labelY);
-                ctx.fillText(`(${(i * Rs / 1000).toFixed(1)} km)`, labelX, labelY + 12);
+
+                // Format distance nicely
+                const distAtRing = i * Rs;
+                let distText = '';
+                if (distAtRing >= 1e12) {
+                    distText = `(${(distAtRing / 1e9).toFixed(0)}B km)`;
+                } else if (distAtRing >= 1e9) {
+                    distText = `(${(distAtRing / 1e9).toFixed(1)}B km)`;
+                } else if (distAtRing >= 1e6) {
+                    distText = `(${(distAtRing / 1e6).toFixed(0)}M km)`;
+                } else if (distAtRing >= 1000) {
+                    distText = `(${(distAtRing / 1000).toFixed(0)}K km)`;
+                } else {
+                    distText = `(${(distAtRing).toFixed(0)} km)`;
+                }
+                ctx.fillText(distText, labelX, labelY + 12);
             }
 
             // Label photon sphere and ISCO
@@ -917,7 +1012,28 @@
             ctx.fillText(formatTime(nearTime), nearObserverX + 18, nearObserverY + 5);
             ctx.font = '12px Monaco';
             ctx.fillStyle = '#ff6b6b';
-            ctx.fillText(`${observerDistance.toFixed(1)} Rs`, nearObserverX + 18, nearObserverY + 20);
+
+            // Show Rs with appropriate precision
+            let rsDisplay = '';
+            if (observerDistance < 1.05) {
+                rsDisplay = observerDistance.toFixed(4);
+            } else if (observerDistance < 1.2) {
+                rsDisplay = observerDistance.toFixed(3);
+            } else {
+                rsDisplay = observerDistance.toFixed(2);
+            }
+            ctx.fillText(`${rsDisplay} Rs`, nearObserverX + 18, nearObserverY + 20);
+
+            // Add warning if very close to horizon
+            if (observerDistance < 1.05) {
+                ctx.fillStyle = '#ff0000';
+                ctx.font = 'bold 13px Monaco';
+                ctx.fillText('⚠️ APPROACHING HORIZON!', nearObserverX + 18, nearObserverY + 35);
+            } else if (observerDistance < 1.2) {
+                ctx.fillStyle = '#ff6666';
+                ctx.font = 'bold 12px Monaco';
+                ctx.fillText('⚠️ Extreme dilation!', nearObserverX + 18, nearObserverY + 35);
+            }
 
             // Distant observer position (top right, far away)
             const distantObserverX = dims.width - 100;
@@ -971,11 +1087,22 @@
             ctx.textAlign = 'center';
             ctx.fillText('Time flows differently!', midX, midY - 5);
 
-            // Show time difference
+            // Show time difference and gamma
             const timeDiff = distantTime - nearTime;
+            const gamma = 1 / Math.sqrt(Math.max(0.001, 1 - (1 / observerDistance)));
+
             ctx.fillStyle = '#ffd43b';
-            ctx.font = '12px Monaco';
+            ctx.font = 'bold 13px Monaco';
             ctx.fillText(`Δt = ${timeDiff.toFixed(1)}s`, midX, midY + 10);
+
+            // Show gamma factor
+            ctx.fillStyle = '#ff6b6b';
+            ctx.font = '11px Monaco';
+            if (gamma > 10) {
+                ctx.fillText(`γ = ${gamma.toFixed(1)}x slower!`, midX, midY + 24);
+            } else {
+                ctx.fillText(`γ = ${gamma.toFixed(2)}x slower`, midX, midY + 24);
+            }
         }
 
         // Animation loop
@@ -1007,7 +1134,7 @@
             const props = calculateBlackHoleProperties();
 
             // Black hole properties
-            document.getElementById('bhMass').textContent = formatMass(M_solar_masses) + ' (' + (M / 1e30).toExponential(2) + ' × 10³⁰ kg)';
+            document.getElementById('bhMass').textContent = formatMassDetailed(M_solar_masses);
             document.getElementById('bhRadius').textContent = formatDistance(Rs);
 
             // Density in various units with comparisons
@@ -1031,12 +1158,41 @@
             document.getElementById('bhGravity').textContent = (props.surfaceGravity / 1e12).toExponential(2) + ' × 10¹² m/s²';
             document.getElementById('hawkingTemp').textContent = (props.hawkingTemp * 1e9).toExponential(2) + ' × 10⁻⁹ K';
 
-            // Observer state
-            document.getElementById('currentDistance').textContent = r.toFixed(2) + ' Rs (' + formatDistance(r * Rs) + ')';
+            // Observer state with appropriate precision
+            let rsText = '';
+            if (r < 1.05) {
+                rsText = r.toFixed(4) + ' Rs (⚠️ VERY CLOSE!)';
+            } else if (r < 1.2) {
+                rsText = r.toFixed(3) + ' Rs (Near horizon)';
+            } else {
+                rsText = r.toFixed(2) + ' Rs';
+            }
+
+            document.getElementById('distanceRs').textContent = rsText;
+            document.getElementById('distanceAbs').textContent = formatDistance(r * Rs);
 
             // Time dilation factor: γ = 1/√(1 - Rs/r)
             const gamma = 1 / Math.sqrt(Math.max(0.001, 1 - (1 / r)));
-            document.getElementById('timeDilation').textContent = gamma.toFixed(3) + 'x slower';
+
+            let gammaText = gamma.toFixed(2) + 'x';
+            if (gamma > 100) {
+                gammaText = gamma.toFixed(0) + 'x (EXTREME!)';
+            } else if (gamma > 10) {
+                gammaText = gamma.toFixed(1) + 'x (Very high!)';
+            } else if (gamma > 5) {
+                gammaText = gamma.toFixed(2) + 'x (High)';
+            }
+
+            document.getElementById('timeDilation').textContent = gammaText;
+
+            // Update slow factor in clock display
+            let slowText = gamma.toFixed(2) + 'x slower';
+            if (gamma > 100) {
+                slowText = gamma.toFixed(0) + 'x SLOWER!';
+            } else if (gamma > 10) {
+                slowText = gamma.toFixed(1) + 'x slower!';
+            }
+            document.getElementById('slowFactor').textContent = slowText;
 
             // Escape velocity as fraction of c
             const vEscape = Math.sqrt(2 / r);
@@ -1088,7 +1244,15 @@
 
             document.getElementById('distantClock').textContent = formatTime(distantTime);
             document.getElementById('nearClock').textContent = formatTime(nearTime);
-            document.getElementById('nearLocation').textContent = `At ${r.toFixed(1)} Rs`;
+
+            // Show more precision when very close to horizon
+            if (r < 1.05) {
+                document.getElementById('nearLocation').textContent = `At ${r.toFixed(4)} Rs`;
+            } else if (r < 1.2) {
+                document.getElementById('nearLocation').textContent = `At ${r.toFixed(3)} Rs`;
+            } else {
+                document.getElementById('nearLocation').textContent = `At ${r.toFixed(2)} Rs`;
+            }
 
             // Update time delta
             const timeDiff = distantTime - nearTime;
@@ -1182,6 +1346,48 @@
             }
 
             survivalInfo.innerHTML = survivalHTML;
+
+            // Update tidal force comparison at horizon
+            const tidalComp = document.getElementById('tidalComparison');
+            const stellarMass = 10 * M_sun;
+            const stellarRs = (2 * G * stellarMass) / (c * c);
+            const stellarTidal = (2 * G * stellarMass * h) / Math.pow(stellarRs, 3);
+
+            const sgrMass = 4.1e6 * M_sun;
+            const sgrRs = (2 * G * sgrMass) / (c * c);
+            const sgrTidal = (2 * G * sgrMass * h) / Math.pow(sgrRs, 3);
+
+            const m87Mass = 6.5e9 * M_sun;
+            const m87Rs = (2 * G * m87Mass) / (c * c);
+            const m87Tidal = (2 * G * m87Mass * h) / Math.pow(m87Rs, 3);
+
+            const tonMass = 6.6e10 * M_sun;
+            const tonRs = (2 * G * tonMass) / (c * c);
+            const tonTidal = (2 * G * tonMass * h) / Math.pow(tonRs, 3);
+
+            tidalComp.innerHTML = `
+                • <strong>Stellar (10 M☉):</strong> ${(stellarTidal / 9.81 / 1e9).toFixed(1)} billion g - γ = ∞ - 💀 INSTANT DEATH<br>
+                • <strong>Sgr A* (4.1M M☉):</strong> ${(sgrTidal / 9.81).toFixed(1)} g - γ = ∞ - ✅ SURVIVABLE!<br>
+                • <strong>M87* (6.5B M☉):</strong> ${(m87Tidal / 9.81 * 1000).toFixed(3)} millig - γ = ∞ - ✨ GENTLE!<br>
+                • <strong>TON 618 (66B M☉):</strong> ${(tonTidal / 9.81 * 1e6).toFixed(2)} microg - γ = ∞ - 🪶 WOULDN'T FEEL IT!
+            `;
+
+            // Update scale comparison
+            const scaleComp = document.getElementById('scaleComparison');
+            const absDistance = r * Rs;
+            const stellarDist = r * stellarRs;
+            const sgrDist = r * sgrRs;
+            const m87Dist = r * m87Rs;
+            const tonDist = r * tonRs;
+
+            scaleComp.innerHTML = `
+                <strong>At ${r < 1.2 ? r.toFixed(3) : r.toFixed(2)} Rs from different black holes:</strong><br>
+                • <strong>Stellar (10 M☉):</strong> ${formatDistance(stellarDist)} - γ = ${gamma.toFixed(2)}x<br>
+                • <strong>Sgr A* (4.1M M☉):</strong> ${formatDistance(sgrDist)} - γ = ${gamma.toFixed(2)}x<br>
+                • <strong>M87* (6.5B M☉):</strong> ${formatDistance(m87Dist)} - γ = ${gamma.toFixed(2)}x<br>
+                • <strong>TON 618 (66B M☉):</strong> ${formatDistance(tonDist)} - γ = ${gamma.toFixed(2)}x<br><br>
+                <strong>Same time dilation, WILDLY different absolute distances!</strong>
+            `;
         }
 
         // Mass slider control
@@ -1206,7 +1412,15 @@
 
         distanceSlider.addEventListener('input', (e) => {
             observerDistance = parseFloat(e.target.value);
-            distanceValue.innerHTML = observerDistance.toFixed(1) + ' R<sub>s</sub>';
+
+            // Show more precision when very close to horizon
+            if (observerDistance < 1.05) {
+                distanceValue.innerHTML = observerDistance.toFixed(4) + ' R<sub>s</sub>';
+            } else if (observerDistance < 1.2) {
+                distanceValue.innerHTML = observerDistance.toFixed(3) + ' R<sub>s</sub>';
+            } else {
+                distanceValue.innerHTML = observerDistance.toFixed(2) + ' R<sub>s</sub>';
+            }
         });
 
         // Start animation
