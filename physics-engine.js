@@ -6,10 +6,63 @@
  * - Observer-dependent rendering
  * - Live telemetry and metrics
  * - Canvas rendering with LOD optimization
+ * - Time series tracking for graphs
+ * - Animation states for transitions
+ * - Network evolution rules
  *
  * @author Jacob Edwards | Elemental Insights
  * @license MIT
  */
+
+// ===== TIME SERIES TRACKER =====
+class TimeSeriesTracker {
+    constructor(config = {}) {
+        this.maxHistory = config.maxHistory || 1000; // Keep last 1000 data points
+        this.series = {}; // {metricName: [{time, value}, ...]}
+    }
+
+    track(metric, value, timestamp = performance.now()) {
+        if (!this.series[metric]) {
+            this.series[metric] = [];
+        }
+
+        this.series[metric].push({time: timestamp, value: value});
+
+        // Trim to max history
+        if (this.series[metric].length > this.maxHistory) {
+            this.series[metric].shift();
+        }
+    }
+
+    getHistory(metric, duration = null) {
+        const data = this.series[metric] || [];
+
+        if (!duration) {
+            return data; // Return all
+        }
+
+        // Return data from last N milliseconds
+        const cutoff = performance.now() - duration;
+        return data.filter(point => point.time >= cutoff);
+    }
+
+    getAllMetrics() {
+        return Object.keys(this.series);
+    }
+
+    clear(metric = null) {
+        if (metric) {
+            this.series[metric] = [];
+        } else {
+            this.series = {}; // Clear all
+        }
+    }
+
+    getLatest(metric) {
+        const data = this.series[metric];
+        return data && data.length > 0 ? data[data.length - 1] : null;
+    }
+}
 
 class ObserverPhysicsEngine {
     constructor(canvasId, config = {}) {
@@ -33,6 +86,21 @@ class ObserverPhysicsEngine {
         this.frameCount = 0;
         this.evolutionSpeed = 1;
         this.computationalBudget = 100;
+
+        // Time series tracking (optional)
+        this.enableTimeSeries = config.enableTimeSeries || false;
+        this.timeSeries = this.enableTimeSeries ? new TimeSeriesTracker({maxHistory: config.maxHistory || 1000}) : null;
+
+        // Animation states
+        this.animationState = 'normal'; // 'normal', 'transitioning', 'paused', 'superposition', 'collapsed'
+        this.stateTransition = null;
+
+        // Network evolution
+        this.networkRules = {
+            homophily: 0, // 0-1: Strength of like-attracts-like
+            clustering: 0, // 0-1: Tendency to form tight clusters
+            rewiring: 0    // 0-1: Probability of connection rewiring
+        };
 
         // Telemetry
         this.telemetry = {
@@ -481,6 +549,21 @@ class ObserverPhysicsEngine {
             spacelikeConnections: spacelikeConnections,
             lightlikeConnections: lightlikeConnections
         };
+
+        // Track metrics over time (if enabled)
+        if (this.timeSeries) {
+            const now = performance.now();
+            this.timeSeries.track('entropy', entropy, now);
+            this.timeSeries.track('temperature', temperature, now);
+            this.timeSeries.track('kineticEnergy', kineticEnergy, now);
+            this.timeSeries.track('totalEnergy', totalEnergy, now);
+            this.timeSeries.track('uncertainty', uncertainty, now);
+            this.timeSeries.track('freeEnergy', freeEnergy, now);
+            this.timeSeries.track('spatialSpread', spatialSpread, now);
+            this.timeSeries.track('avgVelocity', avgVelocity, now);
+            this.timeSeries.track('particleCount', particles.length, now);
+            this.timeSeries.track('fps', this.telemetry.fps, now);
+        }
 
         return this.telemetry;
     }
@@ -1170,6 +1253,141 @@ class ObserverPhysicsEngine {
             p.vx *= factor;
             p.vy *= factor;
         });
+    }
+
+    // ===== ANIMATION STATES =====
+    setState(newState) {
+        this.animationState = newState;
+        return this.animationState;
+    }
+
+    animateTransition(fromState, toState, duration = 1000, callback = null) {
+        this.animationState = 'transitioning';
+        this.stateTransition = {
+            from: fromState,
+            to: toState,
+            startTime: performance.now(),
+            duration: duration,
+            progress: 0,
+            callback: callback
+        };
+
+        // Update progress in animation loop
+        const checkTransition = () => {
+            if (this.stateTransition) {
+                const elapsed = performance.now() - this.stateTransition.startTime;
+                this.stateTransition.progress = Math.min(elapsed / duration, 1);
+
+                if (this.stateTransition.progress >= 1) {
+                    this.animationState = toState;
+                    if (callback) callback();
+                    this.stateTransition = null;
+                } else {
+                    requestAnimationFrame(checkTransition);
+                }
+            }
+        };
+        checkTransition();
+    }
+
+    getState() {
+        return this.animationState;
+    }
+
+    getTransitionProgress() {
+        return this.stateTransition ? this.stateTransition.progress : 0;
+    }
+
+    // ===== NETWORK EVOLUTION =====
+    setNetworkRule(rule, value) {
+        if (this.networkRules.hasOwnProperty(rule)) {
+            this.networkRules[rule] = Math.max(0, Math.min(1, value));
+        }
+    }
+
+    evolveNetwork(steps = 1) {
+        // Apply homophily: like attracts like
+        if (this.networkRules.homophily > 0) {
+            this.particles.forEach(p => {
+                // Find similar particles (same cluster or similar velocity)
+                const similar = this.particles.filter(other => {
+                    if (p.id === other.id) return false;
+                    if (p.cluster !== undefined && other.cluster !== undefined) {
+                        return p.cluster === other.cluster;
+                    }
+                    // Velocity similarity
+                    const dvx = p.vx - other.vx;
+                    const dvy = p.vy - other.vy;
+                    const velDiff = Math.sqrt(dvx * dvx + dvy * dvy);
+                    return velDiff < 1.0;
+                });
+
+                // Slightly attract to similar particles
+                similar.forEach(other => {
+                    const dx = other.x - p.x;
+                    const dy = other.y - p.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist > 0 && dist < 200) {
+                        const force = this.networkRules.homophily * 0.001;
+                        p.vx += (dx / dist) * force;
+                        p.vy += (dy / dist) * force;
+                    }
+                });
+            });
+        }
+
+        // Apply clustering: form tight groups
+        if (this.networkRules.clustering > 0) {
+            this.particles.forEach(p => {
+                if (p.cluster !== undefined) {
+                    // Find cluster centroid
+                    const clusterMembers = this.particles.filter(other => other.cluster === p.cluster);
+                    const cx = clusterMembers.reduce((sum, m) => sum + m.x, 0) / clusterMembers.length;
+                    const cy = clusterMembers.reduce((sum, m) => sum + m.y, 0) / clusterMembers.length;
+
+                    // Slight attraction to cluster center
+                    const dx = cx - p.x;
+                    const dy = cy - p.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist > 0) {
+                        const force = this.networkRules.clustering * 0.002;
+                        p.vx += (dx / dist) * force;
+                        p.vy += (dy / dist) * force;
+                    }
+                }
+            });
+        }
+
+        // Apply rewiring: randomly change connections
+        if (this.networkRules.rewiring > 0 && Math.random() < this.networkRules.rewiring) {
+            // Randomly reassign a particle's cluster
+            const randomParticle = this.particles[Math.floor(Math.random() * this.particles.length)];
+            if (randomParticle && randomParticle.cluster !== undefined) {
+                const config = this.observerConfigs[this.config.observerType];
+                if (config.clusterCount) {
+                    randomParticle.cluster = Math.floor(Math.random() * config.clusterCount);
+                }
+            }
+        }
+    }
+
+    getNetworkRules() {
+        return {...this.networkRules};
+    }
+
+    // ===== TIME SERIES ACCESS =====
+    getTimeSeries(metric = null) {
+        if (!this.timeSeries) return null;
+        if (metric) {
+            return this.timeSeries.getHistory(metric);
+        }
+        return this.timeSeries;
+    }
+
+    clearTimeSeries(metric = null) {
+        if (this.timeSeries) {
+            this.timeSeries.clear(metric);
+        }
     }
 }
 
