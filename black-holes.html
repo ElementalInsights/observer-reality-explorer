@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Black Holes - Where Spacetime Breaks</title>
+    <script src="physics-engine.js"></script>
+    <script src="chart-renderer.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            font-size: 16px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #444;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            color: #fff;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .header-left p {
+            color: #888;
+            font-size: 1.1em;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-buttons button {
+            padding: 12px 24px;
+            background: #444;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background 0.3s;
+        }
+
+        .header-buttons button:hover {
+            background: #555;
+        }
+
+        .panel {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid #444;
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .panel::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+
+        .panel::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+
+        .panel::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+
+        .panel h2 {
+            color: #fff;
+            font-size: 1.6em;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        .canvas-wrapper {
+            background: #000;
+            border: 2px solid #555;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 100%;
+            max-height: 450px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: none;
+            color: #888;
+            padding: 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95em;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        .back-btn:hover {
+            color: #2ecc71;
+            transform: translateX(-3px);
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .info-box h3 {
+            color: #fff;
+            font-size: 1.4em;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #ccc;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .info-box code {
+            background: rgba(255,255,255,0.1);
+            padding: 3px 8px;
+            border-radius: 3px;
+            color: #ddd;
+            font-size: 1.05em;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #bbb;
+            font-size: 1.1em;
+        }
+
+        .stat-value {
+            color: #fff;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .warning {
+            color: #ff6b6b;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .distance-slider {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .distance-slider label {
+            color: #bbb;
+            font-size: 1em;
+        }
+
+        .distance-slider input[type="range"] {
+            width: 200px;
+            cursor: pointer;
+        }
+
+        .distance-value {
+            color: #fff;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+
+        .preset-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .preset-btn {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #666;
+            border-radius: 5px;
+            color: white;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .preset-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #888;
+        }
+
+        .preset-btn.active {
+            background: #2ecc71;
+            border-color: #27ae60;
+        }
+
+        .scale-indicator {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #555;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.9em;
+            color: #fff;
+        }
+
+        .scale-indicator h4 {
+            margin: 0 0 8px 0;
+            color: #2ecc71;
+            font-size: 1em;
+        }
+
+        .scale-indicator p {
+            margin: 4px 0;
+            font-size: 0.85em;
+        }
+
+        .clocks-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            justify-content: space-around;
+        }
+
+        .clock {
+            background: rgba(0, 0, 0, 0.5);
+            border: 3px solid;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            flex: 1;
+        }
+
+        .clock.distant {
+            border-color: #2ecc71;
+        }
+
+        .clock.near {
+            border-color: #ff6b6b;
+        }
+
+        .clock-label {
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+
+        .clock.distant .clock-label {
+            color: #2ecc71;
+        }
+
+        .clock.near .clock-label {
+            color: #ff6b6b;
+        }
+
+        .clock-time {
+            font-size: 2.2em;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+
+        .clock.distant .clock-time {
+            color: #2ecc71;
+        }
+
+        .clock.near .clock-time {
+            color: #ff6b6b;
+        }
+
+        .clock-detail {
+            font-size: 0.85em;
+            margin-top: 8px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <h1>🕳️ Black Holes</h1>
+                <p>Where spacetime curves to infinity and time itself stops</p>
+                <a href="index.html" class="back-btn">← Back</a>
+            </div>
+
+            <div class="header-right">
+                <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+                    <!-- Presets -->
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="preset-btn" onclick="setMass(10, 'Stellar')" title="Stellar-mass black hole. Rs ≈ 30 km. DEADLY tidal forces!">⭐ Stellar</button>
+                        <button class="preset-btn" onclick="setMass(4.1e6, 'Sgr A*')" title="Sagittarius A* - Center of Milky Way. Rs ≈ 12M km. Survivable horizon!">🌌 Sgr A*</button>
+                        <button class="preset-btn" onclick="setMass(6.5e9, 'M87*')" title="M87* - First BH photographed (2019). Rs ≈ 19B km. Larger than Pluto's orbit!">📸 M87*</button>
+                        <button class="preset-btn" onclick="setMass(6.6e10, 'TON 618')" title="One of the most massive known. Rs ≈ 195B km. Density less than air!">🔥 TON 618</button>
+                    </div>
+
+                    <!-- Sliders -->
+                    <div style="display: flex; gap: 20px;">
+                        <div class="distance-slider" style="flex: 1;">
+                            <label for="massSlider">Mass: <span class="distance-value" id="massValue">10 M☉</span></label>
+                            <input type="range" id="massSlider" min="3" max="200" step="1" value="10" style="width: 100%;">
+                        </div>
+                        <div class="distance-slider" style="flex: 1;">
+                            <label for="distanceSlider">Distance: <span class="distance-value" id="distanceValue">5.0 R<sub>s</sub></span></label>
+                            <input type="range" id="distanceSlider" min="1.5" max="10" step="0.1" value="5" style="width: 100%;">
+                        </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="header-buttons">
+                        <button onclick="dropParticle('radial')">🪐 Drop In</button>
+                        <button onclick="dropParticle('orbit')">🛸 Orbit</button>
+                        <button onclick="dropParticle('escape')">🚀 Escape</button>
+                        <button onclick="resetScene()">🔄 Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Black Hole Visualization -->
+        <div class="panel">
+            <h2>🌀 Event Horizon & Gravitational Lensing</h2>
+            <div class="canvas-wrapper">
+                <canvas id="blackHoleCanvas"></canvas>
+                <div class="scale-indicator">
+                    <h4 id="bhName">Stellar Black Hole</h4>
+                    <p id="scaleInfo">--</p>
+                    <p id="comparisonInfo">--</p>
+                </div>
+            </div>
+
+            <div class="info-box" style="margin-top: 10px;">
+                <h3>⏰ Gravitational Time Dilation in Action</h3>
+                <p>Watch two synchronized clocks tick at different rates!</p>
+                <div class="clocks-container">
+                    <div class="clock distant">
+                        <div class="clock-label">🌌 Distant Observer</div>
+                        <div class="clock-time" id="distantClock">00:00.0</div>
+                        <div class="clock-detail">Far from black hole</div>
+                        <div class="clock-detail">Normal time flow</div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-width: 100px;">
+                        <div style="font-size: 1.8em; font-weight: bold; color: #ffd43b;">↔</div>
+                        <div style="font-size: 0.9em; color: #bbb; margin-top: 5px;">Time Δ</div>
+                        <div style="font-size: 1.6em; font-weight: bold; color: #ffd43b; margin-top: 5px;" id="timeDelta">0.0s</div>
+                        <div style="font-size: 0.85em; color: #888; margin-top: 5px; text-align: center;">How much the near observer lags behind</div>
+                    </div>
+                    <div class="clock near">
+                        <div class="clock-label">🔴 Near Observer</div>
+                        <div class="clock-time" id="nearClock">00:00.0</div>
+                        <div class="clock-detail" id="nearLocation">At 5.0 Rs</div>
+                        <div class="clock-detail">Time flows slower!</div>
+                    </div>
+                </div>
+                <p style="margin-top: 15px;"><strong>The closer to the black hole, the slower time flows!</strong> At the event horizon, the near clock appears to stop completely from the distant observer's perspective.</p>
+            </div>
+        </div>
+
+        <!-- Physics Info -->
+        <div class="panel">
+            <h2>📚 Black Hole Physics</h2>
+
+            <div class="info-box" style="border: 3px solid #ffd43b; background: rgba(255, 212, 59, 0.1);">
+                <h3 style="color: #ffd43b; font-size: 1.5em;">⚠️ What Happens to YOU at the Horizon?</h3>
+                <div id="survivalInfo" style="font-size: 1.15em; line-height: 1.8;">
+                    <!-- Dynamically updated -->
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3>🕳️ Black Hole Properties</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Mass (M):</span>
+                    <span class="stat-value" id="bhMass">--</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Schwarzschild Radius (R<sub>s</sub>):</span>
+                    <span class="stat-value" id="bhRadius">--</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Average Density (ρ):</span>
+                    <span class="stat-value" id="bhDensity">--</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Surface Gravity:</span>
+                    <span class="stat-value" id="bhGravity">--</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Hawking Temperature:</span>
+                    <span class="stat-value" id="hawkingTemp">--</span>
+                </div>
+            </div>
+
+            <div class="info-box" style="margin-top: 10px;">
+                <h3>👁️ Observer State</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Distance from Center:</span>
+                    <span class="stat-value" id="currentDistance">--</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Time Dilation (γ):</span>
+                    <span class="stat-value" id="timeDilation">--</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Escape Velocity:</span>
+                    <span class="stat-value" id="escapeVel">--</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Tidal Force (Δg):</span>
+                    <span class="stat-value" id="tidalForce">--</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Status:</span>
+                    <span class="stat-value" id="status">Safe</span>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3>🕰️ Gravitational Time Dilation</h3>
+                <p><strong>Time slows down near massive objects!</strong></p>
+                <p>At distance r from a black hole: <code>t' = t × √(1 - R<sub>s</sub>/r)</code></p>
+                <p><strong>At the event horizon (R<sub>s</sub>):</strong> Time stops completely from an outside observer's perspective!</p>
+                <p><strong>Inside the event horizon:</strong> All paths lead to the singularity. Not even light can escape.</p>
+                <p>This means if you watch someone fall into a black hole, you see them slow down and freeze at the horizon, forever!</p>
+            </div>
+
+            <div class="info-box" style="margin-top: 10px;">
+                <h3>🔮 The Equations</h3>
+                <p><strong>Schwarzschild Radius:</strong> <code>R<sub>s</sub> = 2GM/c²</code></p>
+                <p>The radius at which escape velocity equals the speed of light!</p>
+
+                <p><strong>Average Density:</strong> <code>ρ = 3c⁶/(32πG³M²)</code></p>
+                <p>Surprisingly, LARGER black holes have LOWER density! A supermassive black hole (10⁹ M☉) has the density of water.</p>
+
+                <p><strong>Surface Gravity:</strong> <code>g = GM/R<sub>s</sub>² = c⁴/(4GM)</code></p>
+                <p>Inversely proportional to mass - smaller black holes have higher surface gravity!</p>
+
+                <p><strong>Hawking Temperature:</strong> <code>T<sub>H</sub> = ℏc³/(8πGM k<sub>B</sub>)</code></p>
+                <p>Black holes emit thermal radiation and slowly evaporate. Smaller = hotter!</p>
+
+                <p><strong>Tidal Forces (Spaghettification):</strong> <code>Δg = 2GMh/r³</code></p>
+                <p>Differential gravity across your body. At the event horizon of a stellar mass black hole, you'd be torn apart!</p>
+            </div>
+
+            <div class="info-box" style="margin-top: 10px;">
+                <h3>🌀 Critical Radii</h3>
+                <p><strong>Photon Sphere:</strong> 1.5 R<sub>s</sub> - Light can orbit in circular paths</p>
+                <p><strong>Innermost Stable Circular Orbit (ISCO):</strong> 3.0 R<sub>s</sub> - Last stable orbit for matter</p>
+                <p><strong>Event Horizon:</strong> 1.0 R<sub>s</sub> - The point of no return. Time stops here from outside perspective!</p>
+                <p><strong>Singularity:</strong> r = 0 - Where spacetime curvature becomes infinite and physics breaks down</p>
+            </div>
+
+            <div class="info-box" style="margin-top: 10px;">
+                <h3>🎯 Fun Facts</h3>
+                <p><strong>Not a vacuum cleaner:</strong> Black holes have the same gravitational pull as any object of equal mass. If the Sun became a black hole, Earth's orbit wouldn't change!</p>
+                <p><strong>You can never see someone cross the event horizon:</strong> Time dilation means they appear to freeze and redshift forever.</p>
+                <p><strong>Inside is weird:</strong> Past the horizon, "forward in time" means "toward the singularity" - you can't avoid it any more than you can avoid tomorrow!</p>
+                <p><strong>Supermassive black holes are gentle:</strong> The tidal forces at the horizon of Sagittarius A* (4 million M☉) are survivable!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Physical constants
+        const G = 6.674e-11; // Gravitational constant (m³ kg⁻¹ s⁻²)
+        const c = 299792458; // Speed of light (m/s)
+        const c_km = c / 1000; // Speed of light (km/s)
+        const M_sun = 1.989e30; // Solar mass (kg)
+        const hbar = 1.054571817e-34; // Reduced Planck constant (J·s)
+        const k_B = 1.380649e-23; // Boltzmann constant (J/K)
+
+        // Black hole parameters (dynamic)
+        let M_solar_masses = 10; // Black hole mass in solar masses
+        let M = M_sun * M_solar_masses; // Black hole mass in kg
+        let Rs = (2 * G * M) / (c * c); // Schwarzschild radius (m)
+        let currentBHName = 'Stellar Black Hole';
+
+        // Famous black holes
+        const famousBlackHoles = {
+            'Stellar': { mass: 10, name: 'Stellar Black Hole', description: 'Typical stellar-mass black hole' },
+            'Sgr A*': { mass: 4.1e6, name: 'Sagittarius A*', description: 'Center of Milky Way' },
+            'M87*': { mass: 6.5e9, name: 'M87*', description: 'First black hole photographed (2019)' },
+            'TON 618': { mass: 6.6e10, name: 'TON 618', description: 'One of the most massive known' }
+        };
+
+        // Format large numbers
+        function formatMass(mass) {
+            if (mass >= 1e9) {
+                return (mass / 1e9).toFixed(2) + ' billion M☉';
+            } else if (mass >= 1e6) {
+                return (mass / 1e6).toFixed(2) + ' million M☉';
+            } else if (mass >= 1000) {
+                return (mass / 1000).toFixed(1) + ' thousand M☉';
+            } else {
+                return mass.toFixed(0) + ' M☉';
+            }
+        }
+
+        function formatDistance(meters) {
+            if (meters >= 9.461e15) { // Light years
+                return (meters / 9.461e15).toFixed(3) + ' light-years';
+            } else if (meters >= 1.496e11) { // AU
+                return (meters / 1.496e11).toFixed(2) + ' AU';
+            } else if (meters >= 1e9) {
+                return (meters / 1e9).toFixed(2) + ' million km';
+            } else if (meters >= 1e6) {
+                return (meters / 1e6).toFixed(1) + ' thousand km';
+            } else if (meters >= 1000) {
+                return (meters / 1000).toFixed(2) + ' km';
+            } else {
+                return meters.toFixed(0) + ' m';
+            }
+        }
+
+        // Canvas setup
+        const canvas = document.getElementById('blackHoleCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            const dpr = window.devicePixelRatio || 1;
+
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.scale(dpr, dpr);
+
+            return { width, height };
+        }
+
+        let dims = resizeCanvas();
+        window.addEventListener('resize', () => { dims = resizeCanvas(); });
+
+        // Simulation state
+        let observerDistance = 5; // In units of Rs
+        let particles = [];
+        let frameCount = 0;
+        let accretionDiskRotation = 0;
+
+        // Clock state
+        let distantTime = 0; // Seconds
+        let nearTime = 0; // Seconds (dilated)
+
+        // Calculate black hole properties
+        function calculateBlackHoleProperties() {
+            M = M_sun * M_solar_masses;
+            Rs = (2 * G * M) / (c * c);
+
+            // Average density: ρ = 3c^6 / (32πG^3M^2)
+            const density = (3 * Math.pow(c, 6)) / (32 * Math.PI * Math.pow(G, 3) * M * M);
+
+            // Surface gravity: g = c^4 / (4GM)
+            const surfaceGravity = Math.pow(c, 4) / (4 * G * M);
+
+            // Hawking temperature: T_H = ℏc^3 / (8πGM k_B)
+            const hawkingTemp = (hbar * Math.pow(c, 3)) / (8 * Math.PI * G * M * k_B);
+
+            return { density, surfaceGravity, hawkingTemp };
+        }
+
+        // Particle system with proper orbital mechanics
+        class Particle {
+            constructor(x, y, type = 'radial') {
+                this.x = x;
+                this.y = y;
+                this.type = type;
+                this.trail = [];
+                this.age = 0;
+                this.dead = false;
+
+                const centerX = dims.width / 2;
+                const centerY = dims.height / 2;
+                const dx = this.x - centerX;
+                const dy = this.y - centerY;
+                const r = Math.sqrt(dx * dx + dy * dy);
+                const scale = dims.width / 20;
+
+                // Set initial velocity based on type
+                if (type === 'radial') {
+                    // Drop straight in
+                    this.vx = 0;
+                    this.vy = 0;
+                } else if (type === 'orbit') {
+                    // Orbital velocity at distance r
+                    const vOrbit = Math.sqrt((scale * 1.0) / r) * 2; // Simplified orbital speed
+                    this.vx = (-dy / r) * vOrbit;
+                    this.vy = (dx / r) * vOrbit;
+                } else if (type === 'escape') {
+                    // Escape velocity
+                    const vEscape = Math.sqrt((2 * scale * 1.0) / r) * 2.5;
+                    this.vx = (-dy / r) * vEscape * 0.7;
+                    this.vy = (dx / r) * vEscape * 0.7;
+                }
+            }
+
+            update() {
+                const centerX = dims.width / 2;
+                const centerY = dims.height / 2;
+                const dx = this.x - centerX;
+                const dy = this.y - centerY;
+                const r = Math.sqrt(dx * dx + dy * dy);
+
+                // Gravitational acceleration (proper physics)
+                const scale = dims.width / 20;
+                const a = (scale * 1.0) / (r * r + 0.1); // GM/r^2 simplified
+
+                this.vx += (-dx / r) * a * 0.5;
+                this.vy += (-dy / r) * a * 0.5;
+
+                // Update position
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Trail with fading
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > 100) this.trail.shift();
+
+                // Check if crossed event horizon
+                const horizonRadius = scale * 1.0;
+                if (r < horizonRadius) {
+                    this.dead = true;
+                }
+
+                // Check if escaped
+                if (r > dims.width * 0.55) {
+                    this.dead = true;
+                }
+
+                this.age++;
+            }
+
+            draw() {
+                // Draw trail with color based on type
+                let trailColor = '#4dabf7';
+                if (this.type === 'orbit') trailColor = '#2ecc71';
+                if (this.type === 'escape') trailColor = '#ffd43b';
+
+                ctx.strokeStyle = trailColor;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                for (let i = 1; i < this.trail.length; i++) {
+                    ctx.globalAlpha = (i / this.trail.length) * 0.7;
+                    ctx.moveTo(this.trail[i-1].x, this.trail[i-1].y);
+                    ctx.lineTo(this.trail[i].x, this.trail[i].y);
+                }
+                ctx.stroke();
+
+                // Draw particle
+                ctx.globalAlpha = 1;
+                ctx.fillStyle = trailColor;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function dropParticle(type = 'radial') {
+            const centerX = dims.width / 2;
+            const centerY = dims.height / 2;
+            const angle = Math.random() * Math.PI * 2;
+            const distance = dims.width * 0.35;
+
+            particles.push(new Particle(
+                centerX + Math.cos(angle) * distance,
+                centerY + Math.sin(angle) * distance,
+                type
+            ));
+        }
+
+        function resetScene() {
+            particles = [];
+            distantTime = 0;
+            nearTime = 0;
+        }
+
+        // Set mass from preset buttons
+        function setMass(mass, name) {
+            M_solar_masses = mass;
+            currentBHName = famousBlackHoles[name].name;
+            M = M_sun * M_solar_masses;
+            Rs = (2 * G * M) / (c * c);
+
+            // Update slider
+            if (mass <= 200) {
+                massSlider.value = mass;
+            }
+
+            // Update display
+            massValue.innerHTML = formatMass(mass);
+
+            // Update scale indicator
+            document.getElementById('bhName').textContent = currentBHName;
+
+            resetScene();
+        }
+
+        // Draw black hole with animated accretion disk
+        function drawBlackHole() {
+            const centerX = dims.width / 2;
+            const centerY = dims.height / 2;
+            const scale = dims.width / 20;
+
+            // Animated accretion disk (spiraling matter)
+            accretionDiskRotation += 0.005;
+            for (let ring = 0; ring < 5; ring++) {
+                const ringRadius = scale * (1.5 + ring * 0.4);
+                const numParticles = 20 + ring * 10;
+                const brightness = 1 - (ring / 5) * 0.7;
+
+                for (let i = 0; i < numParticles; i++) {
+                    const angle = (i / numParticles) * Math.PI * 2 + accretionDiskRotation * (5 - ring);
+                    const jitter = Math.sin(frameCount * 0.1 + i) * 3;
+                    const x = centerX + Math.cos(angle) * (ringRadius + jitter);
+                    const y = centerY + Math.sin(angle) * (ringRadius + jitter);
+
+                    ctx.fillStyle = `rgba(255, ${100 + ring * 30}, ${20 + ring * 10}, ${brightness * 0.3})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Accretion disk glow
+            const diskRadius = scale * 3.5;
+            const gradient = ctx.createRadialGradient(centerX, centerY, scale * 1.5, centerX, centerY, diskRadius);
+            gradient.addColorStop(0, 'rgba(255, 150, 50, 0.2)');
+            gradient.addColorStop(0.5, 'rgba(255, 100, 20, 0.1)');
+            gradient.addColorStop(1, 'rgba(255, 50, 10, 0)');
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, diskRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Photon sphere (1.5 Rs)
+            ctx.strokeStyle = 'rgba(100, 200, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, scale * 1.5, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Event horizon (1.0 Rs) - pure black
+            const horizonRadius = scale * 1.0;
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, horizonRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Event horizon border (glowing edge)
+            ctx.strokeStyle = '#ff6b6b';
+            ctx.lineWidth = 3;
+            ctx.globalAlpha = 0.8;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, horizonRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+
+            // Display mass and Rs in center
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.font = 'bold 16px Monaco';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${M_solar_masses.toFixed(0)} M☉`, centerX, centerY - 10);
+            ctx.font = '12px Monaco';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.fillText(`Rs = ${(Rs / 1000).toFixed(1)} km`, centerX, centerY + 8);
+
+            // Gravitational lensing rings with distance labels
+            for (let i = 2; i <= 4; i++) {
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 / i})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, scale * i, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Distance labels
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.font = '11px Monaco';
+                ctx.textAlign = 'left';
+                const labelX = centerX + scale * i + 5;
+                const labelY = centerY + 3;
+                ctx.fillText(`${i}.0 Rs`, labelX, labelY);
+                ctx.fillText(`(${(i * Rs / 1000).toFixed(1)} km)`, labelX, labelY + 12);
+            }
+
+            // Label photon sphere and ISCO
+            ctx.fillStyle = 'rgba(100, 200, 255, 0.8)';
+            ctx.font = 'bold 12px Monaco';
+            ctx.textAlign = 'center';
+            ctx.fillText('Photon Sphere', centerX, centerY - scale * 1.5 - 10);
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.font = '11px Monaco';
+            ctx.fillText('1.5 Rs', centerX, centerY - scale * 1.5 + 5);
+
+            // ISCO label
+            if (scale * 3 < dims.height / 2 - 40) {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.font = 'bold 11px Monaco';
+                ctx.fillText('ISCO (3.0 Rs)', centerX, centerY + scale * 3 + 15);
+            }
+
+            // Near observer position indicator (red)
+            const nearObserverR = scale * observerDistance;
+            const nearObserverX = centerX + nearObserverR;
+            const nearObserverY = centerY;
+
+            // Near observer glow
+            const nearGlow = ctx.createRadialGradient(nearObserverX, nearObserverY, 0, nearObserverX, nearObserverY, 20);
+            nearGlow.addColorStop(0, 'rgba(255, 107, 107, 0.6)');
+            nearGlow.addColorStop(1, 'rgba(255, 107, 107, 0)');
+            ctx.fillStyle = nearGlow;
+            ctx.beginPath();
+            ctx.arc(nearObserverX, nearObserverY, 20, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Near observer marker
+            ctx.fillStyle = '#ff6b6b';
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(nearObserverX, nearObserverY, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Near observer clock display
+            function formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                const decisecs = Math.floor((seconds % 1) * 10);
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${decisecs}`;
+            }
+
+            ctx.fillStyle = '#ff6b6b';
+            ctx.font = 'bold 16px Monaco';
+            ctx.textAlign = 'left';
+            ctx.fillText('🔴 Near Observer', nearObserverX + 18, nearObserverY - 15);
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 18px Monaco';
+            ctx.fillText(formatTime(nearTime), nearObserverX + 18, nearObserverY + 5);
+            ctx.font = '12px Monaco';
+            ctx.fillStyle = '#ff6b6b';
+            ctx.fillText(`${observerDistance.toFixed(1)} Rs`, nearObserverX + 18, nearObserverY + 20);
+
+            // Distant observer position (top right, far away)
+            const distantObserverX = dims.width - 100;
+            const distantObserverY = 80;
+
+            // Distant observer glow
+            const distantGlow = ctx.createRadialGradient(distantObserverX, distantObserverY, 0, distantObserverX, distantObserverY, 20);
+            distantGlow.addColorStop(0, 'rgba(46, 204, 113, 0.6)');
+            distantGlow.addColorStop(1, 'rgba(46, 204, 113, 0)');
+            ctx.fillStyle = distantGlow;
+            ctx.beginPath();
+            ctx.arc(distantObserverX, distantObserverY, 20, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Distant observer marker
+            ctx.fillStyle = '#2ecc71';
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(distantObserverX, distantObserverY, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Distant observer clock display
+            ctx.fillStyle = '#2ecc71';
+            ctx.font = 'bold 16px Monaco';
+            ctx.textAlign = 'right';
+            ctx.fillText('🌌 Distant Observer', distantObserverX - 18, distantObserverY - 15);
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 18px Monaco';
+            ctx.fillText(formatTime(distantTime), distantObserverX - 18, distantObserverY + 5);
+            ctx.font = '12px Monaco';
+            ctx.fillStyle = '#2ecc71';
+            ctx.fillText('Far from BH', distantObserverX - 18, distantObserverY + 20);
+
+            // Draw line showing they're observing the same event
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(nearObserverX, nearObserverY);
+            ctx.lineTo(distantObserverX, distantObserverY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Add "Time flows differently!" label in the middle
+            const midX = (nearObserverX + distantObserverX) / 2;
+            const midY = (nearObserverY + distantObserverY) / 2;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.font = 'bold 14px Monaco';
+            ctx.textAlign = 'center';
+            ctx.fillText('Time flows differently!', midX, midY - 5);
+
+            // Show time difference
+            const timeDiff = distantTime - nearTime;
+            ctx.fillStyle = '#ffd43b';
+            ctx.font = '12px Monaco';
+            ctx.fillText(`Δt = ${timeDiff.toFixed(1)}s`, midX, midY + 10);
+        }
+
+        // Animation loop
+        function animate() {
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, dims.width, dims.height);
+
+            // Draw black hole
+            drawBlackHole();
+
+            // Update and draw particles
+            particles = particles.filter(p => !p.dead && p.age < 500);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // Update stats
+            updateStats();
+
+            frameCount++;
+            requestAnimationFrame(animate);
+        }
+
+        // Update statistics
+        function updateStats() {
+            const r = observerDistance;
+            const props = calculateBlackHoleProperties();
+
+            // Black hole properties
+            document.getElementById('bhMass').textContent = formatMass(M_solar_masses) + ' (' + (M / 1e30).toExponential(2) + ' × 10³⁰ kg)';
+            document.getElementById('bhRadius').textContent = formatDistance(Rs);
+
+            // Density in various units with comparisons
+            let densityText = (props.density).toExponential(2) + ' kg/m³';
+
+            // Add comparisons
+            if (props.density > 1e17) {
+                densityText += ' (Nuclear density!)';
+            } else if (props.density > 1e4) {
+                densityText += ' (Ultra-dense)';
+            } else if (props.density > 1000) {
+                densityText += ' (Denser than water)';
+            } else if (props.density > 1) {
+                densityText += ' (Water-like: ' + props.density.toFixed(1) + ' kg/m³)';
+            } else {
+                densityText += ' (Less dense than AIR!)';
+            }
+
+            document.getElementById('bhDensity').textContent = densityText;
+
+            document.getElementById('bhGravity').textContent = (props.surfaceGravity / 1e12).toExponential(2) + ' × 10¹² m/s²';
+            document.getElementById('hawkingTemp').textContent = (props.hawkingTemp * 1e9).toExponential(2) + ' × 10⁻⁹ K';
+
+            // Observer state
+            document.getElementById('currentDistance').textContent = r.toFixed(2) + ' Rs (' + formatDistance(r * Rs) + ')';
+
+            // Time dilation factor: γ = 1/√(1 - Rs/r)
+            const gamma = 1 / Math.sqrt(Math.max(0.001, 1 - (1 / r)));
+            document.getElementById('timeDilation').textContent = gamma.toFixed(3) + 'x slower';
+
+            // Escape velocity as fraction of c
+            const vEscape = Math.sqrt(2 / r);
+            document.getElementById('escapeVel').textContent = (vEscape * c_km).toFixed(0) + ' km/s (' + (vEscape * 100).toFixed(1) + '% of c)';
+
+            // Tidal force: Δg = 2GM h / r³ (assuming h = 2m for human height)
+            const h = 2; // meters
+            const tidalForce = (2 * G * M * h) / Math.pow(r * Rs, 3);
+            const tidalForceInGs = tidalForce / 9.81;
+            if (tidalForceInGs > 1e6) {
+                document.getElementById('tidalForce').textContent = (tidalForceInGs / 1e6).toExponential(2) + ' × 10⁶ g (LETHAL!)';
+            } else if (tidalForceInGs > 1000) {
+                document.getElementById('tidalForce').textContent = (tidalForceInGs / 1000).toFixed(1) + ' thousand g (FATAL)';
+            } else if (tidalForceInGs > 10) {
+                document.getElementById('tidalForce').textContent = tidalForceInGs.toFixed(1) + ' g (DANGEROUS)';
+            } else {
+                document.getElementById('tidalForce').textContent = tidalForceInGs.toFixed(2) + ' g (Survivable)';
+            }
+
+            // Status
+            let status = 'Safe';
+            let statusClass = 'stat-value';
+
+            if (r < 1.0) {
+                status = '💀 INSIDE EVENT HORIZON';
+                statusClass = 'stat-value warning';
+            } else if (r < 1.5) {
+                status = '⚠️ PHOTON SPHERE - DANGER!';
+                statusClass = 'stat-value warning';
+            } else if (r < 3.0) {
+                status = '⚠️ Near Event Horizon';
+                statusClass = 'stat-value warning';
+            }
+
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = status;
+            statusEl.className = statusClass;
+
+            // Update clocks
+            distantTime += 1 / 60; // 60 FPS
+            nearTime += (1 / 60) / gamma; // Time dilated
+
+            function formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                const decisecs = Math.floor((seconds % 1) * 10);
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${decisecs}`;
+            }
+
+            document.getElementById('distantClock').textContent = formatTime(distantTime);
+            document.getElementById('nearClock').textContent = formatTime(nearTime);
+            document.getElementById('nearLocation').textContent = `At ${r.toFixed(1)} Rs`;
+
+            // Update time delta
+            const timeDiff = distantTime - nearTime;
+            document.getElementById('timeDelta').textContent = timeDiff.toFixed(1) + 's';
+
+            // Update scale indicator
+            document.getElementById('bhName').textContent = currentBHName;
+            document.getElementById('scaleInfo').textContent = `Rs = ${formatDistance(Rs)}`;
+
+            // Comparison info
+            let comparison = '';
+            if (M_solar_masses >= 1e9) {
+                comparison = 'Ultramassive supermassive BH - Larger than our solar system!';
+            } else if (M_solar_masses >= 1e6) {
+                comparison = `Supermassive BH - ${(Rs / 1.496e11).toFixed(2)} AU diameter`;
+            } else if (M_solar_masses >= 1000) {
+                comparison = 'Intermediate mass BH';
+            } else {
+                comparison = 'Stellar-mass BH - Size of a city';
+            }
+
+            // Add tidal force comparison at horizon
+            const tidalAtHorizon = (2 * G * M * h) / Math.pow(Rs, 3);
+            const tidalInGs = tidalAtHorizon / 9.81;
+
+            if (tidalInGs > 1e6) {
+                comparison += ' • INSTANT SPAGHETTIFICATION at horizon!';
+            } else if (tidalInGs > 100) {
+                comparison += ' • Extreme tidal forces at horizon';
+            } else if (tidalInGs > 10) {
+                comparison += ' • Survivable to cross the horizon!';
+            } else {
+                comparison += ' • GENTLE at horizon - could survive crossing!';
+            }
+
+            document.getElementById('comparisonInfo').textContent = comparison;
+
+            // Update survival info card
+            const survivalInfo = document.getElementById('survivalInfo');
+            let survivalHTML = '';
+
+            if (tidalInGs > 1e9) {
+                survivalHTML = `
+                    <p style="color: #ff3333; font-weight: bold;">💀 INSTANT VAPORIZATION</p>
+                    <p>Tidal forces: <strong>${(tidalInGs / 1e9).toFixed(2)} billion g</strong></p>
+                    <p>You would be torn apart into individual atoms <strong>INSTANTLY</strong> before even reaching the horizon. The differential gravity across your body is so extreme that you'd be stretched into a stream of plasma.</p>
+                    <p><strong>Time to spaghettification:</strong> Nanoseconds</p>
+                `;
+            } else if (tidalInGs > 1e6) {
+                survivalHTML = `
+                    <p style="color: #ff4444; font-weight: bold;">☠️ EXTREME SPAGHETTIFICATION</p>
+                    <p>Tidal forces: <strong>${(tidalInGs / 1e6).toFixed(2)} million g</strong></p>
+                    <p>You would be stretched like taffy as you approach the horizon. Your head and feet would experience wildly different gravitational pulls, pulling you into a thin stream of matter.</p>
+                    <p><strong>Time to spaghettification:</strong> Milliseconds</p>
+                `;
+            } else if (tidalInGs > 10000) {
+                survivalHTML = `
+                    <p style="color: #ff6666; font-weight: bold;">⚠️ FATAL TIDAL FORCES</p>
+                    <p>Tidal forces: <strong>${(tidalInGs / 1000).toFixed(1)} thousand g</strong></p>
+                    <p>You would be painfully stretched apart. The difference in gravitational force between your head and feet would be enough to tear your body apart before crossing the horizon.</p>
+                    <p><strong>Time to death:</strong> Seconds</p>
+                `;
+            } else if (tidalInGs > 100) {
+                survivalHTML = `
+                    <p style="color: #ff8844; font-weight: bold;">⚠️ DANGEROUS - Severe Injury</p>
+                    <p>Tidal forces: <strong>${tidalInGs.toFixed(1)} g</strong></p>
+                    <p>You would experience severe stretching and crushing. Bones would break, organs would be damaged. You might briefly survive crossing the horizon, but not for long.</p>
+                    <p><strong>Time to unconsciousness:</strong> Minutes</p>
+                `;
+            } else if (tidalInGs > 10) {
+                survivalHTML = `
+                    <p style="color: #ffaa44; font-weight: bold;">⚠️ SURVIVABLE - But Uncomfortable!</p>
+                    <p>Tidal forces: <strong>${tidalInGs.toFixed(2)} g</strong></p>
+                    <p>You would feel a strong stretching sensation, like being pulled apart by strong hands. It would be painful and disorienting, but you would survive crossing the horizon!</p>
+                    <p><strong>You could live for:</strong> Hours (maybe)</p>
+                `;
+            } else if (tidalInGs > 1) {
+                survivalHTML = `
+                    <p style="color: #88dd44; font-weight: bold;">✅ SURVIVABLE - Mild Discomfort</p>
+                    <p>Tidal forces: <strong>${tidalInGs.toFixed(3)} g</strong></p>
+                    <p>You would feel a gentle stretching, like hanging upside down or being on a roller coaster. You'd survive crossing the horizon with minimal injury!</p>
+                    <p><strong>You could live for:</strong> Many hours, possibly days</p>
+                `;
+            } else {
+                survivalHTML = `
+                    <p style="color: #44dd88; font-weight: bold;">✨ PERFECTLY SAFE - You Wouldn't Even Notice!</p>
+                    <p>Tidal forces: <strong>${tidalInGs.toFixed(4)} g</strong></p>
+                    <p>The tidal forces are so gentle that you wouldn't even feel anything crossing the horizon! You could float peacefully into the black hole. From your perspective, space would just look a bit weird.</p>
+                    <p><strong>Problem:</strong> Once inside, you can't escape. All paths lead to the singularity, and you'd reach it in ${formatDistance(Rs)} / c ≈ ${(Rs / c / 3600).toFixed(2)} hours.</p>
+                `;
+            }
+
+            survivalInfo.innerHTML = survivalHTML;
+        }
+
+        // Mass slider control
+        const massSlider = document.getElementById('massSlider');
+        const massValue = document.getElementById('massValue');
+
+        massSlider.addEventListener('input', (e) => {
+            M_solar_masses = parseFloat(e.target.value);
+            currentBHName = 'Custom Black Hole';
+            M = M_sun * M_solar_masses;
+            Rs = (2 * G * M) / (c * c);
+
+            massValue.innerHTML = formatMass(M_solar_masses);
+            document.getElementById('bhName').textContent = currentBHName;
+
+            resetScene(); // Reset when mass changes
+        });
+
+        // Distance slider control
+        const distanceSlider = document.getElementById('distanceSlider');
+        const distanceValue = document.getElementById('distanceValue');
+
+        distanceSlider.addEventListener('input', (e) => {
+            observerDistance = parseFloat(e.target.value);
+            distanceValue.innerHTML = observerDistance.toFixed(1) + ' R<sub>s</sub>';
+        });
+
+        // Start animation
+        animate();
+    </script>
+</body>
+</html>
