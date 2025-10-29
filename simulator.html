@@ -752,52 +752,45 @@
     <div class="main-canvas">
         <!-- System State & Calculations (left column) -->
         <div class="math-panel">
-            <h2>📊 System State</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #00ff88;">
+                <h2 style="margin: 0;">📊 System State</h2>
+                <button id="infoModalBtn" style="background: rgba(0,255,136,0.2); border: 2px solid #00ff88; color: #00ff88; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 1em;">
+                    ℹ️ Learn All Formulas
+                </button>
+            </div>
 
-                <!-- Live System Stats -->
-                <div class="live-stats-grid">
-                    <div class="live-stat stat-row-hover">
-                        <span class="live-stat-label">Population:</span>
-                        <span class="live-stat-value" id="popDisplay">20</span>
-                        <div class="stat-tooltip">
-                            <h4>📊 Population Size (N)</h4>
-                            <p><strong>Statistical Mechanics:</strong> As N increases, individual randomness averages out and collective behavior emerges!</p>
-                            <p class="why">Scale Effects:</p>
-                            <p>• <strong>Small N (10-100):</strong> See individual particles, random fluctuations dominate<br>
-                            • <strong>Medium N (100-1000):</strong> Patterns start emerging, statistics become reliable<br>
-                            • <strong>Large N (1000+):</strong> Thermodynamic laws emerge (entropy always increases, diffusion, equilibration)</p>
-                            <p class="why">Coarse-Graining:</p>
-                            <p>At high N, we can't track every particle! Use <strong>Observer Power</strong> slider to simulate limited resolution. Low power = coarse-grained view (particles appear as blobs).</p>
-                            <p class="why">Real-world analogy:</p>
-                            <p>A single water molecule is chaotic. A billion molecules? That's a wave with predictable physics!</p>
-                        </div>
+                <!-- Live System Stats (simple rows) -->
+                <div style="margin-bottom: 20px;">
+                    <div class="metric">
+                        <span class="metric-label">Population:</span>
+                        <span class="metric-value" id="popDisplay">20</span>
                     </div>
-                    <div class="live-stat">
-                        <span class="live-stat-label">Temperature:</span>
-                        <span class="live-stat-value" id="tempDisplay">T = 0.000</span>
+                    <div class="metric">
+                        <span class="metric-label">Temperature:</span>
+                        <span class="metric-value" id="tempDisplay">T = 0.000</span>
                     </div>
-                    <div class="live-stat">
-                        <span class="live-stat-label">FPS:</span>
-                        <span class="live-stat-value perf-fps" id="fpsValue">60</span>
+                    <div class="metric">
+                        <span class="metric-label">FPS:</span>
+                        <span class="metric-value perf-fps" id="fpsValue">60</span>
                     </div>
-                    <div class="live-stat">
-                        <span class="live-stat-label">LOD:</span>
-                        <span class="live-stat-value perf-lod" id="lodMode">HIGH</span>
+                    <div class="metric">
+                        <span class="metric-label">LOD Mode:</span>
+                        <span class="metric-value perf-lod" id="lodMode">ULTRA</span>
                     </div>
-                    <div class="live-stat">
-                        <span class="live-stat-label">Effects:</span>
-                        <span class="live-stat-value perf-effects" id="effectsActive">ALL</span>
+                    <div class="metric">
+                        <span class="metric-label">Effects:</span>
+                        <span class="metric-value perf-effects" id="effectsActive">ALL</span>
                     </div>
                 </div>
 
-                <div style="height: 1px; background: rgba(0,255,136,0.2); margin: 15px 0;"></div>
+                <div style="height: 1px; background: rgba(0,255,136,0.2); margin: 20px 0;"></div>
 
             <div class="math-section">
                 <div class="metric">
                     <span class="metric-label">
                         Particles (N):
-                        <span class="tooltip-icon">?
-                            <span class="tooltip-content">
+                        <span style="display:none;" class="tooltip-icon-removed">
+                            <span class="tooltip-content-removed">
                                 <h4>Population Size (N)</h4>
                                 <p>The total number of entities in your system - could be particles, people, neurons, or concepts.</p>
                                 <p class="why">Why it matters:</p>
@@ -810,8 +803,8 @@
                 <div class="metric">
                     <span class="metric-label">
                         Connections (E):
-                        <span class="tooltip-icon">?
-                            <span class="tooltip-content">
+                        <span style="display:none;" class="tooltip-icon-removed">
+                            <span class="tooltip-content-removed">
                                 <h4>Network Edges (E)</h4>
                                 <p>Number of active relationships between particles within connection distance. Forms the network topology.</p>
                                 <p class="why">Why it matters:</p>
@@ -824,8 +817,8 @@
                 <div class="metric">
                     <span class="metric-label">
                         Observer Power:
-                        <span class="tooltip-icon">?
-                            <span class="tooltip-content">
+                        <span style="display:none;" class="tooltip-icon-removed">
+                            <span class="tooltip-content-removed">
                                 <h4>Computational Budget</h4>
                                 <p>How much resolution your observer has. Low power = coarse-grained view (particles snap to grid). High power = fine-grained precision.</p>
                                 <p class="why">Why it matters:</p>
@@ -841,8 +834,8 @@
                 <div class="metric">
                     <span class="metric-label">
                         Shannon Entropy (H):
-                        <span class="tooltip-icon">?
-                            <span class="tooltip-content">
+                        <span style="display:none;" class="tooltip-icon-removed">
+                            <span class="tooltip-content-removed">
                                 <h4>Shannon Entropy (Information Theory)</h4>
                                 <p><strong>H = -Σ p(x) log₂ p(x)</strong></p>
                                 <p>Measures disorder/unpredictability. We divide space into grid cells and calculate probability distribution. Higher H = more spread out, more random.</p>
@@ -860,8 +853,8 @@
                 <div class="metric">
                     <span class="metric-label">
                         Uncertainty (Δx·Δp):
-                        <span class="tooltip-icon">?
-                            <span class="tooltip-content">
+                        <span style="display:none;" class="tooltip-icon-removed">
+                            <span class="tooltip-content-removed">
                                 <h4>Heisenberg Uncertainty Principle</h4>
                                 <p><strong>Δx · Δp ≥ ℏ/2</strong></p>
                                 <p>Product of position variance (σₓ) and velocity variance (σₚ). You can't know both precisely at once!</p>
@@ -879,8 +872,8 @@
                 <div class="metric">
                     <span class="metric-label">
                         Network Density (ρ):
-                        <span class="tooltip-icon">?
-                            <span class="tooltip-content">
+                        <span style="display:none;" class="tooltip-icon-removed">
+                            <span class="tooltip-content-removed">
                                 <h4>Graph Density</h4>
                                 <p><strong>ρ = 2E / N(N-1)</strong></p>
                                 <p>Ratio of actual connections to maximum possible connections. ρ=1 means fully connected (every particle connects to every other), ρ=0 means totally isolated.</p>
@@ -898,8 +891,8 @@
                 <div class="metric">
                     <span class="metric-label">
                         Computational Cost (C):
-                        <span class="tooltip-icon">?
-                            <span class="tooltip-content">
+                        <span style="display:none;" class="tooltip-icon-removed">
+                            <span class="tooltip-content-removed">
                                 <h4>Algorithmic Complexity</h4>
                                 <p><strong>C = N²</strong></p>
                                 <p>Number of pairwise distance calculations per frame. Checking every particle against every other = O(N²) scaling.</p>
@@ -917,8 +910,8 @@
                 <div class="metric">
                     <span class="metric-label">
                         Free Energy (F):
-                        <span class="tooltip-icon">?
-                            <span class="tooltip-content">
+                        <span style="display:none;" class="tooltip-icon-removed">
+                            <span class="tooltip-content-removed">
                                 <h4>Helmholtz Free Energy</h4>
                                 <p><strong>F = U - TS</strong></p>
                                 <p>Combines potential energy (U) with entropy (S) and temperature (T). Lower F = more stable configuration.</p>
@@ -938,8 +931,8 @@
                 <div class="metric">
                     <span class="metric-label">
                         Temperature (T):
-                        <span class="tooltip-icon">?
-                            <span class="tooltip-content">
+                        <span style="display:none;" class="tooltip-icon-removed">
+                            <span class="tooltip-content-removed">
                                 <h4>Thermodynamic Temperature</h4>
                                 <p><strong>T ∝ √(⟨v²⟩)</strong></p>
                                 <p>Derived from kinetic energy. Higher T = faster particles = more thermal motion.</p>
@@ -957,8 +950,8 @@
                 <div class="metric">
                     <span class="metric-label">
                         Kinetic Energy (K):
-                        <span class="tooltip-icon">?
-                            <span class="tooltip-content">
+                        <span style="display:none;" class="tooltip-icon-removed">
+                            <span class="tooltip-content-removed">
                                 <h4>Kinetic Energy (Motion)</h4>
                                 <p><strong>K = ½mv²</strong></p>
                                 <p>Energy of motion. Sum of all particle velocities squared.</p>
@@ -976,8 +969,8 @@
                 <div class="metric">
                     <span class="metric-label">
                         Potential Energy (U):
-                        <span class="tooltip-icon">?
-                            <span class="tooltip-content">
+                        <span style="display:none;" class="tooltip-icon-removed">
+                            <span class="tooltip-content-removed">
                                 <h4>Potential Energy (Interactions)</h4>
                                 <p>Energy stored in particle interactions. Lennard-Jones potential: attractive at medium range, repulsive up close.</p>
                                 <p class="why">Why it matters:</p>
@@ -994,8 +987,8 @@
                 <div class="metric">
                     <span class="metric-label">
                         Spatial Spread (σᵣ):
-                        <span class="tooltip-icon">?
-                            <span class="tooltip-content">
+                        <span style="display:none;" class="tooltip-icon-removed">
+                            <span class="tooltip-content-removed">
                                 <h4>Root Mean Square Spread</h4>
                                 <p>Average distance from center of mass. Measures how "puffed out" the system is.</p>
                                 <p class="why">Why it matters:</p>
@@ -1012,8 +1005,8 @@
                 <div class="metric">
                     <span class="metric-label">
                         Info Deficit (ΔH):
-                        <span class="tooltip-icon">?
-                            <span class="tooltip-content">
+                        <span style="display:none;" class="tooltip-icon-removed">
+                            <span class="tooltip-content-removed">
                                 <h4>Information Deficit</h4>
                                 <p><strong>ΔH = H_max - H</strong></p>
                                 <p>How much entropy remains before reaching maximum disorder (uniform distribution).</p>
@@ -1031,8 +1024,8 @@
                 <div class="metric">
                     <span class="metric-label">
                         Avg Velocity (⟨v⟩):
-                        <span class="tooltip-icon">?
-                            <span class="tooltip-content">
+                        <span style="display:none;" class="tooltip-icon-removed">
+                            <span class="tooltip-content-removed">
                                 <h4>Mean Particle Speed</h4>
                                 <p>Average velocity magnitude across all particles. Proxy for system momentum.</p>
                                 <p class="why">Why it matters:</p>
@@ -1051,8 +1044,8 @@
                 <div class="metric">
                     <span class="metric-label">
                         Total Energy (E_total):
-                        <span class="tooltip-icon">?
-                            <span class="tooltip-content">
+                        <span style="display:none;" class="tooltip-icon-removed">
+                            <span class="tooltip-content-removed">
                                 <h4>Total System Energy</h4>
                                 <p><strong>E_total = K + U</strong></p>
                                 <p>Sum of kinetic energy (motion) and potential energy (interactions).</p>
@@ -1165,6 +1158,62 @@
                     </p>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Comprehensive Info Modal -->
+    <div id="infoModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(10,14,39,0.98); border: 4px solid #00ff88; border-radius: 16px; padding: 40px; width: 800px; max-width: 95vw; max-height: 90vh; overflow-y: auto; z-index: 10000; box-shadow: 0 12px 60px rgba(0,255,136,1), 0 0 0 9999px rgba(0,0,0,0.85);">
+        <h2 style="color: #00ff88; font-size: 2.2em; text-align: center; margin: 0 0 30px 0; border-bottom: 3px solid #00ff88; padding-bottom: 20px;">📚 Physics & Math Reference Guide</h2>
+
+        <div style="columns: 2; column-gap: 40px;">
+            <!-- Each metric explained -->
+            <div style="break-inside: avoid; margin-bottom: 30px;">
+                <h3 style="color: #00ff88; font-size: 1.5em; margin-bottom: 12px;">Shannon Entropy (H)</h3>
+                <p style="color: #f39c12; font-size: 1.2em; font-weight: 700; margin: 10px 0;">H = -Σ p(x) log₂ p(x)</p>
+                <p style="color: #eee; font-size: 1.1em; line-height: 1.6;">Measures disorder/unpredictability. Higher H = more spread out, more random.</p>
+                <p style="color: #aaa; font-size: 1em; line-height: 1.5; margin-top: 10px;"><strong>Why:</strong> 2nd Law of Thermodynamics - entropy ALWAYS increases!</p>
+            </div>
+
+            <div style="break-inside: avoid; margin-bottom: 30px;">
+                <h3 style="color: #00ff88; font-size: 1.5em; margin-bottom: 12px;">Heisenberg Uncertainty</h3>
+                <p style="color: #f39c12; font-size: 1.2em; font-weight: 700; margin: 10px 0;">Δx · Δp ≥ ℏ/2</p>
+                <p style="color: #eee; font-size: 1.1em; line-height: 1.6;">You can't know both position and velocity precisely at once!</p>
+                <p style="color: #aaa; font-size: 1em; line-height: 1.5; margin-top: 10px;"><strong>Why:</strong> Fundamental quantum limit. Trade-off between WHERE vs HOW FAST.</p>
+            </div>
+
+            <div style="break-inside: avoid; margin-bottom: 30px;">
+                <h3 style="color: #00ff88; font-size: 1.5em; margin-bottom: 12px;">Network Density (ρ)</h3>
+                <p style="color: #f39c12; font-size: 1.2em; font-weight: 700; margin: 10px 0;">ρ = 2E / N(N-1)</p>
+                <p style="color: #eee; font-size: 1.1em; line-height: 1.6;">Ratio of actual connections to maximum possible. ρ=1 = fully connected.</p>
+                <p style="color: #aaa; font-size: 1em; line-height: 1.5; margin-top: 10px;"><strong>Why:</strong> Shows how interconnected the system is.</p>
+            </div>
+
+            <div style="break-inside: avoid; margin-bottom: 30px;">
+                <h3 style="color: #00ff88; font-size: 1.5em; margin-bottom: 12px;">Free Energy (F)</h3>
+                <p style="color: #f39c12; font-size: 1.2em; font-weight: 700; margin: 10px 0;">F = U - TS</p>
+                <p style="color: #eee; font-size: 1.1em; line-height: 1.6;">Combines potential energy with entropy and temperature. Lower F = more stable.</p>
+                <p style="color: #aaa; font-size: 1em; line-height: 1.5; margin-top: 10px;"><strong>Why:</strong> Systems minimize free energy! Core to consciousness and active inference.</p>
+            </div>
+
+            <div style="break-inside: avoid; margin-bottom: 30px;">
+                <h3 style="color: #00ff88; font-size: 1.5em; margin-bottom: 12px;">Kinetic Energy (K)</h3>
+                <p style="color: #f39c12; font-size: 1.2em; font-weight: 700; margin: 10px 0;">K = ½mv²</p>
+                <p style="color: #eee; font-size: 1.1em; line-height: 1.6;">Energy of motion. Sum of all particle velocities squared.</p>
+                <p style="color: #aaa; font-size: 1em; line-height: 1.5; margin-top: 10px;"><strong>Why:</strong> Kinetic energy IS heat in statistical mechanics!</p>
+            </div>
+
+            <div style="break-inside: avoid; margin-bottom: 30px;">
+                <h3 style="color: #00ff88; font-size: 1.5em; margin-bottom: 12px;">Total Energy (E)</h3>
+                <p style="color: #f39c12; font-size: 1.2em; font-weight: 700; margin: 10px 0;">E = K + U</p>
+                <p style="color: #eee; font-size: 1.1em; line-height: 1.6;">Sum of kinetic and potential energy.</p>
+                <p style="color: #aaa; font-size: 1em; line-height: 1.5; margin-top: 10px;"><strong>Why:</strong> In isolated systems, energy is conserved (1st Law).</p>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="document.getElementById('infoModal').style.display='none'" style="background: #00ff88; color: #0a0e27; border: none; padding: 12px 32px; border-radius: 8px; font-size: 1.2em; font-weight: 700; cursor: pointer;">
+                Got it! ✓
+            </button>
         </div>
     </div>
 
@@ -2239,6 +2288,18 @@
                 e.stopPropagation();
                 const statRow = e.target.closest('.stat-row-hover');
                 statRow.classList.toggle('active');
+            }
+        });
+
+        // ===== INFO MODAL =====
+        document.getElementById('infoModalBtn').addEventListener('click', function() {
+            document.getElementById('infoModal').style.display = 'block';
+        });
+
+        // Close modal when clicking backdrop
+        document.getElementById('infoModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
             }
         });
 
