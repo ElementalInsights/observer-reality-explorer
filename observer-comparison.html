@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Observer Comparison - Reality Through Different Lenses</title>
+    <script src="physics-engine.js"></script>
+    <script src="telemetry-display.js"></script>
     <style>
         * {
             margin: 0;
@@ -42,10 +44,29 @@
         /* Main Layout */
         .main-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 300px 1fr 1fr 300px;
             grid-template-rows: 1fr auto;
             gap: 0;
             height: calc(100vh - 60px);
+        }
+
+        /* Telemetry Panels */
+        .telemetry-panel {
+            background: rgba(10,14,39,0.95);
+            border: 2px solid #2ecc71;
+            overflow-y: auto;
+        }
+
+        .telemetry-panel.left {
+            grid-column: 1;
+            grid-row: 1;
+            border-right: 1px solid rgba(46,204,113,0.3);
+        }
+
+        .telemetry-panel.right {
+            grid-column: 4;
+            grid-row: 1;
+            border-left: 1px solid rgba(46,204,113,0.3);
         }
 
         /* Observer Panels */
@@ -53,13 +74,17 @@
             position: relative;
             background: rgba(255,255,255,0.02);
             border: 2px solid rgba(46,204,113,0.3);
+            grid-row: 1;
         }
 
         .observer-panel.left {
+            grid-column: 2;
             border-right: 1px solid rgba(46,204,113,0.3);
+            border-left: 1px solid rgba(46,204,113,0.3);
         }
 
         .observer-panel.right {
+            grid-column: 3;
             border-left: 1px solid rgba(46,204,113,0.3);
         }
 
@@ -97,6 +122,7 @@
         /* Controls Panel */
         .controls-panel {
             grid-column: 1 / -1;
+            grid-row: 2;
             background: rgba(10,14,39,0.95);
             border-top: 2px solid #2ecc71;
             padding: 20px;
@@ -200,6 +226,9 @@
 
     <!-- Main Container -->
     <div class="main-container">
+        <!-- Left Telemetry -->
+        <div class="telemetry-panel left" id="leftTelemetry"></div>
+
         <!-- Left Observer Panel -->
         <div class="observer-panel left">
             <div class="observer-info" id="leftObserverInfo">
@@ -217,6 +246,9 @@
             </div>
             <canvas id="rightCanvas"></canvas>
         </div>
+
+        <!-- Right Telemetry -->
+        <div class="telemetry-panel right" id="rightTelemetry"></div>
 
         <!-- Controls Panel -->
         <div class="controls-panel">
